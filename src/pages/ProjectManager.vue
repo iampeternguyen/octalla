@@ -7,9 +7,9 @@
         </q-card-section>
       </q-card>
 
-      <q-card class="">
+      <q-card v-for="task in tasks" :key="task.id">
         <q-card-section>
-          <div class="task-name">This is a task</div>
+          <div class="task-name">{{ task.name }}</div>
         </q-card-section>
       </q-card>
 
@@ -31,15 +31,27 @@ import Task from 'src/models/Task';
 
 export default defineComponent({
   setup() {
+    const tasks = ref<Task[]>([]);
+
     const text = ref('');
+
     function addTask() {
       const task = new Task(text.value);
       task.save().catch((err) => console.log(err));
+      tasks.value.push(task);
       text.value = '';
     }
+
+    Task.GetAll()
+      .then((dbTasks) => {
+        tasks.value = tasks.value.concat(dbTasks);
+      })
+      .catch((err) => console.log(err));
+
     return {
       text,
       addTask,
+      tasks,
     };
   },
 });

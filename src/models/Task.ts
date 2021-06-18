@@ -20,4 +20,14 @@ export default class Task {
       console.log('error saving Task');
     }
   }
+  static async GetAll() {
+    let tasks: Task[] = [];
+    try {
+      const db = await getDatabase();
+      tasks = await db.getAll(TASK_STORENAME);
+    } catch (error) {
+      console.log('error getting all tasks');
+    }
+    return tasks;
+  }
 }
