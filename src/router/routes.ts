@@ -9,6 +9,17 @@ const routes: RouteRecordRaw[] = [
     ],
   },
 
+  {
+    path: '/login',
+    component: () => import('src/layouts/ProjectManagementLayout.vue'),
+    children: [
+      {
+        path: '',
+        component: () => import('components/UserRegistration/UserLogin.vue'),
+      },
+    ],
+  },
+
   // Always leave this as last one,
   // but you can also remove it
   {

@@ -8,7 +8,17 @@
           round
           :text-color="isComplete ? 'green-4' : 'grey-4'"
           icon="eva-checkmark-circle-outline"
-          @click="toggleComplete"
+          @click="onToggleComplete"
+        />
+      </div>
+      <div class="row justify-between-items-center">
+        <q-space />
+        <q-btn
+          flat
+          round
+          text-color="red"
+          icon="eva-trash-2-outline"
+          @click="onDelete"
         />
       </div>
     </q-card-section>
@@ -28,11 +38,15 @@ export default defineComponent({
   },
   setup(props) {
     const isComplete = ref(props.task.isComplete);
-    async function toggleComplete() {
+    async function onToggleComplete() {
       await props.task.toggleComplete();
       isComplete.value = !isComplete.value;
     }
-    return { toggleComplete, isComplete };
+
+    async function onDelete() {
+      await props.task.delete();
+    }
+    return { onToggleComplete, onDelete, isComplete };
   },
 });
 </script>

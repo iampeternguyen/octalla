@@ -1,6 +1,6 @@
 import { uid } from 'quasar';
-import { getDatabase } from 'src/idb';
-import IDBModel from './IDBModel';
+import { getIDB } from 'src/idb';
+import DatabaseModel from './DatabaseModel';
 
 const TASK_STORENAME = 'tasks';
 
@@ -10,7 +10,7 @@ export interface TaskData {
   isComplete: boolean;
 }
 
-export default class Task extends IDBModel implements TaskData {
+export default class Task extends DatabaseModel implements TaskData {
   STORE_NAME: 'tasks';
 
   id: string;
@@ -33,7 +33,7 @@ export default class Task extends IDBModel implements TaskData {
   static async GetAll() {
     const tasks: Task[] = [];
     try {
-      const db = await getDatabase();
+      const db = await getIDB();
       const taskData = await db.getAll(TASK_STORENAME);
       taskData.forEach((data) => {
         const task = new Task(data.name, data.id, data.isComplete);

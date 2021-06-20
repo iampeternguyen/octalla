@@ -8,7 +8,7 @@ interface OctallaDB extends DBSchema {
   };
 }
 
-export const getDatabase = async () => {
+export const getIDB = async () => {
   return await openDB<OctallaDB>('octalla-db', 1, {
     upgrade(db) {
       db.createObjectStore('tasks');
