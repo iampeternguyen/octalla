@@ -1,10 +1,10 @@
 import { openDB, DBSchema } from 'idb';
-import Task from 'src/models/Task';
+import { TaskData } from 'src/models/Task';
 
 interface OctallaDB extends DBSchema {
   tasks: {
     key: string;
-    value: Task;
+    value: TaskData;
   };
 }
 

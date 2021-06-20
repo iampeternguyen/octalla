@@ -7,11 +7,8 @@
         </q-card-section>
       </q-card>
 
-      <q-card v-for="task in tasks" :key="task.id">
-        <q-card-section>
-          <div class="task-name">{{ task.name }}</div>
-        </q-card-section>
-      </q-card>
+      <task-list-item v-for="task in tasks" :key="task.id" :task="task">
+      </task-list-item>
 
       <q-card class="q-pa-sm">
         <q-input v-model="text" borderless>
@@ -28,8 +25,12 @@
 import { defineComponent, ref } from 'vue';
 import 'src/idb/index';
 import Task from 'src/models/Task';
+import TaskListItem from 'components/Tasks/TaskListItem.vue';
 
 export default defineComponent({
+  components: {
+    TaskListItem,
+  },
   setup() {
     const tasks = ref<Task[]>([]);
 
