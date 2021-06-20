@@ -12,17 +12,15 @@ export interface TaskData {
 
 export default class Task extends DatabaseModel implements TaskData {
   STORE_NAME: 'tasks';
-
   id: string;
-  name: string;
   isComplete: boolean;
 
-  constructor(name: string, id?: string, isComplete?: boolean) {
+  constructor(public name: string, data?: TaskData) {
     super();
+    // for database model abstract class
     this.STORE_NAME = TASK_STORENAME;
-    this.id = id || uid();
-    this.name = name;
-    this.isComplete = isComplete || false;
+    this.id = data?.id || uid();
+    this.isComplete = data?.isComplete || false;
   }
 
   async toggleComplete() {
@@ -36,7 +34,7 @@ export default class Task extends DatabaseModel implements TaskData {
       const db = await getIDB();
       const taskData = await db.getAll(TASK_STORENAME);
       taskData.forEach((data) => {
-        const task = new Task(data.name, data.id, data.isComplete);
+        const task = Task.Deserialize(data);
         tasks.push(task);
       });
     } catch (error) {
@@ -47,5 +45,9 @@ export default class Task extends DatabaseModel implements TaskData {
 
   serialize(): TaskData {
     return { id: this.id, name: this.name, isComplete: this.isComplete };
+  }
+
+  static Deserialize(taskData: TaskData): Task {
+    return new Task(taskData.name, taskData);
   }
 }
