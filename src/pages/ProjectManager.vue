@@ -10,49 +10,63 @@
       <task-list-item v-for="task in tasks" :key="task.id" :task="task">
       </task-list-item>
 
-      <q-card class="q-pa-sm">
-        <q-input v-model="text" borderless>
-          <template v-slot:append>
-            <q-btn round dense flat icon="add" @click="addTask" />
-          </template>
-        </q-input>
-      </q-card>
+      <q-input
+        ref="addTaskInputRef"
+        v-model="text"
+        dense
+        placeholder="+ New Task"
+        borderless
+        lazy-rules
+        @keydown.enter.prevent="addTask"
+        :rules="[(val) => !!val || 'Task can\'t be empty']"
+      >
+      </q-input>
     </div>
   </q-page>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { defineComponent, ref, inject } from 'vue';
 import 'src/idb/index';
 import Task from 'src/models/Task';
 import TaskListItem from 'components/Tasks/TaskListItem.vue';
+import Store from 'src/stores';
+import firebase from 'firebase/app';
+import { QInput } from 'quasar';
 
 export default defineComponent({
   components: {
     TaskListItem,
   },
   setup() {
-    const tasks = ref<Task[]>([]);
+    const store = inject(Store.StoreKey);
+    if (!store) return;
+
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        store.watchTasks(user.uid);
+      }
+    });
+
+    const addTaskInputRef = ref<QInput | null>(null);
+    const tasks = store.projectTasks;
 
     const text = ref('');
 
-    function addTask() {
+    async function addTask() {
+      if (!text.value) return;
       const task = new Task(text.value);
-      task.save().catch((err) => console.log(err));
-      tasks.value.push(task);
+      await task.save();
       text.value = '';
+      addTaskInputRef.value?.resetValidation();
+      addTaskInputRef.value?.blur();
     }
-
-    Task.GetAll()
-      .then((dbTasks) => {
-        tasks.value = tasks.value.concat(dbTasks);
-      })
-      .catch((err) => console.log(err));
 
     return {
       text,
       addTask,
       tasks,
+      addTaskInputRef,
     };
   },
 });

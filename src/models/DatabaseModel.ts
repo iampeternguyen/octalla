@@ -5,13 +5,16 @@ import { db } from 'src/firebase';
 export default abstract class DatabaseModel {
   abstract STORE_NAME: 'tasks';
   abstract id: string;
+  abstract last_modified: number;
   abstract serialize(): TaskData;
 
   async save() {
     try {
+      const data = this.serialize();
+      data.last_modified = Date.now();
       const idb = await getIDB();
-      await idb.put(this.STORE_NAME, this.serialize(), this.id);
-      await db.collection(this.STORE_NAME).doc(this.id).set(this.serialize());
+      await idb.put(this.STORE_NAME, data, this.id);
+      await db.collection(this.STORE_NAME).doc(this.id).set(data);
     } catch (error) {
       console.log('error saving: ', error);
     }
