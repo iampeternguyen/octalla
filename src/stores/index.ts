@@ -2,6 +2,7 @@ import { reactive, InjectionKey, computed, ref } from 'vue';
 import { User } from '@firebase/auth-types';
 import Task, { TaskData, TASKS_STORENAME } from 'src/models/Task';
 import { db } from 'src/firebase';
+import Project, { ProjectData, PROJECTS_STORENAME } from 'src/models/Project';
 
 interface UserStateInterface {
   isLoggedIn: boolean;
@@ -16,6 +17,7 @@ export default class Store {
 
   #userState: UserStateInterface;
   #projectTasks: Task[];
+  #projectsList: Project[];
 
   #showNewProjectModal = ref(false);
 
@@ -27,6 +29,7 @@ export default class Store {
       display_name: '',
     });
     this.#projectTasks = reactive([]);
+    this.#projectsList = reactive([]);
   }
 
   public static getInstance(): Store {
@@ -44,6 +47,10 @@ export default class Store {
     return computed(() => this.#projectTasks);
   }
 
+  get projectsList() {
+    return computed(() => this.#projectsList);
+  }
+
   get showNewProjectModal() {
     return computed(() => this.#showNewProjectModal);
   }
@@ -57,6 +64,44 @@ export default class Store {
     this.#userState.user_id = user.uid;
     this.#userState.email = user.email || '';
     this.#userState.display_name = user.displayName || '';
+    this.watchProjects();
+  }
+
+  watchProjects() {
+    const query = db
+      .collection(PROJECTS_STORENAME)
+      .where('created_by', '==', this.#userState.user_id);
+    // const observer =
+    query.onSnapshot(
+      (querySnapshot) => {
+        querySnapshot.docChanges().forEach((change) => {
+          const projectData = change.doc.data() as ProjectData;
+          console.log('proj.change.type ', change.type);
+          if (change.type === 'added') {
+            const project = new Project(projectData.name, projectData);
+            this.#projectsList.push(project);
+          }
+          if (change.type === 'modified') {
+            const index = this.#projectTasks.findIndex(
+              (t) => t.id == projectData.id
+            );
+            this.#projectsList[index] = new Project(
+              projectData.name,
+              projectData
+            );
+          }
+          if (change.type === 'removed') {
+            const index = this.#projectTasks.findIndex(
+              (t) => t.id == projectData.id
+            );
+            this.#projectsList.splice(index, 1);
+          }
+        });
+      },
+      (err) => {
+        console.log(`Encountered error: ${err.message}`);
+      }
+    );
   }
 
   watchTasks(projectId: string) {
@@ -68,6 +113,7 @@ export default class Store {
       (querySnapshot) => {
         querySnapshot.docChanges().forEach((change) => {
           const taskData = change.doc.data() as TaskData;
+          console.log('change.type ', change.type);
           if (change.type === 'added') {
             const task = new Task(taskData.name, taskData);
             this.#projectTasks.push(task);

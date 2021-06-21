@@ -26,12 +26,11 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, inject } from 'vue';
+import { defineComponent, ref, inject, watch } from 'vue';
 import 'src/idb/index';
 import Task from 'src/models/Task';
 import TaskListItem from 'components/Tasks/TaskListItem.vue';
 import Store from 'src/stores';
-import firebase from 'firebase/app';
 import { QInput } from 'quasar';
 
 export default defineComponent({
@@ -41,11 +40,9 @@ export default defineComponent({
   setup() {
     const store = inject(Store.StoreKey);
     if (!store) return;
-
-    firebase.auth().onAuthStateChanged((user) => {
-      if (user) {
-        store.watchTasks(user.uid);
-      }
+    watch(store.userState.value, (state) => {
+      console.log('state changed', state);
+      if (state.user_id) store.watchTasks(state.user_id);
     });
 
     const addTaskInputRef = ref<QInput | null>(null);

@@ -54,62 +54,13 @@
               />
             </q-item>
             <q-expansion-item
+              v-for="project in projects"
+              :key="project.id"
               :header-inset-level="1"
               expand-separator
-              icon="receipt"
-              label="Receipts"
+              :label="project.name"
               default-opened
             >
-              <q-expansion-item
-                switch-toggle-side
-                dense-toggle
-                label="Today"
-                :header-inset-level="1"
-                :content-inset-level="2"
-              >
-                <q-card>
-                  <q-card-section>
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-                    Quidem, eius reprehenderit eos corrupti commodi magni
-                    quaerat ex numquam, dolorum officiis modi facere maiores
-                    architecto suscipit iste eveniet doloribus ullam aliquid.
-                  </q-card-section>
-                </q-card>
-              </q-expansion-item>
-
-              <q-expansion-item
-                switch-toggle-side
-                dense-toggle
-                label="Yesterday"
-                :header-inset-level="1"
-                :content-inset-level="2"
-              >
-                <q-card>
-                  <q-card-section>
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-                    Quidem, eius reprehenderit eos corrupti commodi magni
-                    quaerat ex numquam, dolorum officiis modi facere maiores
-                    architecto suscipit iste eveniet doloribus ullam aliquid.
-                  </q-card-section>
-                </q-card>
-              </q-expansion-item>
-            </q-expansion-item>
-
-            <q-expansion-item
-              :header-inset-level="1"
-              :content-inset-level="1"
-              expand-separator
-              icon="schedule"
-              label="Postponed"
-            >
-              <q-card>
-                <q-card-section>
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-                  Quidem, eius reprehenderit eos corrupti commodi magni quaerat
-                  ex numquam, dolorum officiis modi facere maiores architecto
-                  suscipit iste eveniet doloribus ullam aliquid.
-                </q-card-section>
-              </q-card>
             </q-expansion-item>
           </q-expansion-item>
 
@@ -177,6 +128,8 @@ export default defineComponent({
 
   setup() {
     const store = inject(Store.StoreKey);
+    if (!store) return;
+    const projects = store.projectsList;
 
     const leftDrawerOpen = ref(true);
     const rightDrawerOpen = ref(false);
@@ -216,6 +169,7 @@ export default defineComponent({
       onDrawerClick,
       rightDrawerOpen,
       onNewProject,
+      projects,
     };
   },
 });
