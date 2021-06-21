@@ -43,16 +43,6 @@ export default defineComponent({
     const route = useRoute();
     if (!store) return;
 
-    // store.setActiveProject(route.params.project_id.toString());
-
-    watch(
-      route,
-      () => {
-        store.setActiveProject(route.params.project_id.toString());
-      },
-      { immediate: true }
-    );
-
     const addTaskInputRef = ref<QInput | null>(null);
     const tasks = store.projectTasks;
 

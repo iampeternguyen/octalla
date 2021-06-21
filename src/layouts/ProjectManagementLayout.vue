@@ -1,11 +1,13 @@
 <template>
-  <q-layout view="lHh lpR fFf">
+  <q-layout view="lHh lpR fFf" v-if="activeProject">
     <q-header class="bg-white text-primary shadow-2" height-hint="98">
-      <q-toolbar class="row justify-between">
-        <div class="row items-center">
-          <q-btn dense flat round icon="menu" @click="onToggleLeftDrawer" />
-          <div>{{ activeProject?.name }}</div>
-        </div>
+      <q-toolbar class="row justify-between fit">
+        <q-btn dense flat round icon="menu" @click="onToggleLeftDrawer" />
+        <div class="project-name">{{ activeProject.name }}</div>
+        <edit-project-goal
+          class="col-grow"
+          :project="activeProject"
+        ></edit-project-goal>
 
         <q-btn dense flat round icon="menu" @click="onToggleRightDrawer" />
       </q-toolbar>
@@ -20,19 +22,33 @@
       @click.capture="onDrawerClick"
     >
       <q-scroll-area class="fit">
-        <q-list padding>
-          <q-toolbar-title class="row items-center justify-center q-mb-lg">
-            <q-img src="/logo/Logo_Full.png" height="6rem" fit="contain" />
-          </q-toolbar-title>
+        <q-list>
+          <q-item v-if="!miniState">
+            <q-item-section>
+              <q-img src="/logo/Logo_Full.png" height="6rem" fit="contain" />
+            </q-item-section>
+          </q-item>
+
+          <q-separator />
+
+          <edit-project-success
+            v-if="!miniState"
+            class="q-my-md"
+            :project="activeProject"
+          ></edit-project-success>
+
           <q-item dense clickable v-ripple>
             <q-item-section avatar>
               <q-icon name="eva-bell-outline" />
             </q-item-section>
 
-            <q-item-section> Notifications </q-item-section>
+            <q-item-section class="left-drawer-item">
+              Notifications
+            </q-item-section>
           </q-item>
 
           <q-expansion-item
+            class="left-drawer-item"
             dense
             expand-separator
             icon="eva-browser-outline"
@@ -42,7 +58,7 @@
             <q-item dense class="justify-center items-center">
               <q-btn
                 flat
-                class="q-px-lg"
+                class="q-px-lg left-drawer-item"
                 color="primary"
                 icon="eva-plus-outline"
                 label="New Project"
@@ -52,11 +68,13 @@
               />
             </q-item>
             <router-link
-              class="side-menu-link"
+              class="left-drawer-project-link"
               v-for="project in projects"
               :key="project.id"
               :to="{ name: 'project', params: { project_id: project.id } }"
-              :class="{ 'side-menu-link__active': isActive(project.id) }"
+              :class="{
+                'left-drawer-project-link__active': isActive(project.id),
+              }"
             >
               <q-expansion-item
                 :class="{ 'bg-orange-1': isActive(project.id) }"
@@ -76,7 +94,7 @@
               <q-icon name="star" />
             </q-item-section>
 
-            <q-item-section> Star </q-item-section>
+            <q-item-section class="left-drawer-item"> Star </q-item-section>
           </q-item>
 
           <q-item dense clickable v-ripple>
@@ -84,7 +102,7 @@
               <q-icon name="send" />
             </q-item-section>
 
-            <q-item-section> Send </q-item-section>
+            <q-item-section class="left-drawer-item"> Send </q-item-section>
           </q-item>
 
           <q-item dense clickable v-ripple>
@@ -92,7 +110,7 @@
               <q-icon name="drafts" />
             </q-item-section>
 
-            <q-item-section> Drafts </q-item-section>
+            <q-item-section class="left-drawer-item"> Drafts </q-item-section>
           </q-item>
         </q-list>
       </q-scroll-area>
@@ -114,7 +132,7 @@
       </div>
     </q-drawer>
 
-    <q-drawer v-model="rightDrawerOpen" side="right" bordered>
+    <q-drawer v-model="rightDrawerOpen" side="right" bordered overlay>
       <!-- drawer content -->
     </q-drawer>
 
@@ -128,15 +146,26 @@
 import Store from 'src/stores';
 import { defineComponent, ref, inject, watch } from 'vue';
 import { useRoute } from 'vue-router';
+import EditProjectGoal from 'src/components/Projects/ProjectManagementLayout/EditProjectGoal.vue';
+import EditProjectSuccess from 'src/components/Projects/ProjectManagementLayout/EditProjectSuccess.vue';
 
 export default defineComponent({
   name: 'MainLayout',
 
-  components: {},
+  components: { EditProjectGoal, EditProjectSuccess },
 
   setup() {
     const store = inject(Store.StoreKey);
     const route = useRoute();
+    if (!store) return;
+
+    watch(
+      route,
+      async () => {
+        await store.setActiveProject(route.params.project_id.toString());
+      },
+      { immediate: true }
+    );
 
     if (!store) return;
     const projects = store.projectsList;
@@ -191,9 +220,24 @@ export default defineComponent({
 });
 </script>
 
-<style lang="scss">
-.side-menu-link {
+<style lang="scss" scoped>
+.project-name {
+  font-weight: 800;
+  font-size: 2rem;
+}
+
+.project-goal {
+  min-width: 30rem;
+  color: $primary;
+}
+
+.left-drawer-item {
+  font-size: 1.4rem;
+}
+
+.left-drawer-project-link {
   text-decoration: none;
+  font-size: 1.4rem;
   color: $grey-8;
 
   &__active {

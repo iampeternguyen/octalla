@@ -111,13 +111,22 @@
           <q-input
             color="secondary"
             class="new-project__form-input"
-            v-model="goal"
+            v-model="success"
             type="text"
             placeholder="Success looks like..."
             input-class="text-center"
           />
           <q-stepper-navigation class="row justify-between">
-            <q-btn color="secondary" @click="done3 = true" label="Finish" />
+            <q-btn
+              color="secondary"
+              @click="
+                () => {
+                  done3 = true;
+                  onAddProject();
+                }
+              "
+              label="Finish"
+            />
             <q-btn
               flat
               @click="step = 2"
