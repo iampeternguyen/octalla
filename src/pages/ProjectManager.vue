@@ -27,6 +27,7 @@
 
 <script lang="ts">
 import { defineComponent, ref, inject, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import 'src/idb/index';
 import Task from 'src/models/Task';
 import TaskListItem from 'components/Tasks/TaskListItem.vue';
@@ -39,10 +40,11 @@ export default defineComponent({
   },
   setup() {
     const store = inject(Store.StoreKey);
+    const route = useRoute();
     if (!store) return;
-    watch(store.userState.value, (state) => {
-      console.log('state changed', state);
-      if (state.user_id) store.watchTasks(state.user_id);
+
+    watch(route, () => {
+      store.watchTasks(route.params.project_id.toString());
     });
 
     const addTaskInputRef = ref<QInput | null>(null);
@@ -53,6 +55,7 @@ export default defineComponent({
     async function addTask() {
       if (!text.value) return;
       const task = new Task(text.value);
+      task.project_id = route.params.project_id.toString();
       await task.save();
       text.value = '';
       addTaskInputRef.value?.resetValidation();

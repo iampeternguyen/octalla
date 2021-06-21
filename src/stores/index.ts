@@ -18,6 +18,7 @@ export default class Store {
   #userState: UserStateInterface;
   #projectTasks: Task[];
   #projectsList: Project[];
+  #projectTasksObserver: (() => void) | null;
 
   #showNewProjectModal = ref(false);
 
@@ -30,6 +31,7 @@ export default class Store {
     });
     this.#projectTasks = reactive([]);
     this.#projectsList = reactive([]);
+    this.#projectTasksObserver = null;
   }
 
   public static getInstance(): Store {
@@ -105,11 +107,14 @@ export default class Store {
   }
 
   watchTasks(projectId: string) {
+    // unsubscribe
+    if (this.#projectTasksObserver) this.#projectTasksObserver();
+    // emptying array like this allows for computed to be responsive array=[] does not
+    this.#projectTasks.splice(0, this.#projectsList.length);
     const query = db
       .collection(TASKS_STORENAME)
-      .where('user_id', '==', projectId);
-    // const observer =
-    query.onSnapshot(
+      .where('project_id', '==', projectId);
+    this.#projectTasksObserver = query.onSnapshot(
       (querySnapshot) => {
         querySnapshot.docChanges().forEach((change) => {
           const taskData = change.doc.data() as TaskData;

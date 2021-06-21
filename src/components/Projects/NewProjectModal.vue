@@ -214,7 +214,8 @@ export default {
 #new-project-modal {
   position: absolute;
   top: 15vh;
-  min-width: 80vw;
+  width: 80vw;
+  max-width: 60rem;
 }
 
 .new-project__form-input {

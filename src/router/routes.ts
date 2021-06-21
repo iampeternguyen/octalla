@@ -10,6 +10,18 @@ const routes: RouteRecordRaw[] = [
   },
 
   {
+    path: '/project/:project_id',
+    component: () => import('src/layouts/ProjectManagementLayout.vue'),
+    children: [
+      {
+        name: 'project',
+        path: '',
+        component: () => import('pages/ProjectManager.vue'),
+      },
+    ],
+  },
+
+  {
     path: '/login',
     component: () => import('src/layouts/ProjectManagementLayout.vue'),
     children: [

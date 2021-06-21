@@ -27,7 +27,7 @@
     >
       <q-scroll-area class="fit">
         <q-list padding>
-          <q-item clickable v-ripple>
+          <q-item dense clickable v-ripple>
             <q-item-section avatar>
               <q-icon name="eva-bell-outline" />
             </q-item-section>
@@ -36,12 +36,13 @@
           </q-item>
 
           <q-expansion-item
+            dense
             expand-separator
             icon="eva-browser-outline"
             label="Projects"
             default-opened
           >
-            <q-item class="justify-center items-center">
+            <q-item dense class="justify-center items-center">
               <q-btn
                 flat
                 class="q-px-lg"
@@ -53,18 +54,25 @@
                 rounded
               />
             </q-item>
-            <q-expansion-item
+            <router-link
+              class="side-menu-link"
               v-for="project in projects"
               :key="project.id"
-              :header-inset-level="1"
-              expand-separator
-              :label="project.name"
-              default-opened
+              :to="{ name: 'project', params: { project_id: project.id } }"
             >
-            </q-expansion-item>
+              <q-expansion-item
+                dense
+                :header-inset-level="1"
+                expand-icon-toggle
+                expand-separator
+                :label="project.name"
+                default-opened
+              >
+              </q-expansion-item>
+            </router-link>
           </q-expansion-item>
 
-          <q-item active clickable v-ripple>
+          <q-item dense active clickable v-ripple>
             <q-item-section avatar>
               <q-icon name="star" />
             </q-item-section>
@@ -72,7 +80,7 @@
             <q-item-section> Star </q-item-section>
           </q-item>
 
-          <q-item clickable v-ripple>
+          <q-item dense clickable v-ripple>
             <q-item-section avatar>
               <q-icon name="send" />
             </q-item-section>
@@ -80,7 +88,7 @@
             <q-item-section> Send </q-item-section>
           </q-item>
 
-          <q-item clickable v-ripple>
+          <q-item dense clickable v-ripple>
             <q-item-section avatar>
               <q-icon name="drafts" />
             </q-item-section>
@@ -174,3 +182,10 @@ export default defineComponent({
   },
 });
 </script>
+
+<style lang="scss">
+.side-menu-link {
+  text-decoration: none;
+  color: $grey-8;
+}
+</style>
