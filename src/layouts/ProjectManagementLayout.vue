@@ -1,17 +1,11 @@
 <template>
-  <q-layout view="hHh lpR fFf">
+  <q-layout view="lHh lpR fFf">
     <q-header class="bg-white text-primary shadow-2" height-hint="98">
-      <q-toolbar>
-        <q-btn dense flat round icon="menu" @click="onToggleLeftDrawer" />
-
-        <q-toolbar-title>
-          <q-img
-            src="/logo/Logo_Main.png"
-            height="3rem"
-            fit="contain"
-            position="0% 50%"
-          />
-        </q-toolbar-title>
+      <q-toolbar class="row justify-between">
+        <div class="row items-center">
+          <q-btn dense flat round icon="menu" @click="onToggleLeftDrawer" />
+          <div>{{ activeProject?.name }}</div>
+        </div>
 
         <q-btn dense flat round icon="menu" @click="onToggleRightDrawer" />
       </q-toolbar>
@@ -27,6 +21,9 @@
     >
       <q-scroll-area class="fit">
         <q-list padding>
+          <q-toolbar-title class="row items-center justify-center q-mb-lg">
+            <q-img src="/logo/Logo_Full.png" height="6rem" fit="contain" />
+          </q-toolbar-title>
           <q-item dense clickable v-ripple>
             <q-item-section avatar>
               <q-icon name="eva-bell-outline" />
@@ -59,8 +56,10 @@
               v-for="project in projects"
               :key="project.id"
               :to="{ name: 'project', params: { project_id: project.id } }"
+              :class="{ 'side-menu-link__active': isActive(project.id) }"
             >
               <q-expansion-item
+                :class="{ 'bg-orange-1': isActive(project.id) }"
                 dense
                 :header-inset-level="1"
                 expand-icon-toggle
@@ -103,7 +102,7 @@
           so that user can switch back
           to mini-mode
         -->
-      <div class="q-mini-drawer-hide absolute" style="top: 15px; right: -17px">
+      <div class="q-mini-drawer-hide absolute" style="top: 50%; right: -1.5rem">
         <q-btn
           dense
           round
@@ -127,7 +126,8 @@
 
 <script lang="ts">
 import Store from 'src/stores';
-import { defineComponent, ref, inject } from 'vue';
+import { defineComponent, ref, inject, watch } from 'vue';
+import { useRoute } from 'vue-router';
 
 export default defineComponent({
   name: 'MainLayout',
@@ -136,9 +136,15 @@ export default defineComponent({
 
   setup() {
     const store = inject(Store.StoreKey);
+    const route = useRoute();
+
     if (!store) return;
     const projects = store.projectsList;
+    const activeProject = store.activeProject;
 
+    function isActive(project_id: string) {
+      return project_id == activeProject.value?.id;
+    }
     const leftDrawerOpen = ref(true);
     const rightDrawerOpen = ref(false);
     const miniState = ref(false);
@@ -178,6 +184,8 @@ export default defineComponent({
       rightDrawerOpen,
       onNewProject,
       projects,
+      isActive,
+      activeProject,
     };
   },
 });
@@ -187,5 +195,10 @@ export default defineComponent({
 .side-menu-link {
   text-decoration: none;
   color: $grey-8;
+
+  &__active {
+    color: $primary;
+    font-weight: 500;
+  }
 }
 </style>

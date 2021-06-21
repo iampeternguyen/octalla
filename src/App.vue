@@ -37,14 +37,14 @@ export default defineComponent({
 
     // debug purposes
     const userState = store.userState;
-    const projectTasks = store.projectTasks;
+    const projectState = store.projectState;
     firebase.auth().onAuthStateChanged((user) => {
       if (user) {
         store.onUserLoggedIn(user);
       }
     });
 
-    return { userState, projectTasks };
+    return { userState, projectState };
   },
 });
 </script>

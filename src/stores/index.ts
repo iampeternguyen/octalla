@@ -11,14 +11,20 @@ interface UserStateInterface {
   display_name: string;
 }
 
+interface ProjectStateInterface {
+  activeProjectId: string;
+  activeProject: Project | null;
+  activeProjectTasks: Task[];
+  projectsList: Project[];
+  activeProjectTaskObserver: (() => void) | null;
+}
+
 export default class Store {
   private static instance: Store;
   static StoreKey: InjectionKey<Store> = Symbol('Store');
 
   #userState: UserStateInterface;
-  #projectTasks: Task[];
-  #projectsList: Project[];
-  #projectTasksObserver: (() => void) | null;
+  #projectState: ProjectStateInterface;
 
   #showNewProjectModal = ref(false);
 
@@ -29,9 +35,14 @@ export default class Store {
       email: '',
       display_name: '',
     });
-    this.#projectTasks = reactive([]);
-    this.#projectsList = reactive([]);
-    this.#projectTasksObserver = null;
+
+    this.#projectState = reactive({
+      activeProjectId: '',
+      activeProject: null,
+      activeProjectTasks: [],
+      activeProjectTaskObserver: null,
+      projectsList: [],
+    });
   }
 
   public static getInstance(): Store {
@@ -45,12 +56,20 @@ export default class Store {
     return computed(() => this.#userState);
   }
 
+  get projectState() {
+    return computed(() => this.#projectState);
+  }
+
+  get activeProject() {
+    return computed(() => this.#projectState.activeProject);
+  }
+
   get projectTasks() {
-    return computed(() => this.#projectTasks);
+    return computed(() => this.#projectState.activeProjectTasks);
   }
 
   get projectsList() {
-    return computed(() => this.#projectsList);
+    return computed(() => this.#projectState.projectsList);
   }
 
   get showNewProjectModal() {
@@ -69,34 +88,45 @@ export default class Store {
     this.watchProjects();
   }
 
+  async setActiveProject(projectId: string) {
+    this.#projectState.activeProjectId = projectId;
+    const doc = await db.collection(PROJECTS_STORENAME).doc(projectId).get();
+    const projectData = doc.data() as ProjectData;
+    this.#projectState.activeProject = new Project(
+      projectData.name,
+      projectData
+    );
+    this.watchTasks(projectId);
+  }
+
   watchProjects() {
     const query = db
       .collection(PROJECTS_STORENAME)
       .where('created_by', '==', this.#userState.user_id);
+
     // const observer =
     query.onSnapshot(
       (querySnapshot) => {
         querySnapshot.docChanges().forEach((change) => {
           const projectData = change.doc.data() as ProjectData;
-          console.log('proj.change.type ', change.type);
           if (change.type === 'added') {
             const project = new Project(projectData.name, projectData);
-            this.#projectsList.push(project);
+            this.#projectState.projectsList.push(project);
           }
           if (change.type === 'modified') {
-            const index = this.#projectTasks.findIndex(
+            const index = this.#projectState.activeProjectTasks.findIndex(
               (t) => t.id == projectData.id
             );
-            this.#projectsList[index] = new Project(
+            this.#projectState.projectsList[index] = new Project(
               projectData.name,
               projectData
             );
           }
           if (change.type === 'removed') {
-            const index = this.#projectTasks.findIndex(
+            const index = this.#projectState.activeProjectTasks.findIndex(
               (t) => t.id == projectData.id
             );
-            this.#projectsList.splice(index, 1);
+            this.#projectState.projectsList.splice(index, 1);
           }
         });
       },
@@ -108,32 +138,39 @@ export default class Store {
 
   watchTasks(projectId: string) {
     // unsubscribe
-    if (this.#projectTasksObserver) this.#projectTasksObserver();
+    if (this.#projectState.activeProjectTaskObserver)
+      this.#projectState.activeProjectTaskObserver();
     // emptying array like this allows for computed to be responsive array=[] does not
-    this.#projectTasks.splice(0, this.#projectsList.length);
+    this.#projectState.activeProjectTasks.splice(
+      0,
+      this.#projectState.projectsList.length
+    );
     const query = db
       .collection(TASKS_STORENAME)
       .where('project_id', '==', projectId);
-    this.#projectTasksObserver = query.onSnapshot(
+    this.#projectState.activeProjectTaskObserver = query.onSnapshot(
       (querySnapshot) => {
         querySnapshot.docChanges().forEach((change) => {
           const taskData = change.doc.data() as TaskData;
           console.log('change.type ', change.type);
           if (change.type === 'added') {
             const task = new Task(taskData.name, taskData);
-            this.#projectTasks.push(task);
+            this.#projectState.activeProjectTasks.push(task);
           }
           if (change.type === 'modified') {
-            const index = this.#projectTasks.findIndex(
+            const index = this.#projectState.activeProjectTasks.findIndex(
               (t) => t.id == taskData.id
             );
-            this.#projectTasks[index] = new Task(taskData.name, taskData);
+            this.#projectState.activeProjectTasks[index] = new Task(
+              taskData.name,
+              taskData
+            );
           }
           if (change.type === 'removed') {
-            const index = this.#projectTasks.findIndex(
+            const index = this.#projectState.activeProjectTasks.findIndex(
               (t) => t.id == taskData.id
             );
-            this.#projectTasks.splice(index, 1);
+            this.#projectState.activeProjectTasks.splice(index, 1);
           }
         });
       },
