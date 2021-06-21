@@ -3,7 +3,7 @@ import { TaskData } from './Task';
 import { db } from 'src/firebase';
 
 export default abstract class DatabaseModel {
-  abstract STORE_NAME: 'tasks';
+  abstract STORE_NAME: 'tasks' | 'projects';
   abstract id: string;
   abstract last_modified: number;
   abstract serialize(): TaskData;

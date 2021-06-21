@@ -1,6 +1,6 @@
 import { reactive, InjectionKey, computed } from 'vue';
 import { User } from '@firebase/auth-types';
-import Task, { TaskData, TASK_STORENAME } from 'src/models/Task';
+import Task, { TaskData, TASKS_STORENAME } from 'src/models/Task';
 import { db } from 'src/firebase';
 interface UserStateInterface {
   isLoggedIn: boolean;
@@ -50,7 +50,7 @@ export default class Store {
 
   watchTasks(projectId: string) {
     const query = db
-      .collection(TASK_STORENAME)
+      .collection(TASKS_STORENAME)
       .where('user_id', '==', projectId);
     // const observer =
     query.onSnapshot(
