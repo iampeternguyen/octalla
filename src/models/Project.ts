@@ -1,14 +1,12 @@
 import { uid } from 'quasar';
 import Store from 'src/stores';
 import DatabaseModel from './DatabaseModel';
-import { TaskData } from './Task';
 
 export const PROJECTS_STORENAME = 'projects';
 
 export interface ProjectData {
   created_at: number;
   created_by: string;
-  subtitle: string;
   primary_goal: string;
   success_looks_like: string;
   id: string;
@@ -20,7 +18,6 @@ export interface ProjectData {
 export default class Project extends DatabaseModel implements ProjectData {
   created_at: number;
   created_by: string;
-  subtitle: string;
   id: string;
   isComplete: boolean;
   last_modified: number;
@@ -33,7 +30,6 @@ export default class Project extends DatabaseModel implements ProjectData {
     // for database model abstract class
     this.STORE_NAME = PROJECTS_STORENAME;
     this.created_at = data?.created_at || Date.now();
-    this.subtitle = data?.subtitle || '';
     this.primary_goal = data?.primary_goal || '';
     this.success_looks_like = data?.success_looks_like || '';
     this.id = data?.id || uid();
@@ -43,7 +39,16 @@ export default class Project extends DatabaseModel implements ProjectData {
       data?.created_by || Store.getInstance().userState.value.user_id;
   }
 
-  serialize(): TaskData {
-    throw new Error('Method not implemented.');
+  serialize(): ProjectData {
+    return {
+      created_at: this.created_at,
+      success_looks_like: this.success_looks_like,
+      id: this.id,
+      isComplete: this.isComplete,
+      last_modified: this.last_modified,
+      name: this.name,
+      primary_goal: this.primary_goal,
+      created_by: this.created_by,
+    };
   }
 }

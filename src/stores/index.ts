@@ -1,7 +1,8 @@
-import { reactive, InjectionKey, computed } from 'vue';
+import { reactive, InjectionKey, computed, ref } from 'vue';
 import { User } from '@firebase/auth-types';
 import Task, { TaskData, TASKS_STORENAME } from 'src/models/Task';
 import { db } from 'src/firebase';
+
 interface UserStateInterface {
   isLoggedIn: boolean;
   user_id: string;
@@ -15,6 +16,8 @@ export default class Store {
 
   #userState: UserStateInterface;
   #projectTasks: Task[];
+
+  #showNewProjectModal = ref(false);
 
   private constructor() {
     this.#userState = reactive({
@@ -39,6 +42,14 @@ export default class Store {
 
   get projectTasks() {
     return computed(() => this.#projectTasks);
+  }
+
+  get showNewProjectModal() {
+    return computed(() => this.#showNewProjectModal);
+  }
+
+  toggleShowNewProjectModal() {
+    this.#showNewProjectModal.value = !this.#showNewProjectModal.value;
   }
 
   onUserLoggedIn(user: User) {

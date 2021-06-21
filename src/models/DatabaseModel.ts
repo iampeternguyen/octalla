@@ -1,12 +1,13 @@
 import { getIDB } from 'src/idb';
 import { TaskData } from './Task';
 import { db } from 'src/firebase';
+import { ProjectData } from './Project';
 
 export default abstract class DatabaseModel {
   abstract STORE_NAME: 'tasks' | 'projects';
   abstract id: string;
   abstract last_modified: number;
-  abstract serialize(): TaskData;
+  abstract serialize(): TaskData | ProjectData;
 
   async save() {
     try {
