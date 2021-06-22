@@ -11,6 +11,7 @@ export interface TaskData {
   isComplete: boolean;
   last_modified: number;
   name: string;
+  status: 'open' | 'in-progress' | 'review' | 'complete';
   project_id: string;
   created_by: string;
 }
@@ -22,6 +23,7 @@ export default class Task extends DatabaseModel implements TaskData {
   id: string;
   isComplete: boolean;
   last_modified: number;
+  status: 'open' | 'in-progress' | 'review' | 'complete';
   project_id: string;
   created_by: string;
 
@@ -37,6 +39,7 @@ export default class Task extends DatabaseModel implements TaskData {
     this.project_id = data?.project_id || '1';
     this.created_by =
       data?.created_by || Store.getInstance().userState.value.user_id;
+    this.status = data?.status || 'open';
   }
 
   async toggleComplete() {
@@ -54,10 +57,11 @@ export default class Task extends DatabaseModel implements TaskData {
       name: this.name,
       project_id: this.project_id,
       created_by: this.created_by,
+      status: this.status,
     };
   }
 
-  static Deserialize(taskData: TaskData): Task {
+  static deserialize(taskData: TaskData): Task {
     return new Task(taskData.name, taskData);
   }
 }

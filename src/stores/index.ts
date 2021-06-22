@@ -38,7 +38,12 @@ export default class Store {
 
     this.#projectState = reactive({
       activeProjectId: '',
-      activeProject: null,
+      activeProject: computed(() => {
+        const index = this.#projectState.projectsList.findIndex(
+          (p) => p.id == this.#projectState.activeProjectId
+        );
+        return this.#projectState.projectsList[index] || null;
+      }),
       activeProjectTasks: [],
       activeProjectTaskObserver: null,
       projectsList: [],
@@ -88,14 +93,8 @@ export default class Store {
     this.watchProjects();
   }
 
-  async setActiveProject(projectId: string) {
+  setActiveProject(projectId: string) {
     this.#projectState.activeProjectId = projectId;
-    const doc = await db.collection(PROJECTS_STORENAME).doc(projectId).get();
-    const projectData = doc.data() as ProjectData;
-    this.#projectState.activeProject = new Project(
-      projectData.name,
-      projectData
-    );
     this.watchTasks(projectId);
   }
 
@@ -109,17 +108,19 @@ export default class Store {
       (querySnapshot) => {
         querySnapshot.docChanges().forEach((change) => {
           const projectData = change.doc.data() as ProjectData;
+          console.log(change.type);
           if (change.type === 'added') {
-            const project = new Project(projectData.name, projectData);
+            const project = Project.deserialize(projectData);
             this.#projectState.projectsList.push(project);
           }
           if (change.type === 'modified') {
             const index = this.#projectState.activeProjectTasks.findIndex(
               (t) => t.id == projectData.id
             );
-            this.#projectState.projectsList[index] = new Project(
-              projectData.name,
-              projectData
+            this.#projectState.projectsList.splice(
+              index,
+              1,
+              Project.deserialize(projectData)
             );
           }
           if (change.type === 'removed') {
@@ -161,9 +162,10 @@ export default class Store {
             const index = this.#projectState.activeProjectTasks.findIndex(
               (t) => t.id == taskData.id
             );
-            this.#projectState.activeProjectTasks[index] = new Task(
-              taskData.name,
-              taskData
+            this.#projectState.activeProjectTasks.splice(
+              index,
+              1,
+              Task.deserialize(taskData)
             );
           }
           if (change.type === 'removed') {

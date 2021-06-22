@@ -7,7 +7,12 @@
         </q-card-section>
       </q-card>
 
-      <task-list-item v-for="task in tasks" :key="task.id" :task="task">
+      <task-list-item
+        v-for="task in tasks"
+        :key="task.id"
+        :task="task"
+        draggable="true"
+      >
       </task-list-item>
 
       <q-input
@@ -26,7 +31,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, inject, watch } from 'vue';
+import { defineComponent, ref, inject } from 'vue';
 import { useRoute } from 'vue-router';
 import 'src/idb/index';
 import Task from 'src/models/Task';

@@ -1,5 +1,5 @@
 <template>
-  <q-layout view="lHh lpR fFf" v-if="activeProject">
+  <q-layout view="lHh lpR fFf" v-if="activeProject" :key="activeProject?.id">
     <q-header class="bg-white text-primary shadow-2" height-hint="98">
       <q-toolbar class="row justify-between fit">
         <q-btn dense flat round icon="menu" @click="onToggleLeftDrawer" />
@@ -144,7 +144,7 @@
 
 <script lang="ts">
 import Store from 'src/stores';
-import { defineComponent, ref, inject, watch } from 'vue';
+import { defineComponent, ref, inject, watch, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import EditProjectGoal from 'src/components/Projects/ProjectManagementLayout/EditProjectGoal.vue';
 import EditProjectSuccess from 'src/components/Projects/ProjectManagementLayout/EditProjectSuccess.vue';
@@ -161,8 +161,8 @@ export default defineComponent({
 
     watch(
       route,
-      async () => {
-        await store.setActiveProject(route.params.project_id.toString());
+      () => {
+        store.setActiveProject(route.params.project_id.toString());
       },
       { immediate: true }
     );

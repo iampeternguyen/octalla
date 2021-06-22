@@ -19,8 +19,9 @@
 
 <script lang="ts">
 import { QInput } from 'quasar';
-import Project from 'src/models/Project';
-import { defineComponent, ref, PropType } from 'vue';
+import Project, { ProjectData } from 'src/models/Project';
+import Store from 'src/stores';
+import { defineComponent, ref, inject, PropType } from 'vue';
 
 export default defineComponent({
   name: 'EditProjectSuccess',
@@ -32,6 +33,7 @@ export default defineComponent({
   },
   setup(props) {
     const success = ref(props.project.success_looks_like);
+
     const successInput = ref<QInput | null>(null);
 
     function onEnterPressed() {
@@ -40,9 +42,8 @@ export default defineComponent({
 
     async function onGoalSaved() {
       if (success.value == props.project.success_looks_like) return;
-
-      console.log('saving');
       const project = props.project;
+
       project.success_looks_like = success.value.trim();
       await project.save();
     }

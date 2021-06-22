@@ -51,4 +51,7 @@ export default class Project extends DatabaseModel implements ProjectData {
       created_by: this.created_by,
     };
   }
+  static deserialize(projectData: ProjectData) {
+    return new Project(projectData.name, projectData);
+  }
 }
