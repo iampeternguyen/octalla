@@ -171,6 +171,9 @@ export default class Store {
           console.log('change.type ', change.type);
           if (change.type === 'added') {
             const task = new Task(taskData.name, taskData);
+            if (!task.sort_by.status)
+              task.sort_by.status =
+                this.#projectState.activeProjectTasks.length;
             this.#projectState.activeProjectTasks.push(task);
           }
           if (change.type === 'modified') {

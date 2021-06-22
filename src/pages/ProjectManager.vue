@@ -1,6 +1,23 @@
 <template>
   <q-page class="row q-gutter-md" padding>
-    <div
+    <!-- <div class="row">
+      <div class="col-3">
+        <h3>Draggable 1</h3>
+        <drag-1-vue></drag-1-vue>
+      </div>
+
+      <div class="col-3">
+        <h3>Draggable 2</h3>
+        <drag-2-vue></drag-2-vue>
+      </div>
+    </div> -->
+    <tasks-list
+      v-for="status in TASKS_STATUS_OPTIONS"
+      :key="status"
+      :status="status"
+    ></tasks-list>
+
+    <!-- <div
       class="tasks-list column col-2 q-gutter-md"
       v-for="statusOptions in TASKS_STATUS_OPTIONS"
       :key="statusOptions"
@@ -33,7 +50,7 @@
         :rules="[(val) => !!val || 'Task can\'t be empty']"
       >
       </q-input>
-    </div>
+    </div> -->
   </q-page>
 </template>
 
@@ -45,30 +62,22 @@ import Task, { TASKS_STATUS_OPTIONS } from 'src/models/Task';
 import TaskListItem from 'components/Tasks/TaskListItem.vue';
 import Store from 'src/stores';
 import { QInput } from 'quasar';
+import TasksList from 'src/components/Tasks/TasksList.vue';
 
 export default defineComponent({
   components: {
     TaskListItem,
+
+    TasksList,
   },
   setup() {
     const store = inject(Store.StoreKey);
     const route = useRoute();
     if (!store) return;
 
-    const addTaskInputRef = ref<QInput | null>(null);
     const tasks = store.projectTasks;
 
     const text = ref('');
-
-    async function addTask() {
-      if (!text.value) return;
-      const task = new Task(text.value);
-      task.project_id = route.params.project_id.toString();
-      await task.save();
-      text.value = '';
-      addTaskInputRef.value?.resetValidation();
-      addTaskInputRef.value?.blur();
-    }
 
     function filteredTasks(status: string) {
       return tasks.value.filter((t) => t.status == status);
@@ -76,10 +85,8 @@ export default defineComponent({
 
     return {
       text,
-      addTask,
       filteredTasks,
       tasks,
-      addTaskInputRef,
       TASKS_STATUS_OPTIONS,
     };
   },

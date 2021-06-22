@@ -20,6 +20,7 @@ export interface TaskData {
   status: string;
   project_id: string;
   created_by: string;
+  sort_by: Record<string, number>;
 }
 
 export default class Task extends DatabaseModel implements TaskData {
@@ -29,9 +30,10 @@ export default class Task extends DatabaseModel implements TaskData {
   id: string;
   isComplete: boolean;
   last_modified: number;
-  status: string;
   project_id: string;
   created_by: string;
+  sort_by: Record<string, number>;
+  private _status: string;
 
   constructor(public name: string, data?: TaskData) {
     super();
@@ -45,7 +47,21 @@ export default class Task extends DatabaseModel implements TaskData {
     this.project_id = data?.project_id || '1';
     this.created_by =
       data?.created_by || Store.getInstance().userState.value.user_id;
-    this.status = data?.status || 'open';
+    this._status = data?.status || 'open';
+    this.sort_by = data?.sort_by || {
+      status: Store.getInstance().projectTasks.value.length,
+    };
+  }
+
+  get status() {
+    return this._status;
+  }
+
+  set status(value: string) {
+    this._status = value;
+    value == TASKS_STATUS_OPTIONS[3]
+      ? (this.isComplete = true)
+      : (this.isComplete = false);
   }
 
   async toggleComplete() {
@@ -88,6 +104,7 @@ export default class Task extends DatabaseModel implements TaskData {
       project_id: this.project_id,
       created_by: this.created_by,
       status: this.status,
+      sort_by: this.sort_by,
     };
   }
 
