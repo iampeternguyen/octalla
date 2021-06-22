@@ -38,9 +38,9 @@ export default defineComponent({
     // debug purposes
     const userState = store.userState;
     const projectState = store.projectState;
-    firebase.auth().onAuthStateChanged((user) => {
+    firebase.auth().onAuthStateChanged(async (user) => {
       if (user) {
-        store.onUserLoggedIn(user);
+        await store.onUserLoggedIn(user);
       }
     });
 

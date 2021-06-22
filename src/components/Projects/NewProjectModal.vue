@@ -184,6 +184,7 @@ export default {
       project.primary_goal = goal.value;
       project.success_looks_like = success.value;
       await project.save();
+      props.store.onProjectCreated(project);
       onDialogHide();
     }
 

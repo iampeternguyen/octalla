@@ -50,6 +50,7 @@ export default class Task extends DatabaseModel implements TaskData {
 
   async toggleComplete() {
     this.isComplete = !this.isComplete;
+    if (this.isComplete) this.status = TASKS_STATUS_OPTIONS[3];
     await this.save();
   }
 
@@ -70,6 +71,9 @@ export default class Task extends DatabaseModel implements TaskData {
       default:
         break;
     }
+    this.status == TASKS_STATUS_OPTIONS[3]
+      ? (this.isComplete = true)
+      : (this.isComplete = false);
     await this.save();
   }
 

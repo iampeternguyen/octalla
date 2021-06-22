@@ -85,12 +85,12 @@ export default class Store {
     this.#showNewProjectModal.value = !this.#showNewProjectModal.value;
   }
 
-  onUserLoggedIn(user: User) {
+  async onUserLoggedIn(user: User) {
     this.#userState.isLoggedIn = true;
     this.#userState.user_id = user.uid;
     this.#userState.email = user.email || '';
     this.#userState.display_name = user.displayName || '';
-    this.watchProjects();
+    await this.getProjects();
   }
 
   setActiveProject(projectId: string) {
@@ -98,44 +98,59 @@ export default class Store {
     this.watchTasks(projectId);
   }
 
-  watchProjects() {
-    const query = db
-      .collection(PROJECTS_STORENAME)
-      .where('created_by', '==', this.#userState.user_id);
-
-    // const observer =
-    query.onSnapshot(
-      (querySnapshot) => {
-        querySnapshot.docChanges().forEach((change) => {
-          const projectData = change.doc.data() as ProjectData;
-          console.log(change.type);
-          if (change.type === 'added') {
-            const project = Project.deserialize(projectData);
-            this.#projectState.projectsList.push(project);
-          }
-          if (change.type === 'modified') {
-            const index = this.#projectState.activeProjectTasks.findIndex(
-              (t) => t.id == projectData.id
-            );
-            this.#projectState.projectsList.splice(
-              index,
-              1,
-              Project.deserialize(projectData)
-            );
-          }
-          if (change.type === 'removed') {
-            const index = this.#projectState.activeProjectTasks.findIndex(
-              (t) => t.id == projectData.id
-            );
-            this.#projectState.projectsList.splice(index, 1);
-          }
-        });
-      },
-      (err) => {
-        console.log(`Encountered error: ${err.message}`);
-      }
-    );
+  onProjectCreated(project: Project) {
+    this.#projectState.projectsList.push(project);
   }
+
+  async getProjects() {
+    const query = await db
+      .collection(PROJECTS_STORENAME)
+      .where('created_by', '==', this.#userState.user_id)
+      .get();
+    query.docs.forEach((snapshot) => {
+      const project = Project.deserialize(snapshot.data() as ProjectData);
+      this.#projectState.projectsList.push(project);
+    });
+  }
+
+  // watchProjects() {
+  //   const query = db
+  //     .collection(PROJECTS_STORENAME)
+  //     .where('created_by', '==', this.#userState.user_id);
+
+  //   // const observer =
+  //   query.onSnapshot(
+  //     (querySnapshot) => {
+  //       querySnapshot.docChanges().forEach((change) => {
+  //         const projectData = change.doc.data() as ProjectData;
+  //         console.log(change.type);
+  //         if (change.type === 'added') {
+  //           const project = Project.deserialize(projectData);
+  //           this.#projectState.projectsList.push(project);
+  //         }
+  //         if (change.type === 'modified') {
+  //           const index = this.#projectState.activeProjectTasks.findIndex(
+  //             (t) => t.id == projectData.id
+  //           );
+  //           this.#projectState.projectsList.splice(
+  //             index,
+  //             1,
+  //             Project.deserialize(projectData)
+  //           );
+  //         }
+  //         if (change.type === 'removed') {
+  //           const index = this.#projectState.activeProjectTasks.findIndex(
+  //             (t) => t.id == projectData.id
+  //           );
+  //           this.#projectState.projectsList.splice(index, 1);
+  //         }
+  //       });
+  //     },
+  //     (err) => {
+  //       console.log(`Encountered error: ${err.message}`);
+  //     }
+  //   );
+  // }
 
   watchTasks(projectId: string) {
     // unsubscribe
