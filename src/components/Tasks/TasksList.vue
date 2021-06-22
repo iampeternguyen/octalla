@@ -65,14 +65,6 @@ export default defineComponent({
         .sort((a, b) => a.sort_by.status - b.sort_by.status)
     );
 
-    // watch(store.projectState.value.activeProjectTasks, (tasks) => {
-    //   if (tasks.length < 1) {
-    //     taskList.value = [];
-    //     return;
-    //   }
-    //   taskList.value = tasks;
-    //   console.log(tasks[0].id);
-    // });
     const addTaskInputRef = ref<QInput | null>(null);
     const text = ref('');
 
@@ -87,18 +79,21 @@ export default defineComponent({
     }
 
     async function onChange(evt: Record<string, unknown>) {
+      var task = new Task('');
+      var newIndex = 0;
       if (evt.added) {
-        console.log('added');
-        const task = Task.deserialize(evt.added.element as TaskData);
+        newIndex = evt.added.newIndex as number;
+        task = Task.deserialize(evt.added.element as TaskData);
         task.status = props.status.toString();
-        await task.save();
+      } else if (evt.moved) {
+        newIndex = evt.moved.newIndex as number;
+        task = Task.deserialize(evt.moved.element as TaskData);
       }
 
-      if (evt.moved) {
-        const newIndex = evt.moved.newIndex as number;
-        const task = Task.deserialize(evt.moved.element as TaskData);
+      if (evt.moved || evt.added) {
         // in the section, new index is where the moved task is. therefore need to add one or subtract one to get the surrounding tasks
-        if (newIndex == 0) {
+        if (taskList.value.length == 1) {
+        } else if (newIndex == 0) {
           task.sort_by.status = taskList.value[newIndex + 1].sort_by.status / 2;
         } else if (newIndex == taskList.value.length - 1) {
           task.sort_by.status = taskList.value[newIndex - 1].sort_by.status + 1;
