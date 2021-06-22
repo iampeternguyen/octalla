@@ -3,6 +3,12 @@ import Store from 'src/stores';
 import DatabaseModel from './DatabaseModel';
 
 export const TASKS_STORENAME = 'tasks';
+export const TASKS_STATUS_OPTIONS = [
+  'open',
+  'in-progress',
+  'review',
+  'complete',
+];
 
 export interface TaskData {
   created_at: number;
@@ -11,7 +17,7 @@ export interface TaskData {
   isComplete: boolean;
   last_modified: number;
   name: string;
-  status: 'open' | 'in-progress' | 'review' | 'complete';
+  status: string;
   project_id: string;
   created_by: string;
 }
@@ -23,7 +29,7 @@ export default class Task extends DatabaseModel implements TaskData {
   id: string;
   isComplete: boolean;
   last_modified: number;
-  status: 'open' | 'in-progress' | 'review' | 'complete';
+  status: string;
   project_id: string;
   created_by: string;
 
@@ -44,6 +50,26 @@ export default class Task extends DatabaseModel implements TaskData {
 
   async toggleComplete() {
     this.isComplete = !this.isComplete;
+    await this.save();
+  }
+
+  async toggleStatus() {
+    switch (this.status) {
+      case TASKS_STATUS_OPTIONS[0]:
+        this.status = TASKS_STATUS_OPTIONS[1];
+        break;
+      case TASKS_STATUS_OPTIONS[1]:
+        this.status = TASKS_STATUS_OPTIONS[2];
+        break;
+      case TASKS_STATUS_OPTIONS[2]:
+        this.status = TASKS_STATUS_OPTIONS[3];
+        break;
+      case TASKS_STATUS_OPTIONS[3]:
+        this.status = TASKS_STATUS_OPTIONS[0];
+        break;
+      default:
+        break;
+    }
     await this.save();
   }
 

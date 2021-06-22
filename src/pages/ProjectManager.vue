@@ -1,14 +1,21 @@
 <template>
-  <q-page class="row" padding>
-    <div class="column col-2 q-gutter-md">
+  <q-page class="row q-gutter-md" padding>
+    <div
+      class="tasks-list column col-2 q-gutter-md"
+      v-for="statusOptions in TASKS_STATUS_OPTIONS"
+      :key="statusOptions"
+    >
+      <div class="tasks-"></div>
       <q-card class="project-list-category-card">
         <q-card-section class="q-py-sm">
-          <div class="project-list-category-card__name-text">In-Progress</div>
+          <div class="project-list-category-card__name-text">
+            {{ statusOptions }}
+          </div>
         </q-card-section>
       </q-card>
 
       <task-list-item
-        v-for="task in tasks"
+        v-for="task in filteredTasks(statusOptions)"
         :key="task.id"
         :task="task"
         draggable="true"
@@ -34,7 +41,7 @@
 import { defineComponent, ref, inject } from 'vue';
 import { useRoute } from 'vue-router';
 import 'src/idb/index';
-import Task from 'src/models/Task';
+import Task, { TASKS_STATUS_OPTIONS } from 'src/models/Task';
 import TaskListItem from 'components/Tasks/TaskListItem.vue';
 import Store from 'src/stores';
 import { QInput } from 'quasar';
@@ -63,11 +70,17 @@ export default defineComponent({
       addTaskInputRef.value?.blur();
     }
 
+    function filteredTasks(status: string) {
+      return tasks.value.filter((t) => t.status == status);
+    }
+
     return {
       text,
       addTask,
+      filteredTasks,
       tasks,
       addTaskInputRef,
+      TASKS_STATUS_OPTIONS,
     };
   },
 });

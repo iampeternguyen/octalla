@@ -1,5 +1,6 @@
 <template>
   <q-card :class="{ isComplete: isComplete }">
+    <q-btn color="secondary" :label="task.status" @click="onToggleStatus" />
     <q-card-section>
       <div class="row justify-between items-center">
         <div class="task-name">{{ task.name }}</div>
@@ -43,10 +44,14 @@ export default defineComponent({
       isComplete.value = !isComplete.value;
     }
 
+    async function onToggleStatus() {
+      await props.task.toggleStatus();
+    }
+
     async function onDelete() {
       await props.task.delete();
     }
-    return { onToggleComplete, onDelete, isComplete };
+    return { onToggleStatus, onToggleComplete, onDelete, isComplete };
   },
 });
 </script>
