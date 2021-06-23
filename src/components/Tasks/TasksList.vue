@@ -71,6 +71,7 @@ export default defineComponent({
       if (!text.value) return;
       const task = new Task(text.value);
       task.project_id = route.params.project_id.toString();
+      task.status = props.status.toString();
       await task.save();
       text.value = '';
       addTaskInputRef.value?.resetValidation();
@@ -81,29 +82,42 @@ export default defineComponent({
       var task: Task;
       var newIndex = 0;
       if (evt.added) {
+        // in added, newIndex is actually 1 after where the added task should be
         newIndex = evt.added.newIndex;
         task = evt.added.element;
         task.status = props.status.toString();
+
+        if (taskList.value.length <= 1) {
+          await task.save();
+          return;
+        }
+
+        if (newIndex == 0) {
+          task.sort_by.status = taskList.value[newIndex].sort_by.status / 2;
+        } else if (newIndex == taskList.value.length - 1) {
+          task.sort_by.status = taskList.value[newIndex].sort_by.status + 1;
+        } else {
+          task.sort_by.status =
+            (taskList.value[newIndex].sort_by.status +
+              taskList.value[newIndex + 1].sort_by.status) /
+            2;
+        }
+        await task.save();
       } else if (evt.moved) {
+        // taskList is mutated by the drag event, but is affected different on move and added
+        // in moved, newIndex is the location of the moved task
         newIndex = evt.moved.newIndex;
         task = evt.moved.element;
-      } else {
-        return;
-      }
 
-      if (evt.moved || evt.added) {
-        // in the section, new index is where the moved task is. therefore need to add one or subtract one to get the surrounding tasks
-        if (taskList.value.length == 1) {
-        } else if (newIndex == 0) {
+        if (newIndex == 0) {
           task.sort_by.status = taskList.value[newIndex + 1].sort_by.status / 2;
         } else if (newIndex == taskList.value.length - 1) {
           task.sort_by.status = taskList.value[newIndex - 1].sort_by.status + 1;
         } else {
           task.sort_by.status =
-            (taskList.value[newIndex + 1].sort_by.status -
-              taskList.value[newIndex - 1].sort_by.status) /
-              2 +
-            taskList.value[newIndex - 1].sort_by.status;
+            (taskList.value[newIndex + 1].sort_by.status +
+              taskList.value[newIndex + -1].sort_by.status) /
+            2;
         }
         await task.save();
       }

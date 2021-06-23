@@ -19,9 +19,8 @@
 
 <script lang="ts">
 import { QInput } from 'quasar';
-import Project, { ProjectData } from 'src/models/Project';
-import Store from 'src/stores';
-import { defineComponent, ref, inject, PropType } from 'vue';
+import Project from 'src/models/Project';
+import { defineComponent, ref, PropType } from 'vue';
 
 export default defineComponent({
   name: 'EditProjectSuccess',

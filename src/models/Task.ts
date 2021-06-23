@@ -52,7 +52,7 @@ export default class Task extends DatabaseModel implements TaskData {
       status:
         Store.getInstance().projectTasks.value[
           Store.getInstance().projectTasks.value.length - 1
-        ].sort_by.satus + 1 || 0,
+        ]?.sort_by.status + 1 || 0,
     };
   }
 
