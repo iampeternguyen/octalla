@@ -16,14 +16,14 @@
     "firebase": "^8.6.8",
     "firebaseui": "^4.8.0",
     "idb": "^6.1.2",
-    "quasar": "^2.0.0-beta.1",
+    "quasar": "^2.0.0",
     "vue-i18n": "^9.0.0-beta.0",
     "vuedraggable": "^4.0.3"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.13.14",
     "@firebase/auth-types": "^0.10.3",
-    "@quasar/app": "^3.0.0-beta.1",
+    "@quasar/app": "^3.0.0",
     "@types/node": "^10.17.15",
     "@typescript-eslint/eslint-plugin": "^4.16.1",
     "@typescript-eslint/parser": "^4.16.1",

@@ -49,7 +49,10 @@ export default class Task extends DatabaseModel implements TaskData {
       data?.created_by || Store.getInstance().userState.value.user_id;
     this._status = data?.status || 'open';
     this.sort_by = data?.sort_by || {
-      status: Store.getInstance().projectTasks.value.length,
+      status:
+        Store.getInstance().projectTasks.value[
+          Store.getInstance().projectTasks.value.length - 1
+        ].sort_by.satus + 1 || 0,
     };
   }
 

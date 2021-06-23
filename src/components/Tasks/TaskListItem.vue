@@ -1,5 +1,9 @@
 <template>
   <q-card :class="{ isComplete: isComplete }">
+    <div v-for="(value, key) in task.sort_by" :key="value">
+      {{ value }}
+      {{ key }}
+    </div>
     <q-btn color="secondary" :label="task.status" @click="onToggleStatus" />
     <q-card-section>
       <div class="row justify-between items-center">

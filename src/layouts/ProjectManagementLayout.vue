@@ -1,9 +1,11 @@
 <template>
   <q-layout view="lHh lpR fFf" v-if="activeProject" :key="activeProject?.id">
     <q-header class="bg-white text-primary shadow-2" height-hint="98">
-      <q-toolbar class="row justify-between fit">
+      <q-toolbar class="row justify-between">
         <q-btn dense flat round icon="menu" @click="onToggleLeftDrawer" />
-        <div class="project-name">{{ activeProject.name }}</div>
+
+        <edit-project-name :project="activeProject"></edit-project-name>
+
         <edit-project-goal
           class="col-grow"
           :project="activeProject"
@@ -148,11 +150,12 @@ import { defineComponent, ref, inject, watch, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import EditProjectGoal from 'src/components/Projects/ProjectManagementLayout/EditProjectGoal.vue';
 import EditProjectSuccess from 'src/components/Projects/ProjectManagementLayout/EditProjectSuccess.vue';
+import EditProjectName from 'src/components/Projects/ProjectManagementLayout/EditProjectName.vue';
 
 export default defineComponent({
   name: 'MainLayout',
 
-  components: { EditProjectGoal, EditProjectSuccess },
+  components: { EditProjectGoal, EditProjectSuccess, EditProjectName },
 
   setup() {
     const store = inject(Store.StoreKey);

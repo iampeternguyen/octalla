@@ -1,6 +1,6 @@
 <template>
-  <div class="tasks-list column col-2 q-gutter-md">
-    <q-card class="project-list-category-card">
+  <div class="tasks-list column col-2">
+    <q-card class="project-list-category-card q-mb-md">
       <q-card-section class="q-py-sm">
         <div class="project-list-category-card__name-text">
           {{ status }}
@@ -8,7 +8,7 @@
       </q-card-section>
     </q-card>
     <draggable
-      class="list-group"
+      class="list-group q-gutter-md"
       :list="taskList"
       group="people"
       @change="onChange"
@@ -18,7 +18,6 @@
         <task-list-item :key="element.id" :task="element"> </task-list-item>
       </template>
     </draggable>
-
     <q-input
       ref="addTaskInputRef"
       v-model="text"
@@ -38,7 +37,7 @@ import Task, { TaskData } from 'src/models/Task';
 import Store from 'src/stores';
 import { defineComponent, ref, inject, computed } from 'vue';
 import { useRoute } from 'vue-router';
-import draggable from 'vuedraggable';
+import draggable, { ChangeEvent } from 'vuedraggable';
 import TaskListItem from './TaskListItem.vue';
 export default defineComponent({
   name: 'TasksList',
@@ -78,16 +77,18 @@ export default defineComponent({
       addTaskInputRef.value?.blur();
     }
 
-    async function onChange(evt: Record<string, unknown>) {
-      var task = new Task('');
+    async function onChange(evt: ChangeEvent<Task>) {
+      var task: Task;
       var newIndex = 0;
       if (evt.added) {
-        newIndex = evt.added.newIndex as number;
-        task = Task.deserialize(evt.added.element as TaskData);
+        newIndex = evt.added.newIndex;
+        task = evt.added.element;
         task.status = props.status.toString();
       } else if (evt.moved) {
-        newIndex = evt.moved.newIndex as number;
-        task = Task.deserialize(evt.moved.element as TaskData);
+        newIndex = evt.moved.newIndex;
+        task = evt.moved.element;
+      } else {
+        return;
       }
 
       if (evt.moved || evt.added) {

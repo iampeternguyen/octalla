@@ -1,11 +1,12 @@
 <template>
   <q-input
     ref="goalInput"
-    class="project-goal q-ml-lg"
+    class="q-ml-lg"
     flat
     borderless
     :placeholder="'What\'s the goal of this project?'"
     v-model="goal"
+    input-class="edit-project-goal__input"
     @keydown.enter.prevent="onEnterPressed"
     @blur="onGoalSaved"
   >
@@ -47,9 +48,9 @@ export default defineComponent({
 });
 </script>
 
-<style lang="scss" scoped>
-.project-goal {
+<style lang="scss">
+.edit-project-goal__input {
   font-size: 2rem;
-  font-weight: 100;
+  font-weight: 300;
 }
 </style>
