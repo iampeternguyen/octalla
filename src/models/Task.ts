@@ -97,6 +97,13 @@ export default class Task extends DatabaseModel implements TaskData {
   }
 
   serialize(): TaskData {
+    //  cannot store Task sort_by in idb => record, string format needs to be converted to regular object
+
+    const sort_by = {};
+    Object.keys(this.sort_by).forEach((key) => {
+      sort_by[key] = this.sort_by[key];
+    });
+
     return {
       created_at: this.created_at,
       description: this.description,
@@ -107,7 +114,7 @@ export default class Task extends DatabaseModel implements TaskData {
       project_id: this.project_id,
       created_by: this.created_by,
       status: this.status,
-      sort_by: this.sort_by,
+      sort_by,
     };
   }
 
