@@ -1,6 +1,10 @@
 <template>
   <!-- notice dialogRef here -->
-  <q-dialog ref="dialogRef" @hide="onDialogHide">
+  <q-dialog
+    ref="dialogRef"
+    :model-value="showTaskModal"
+    @update:model-value="onValueChanged"
+  >
     <q-card class="task-edit-modal">
       <q-card-section class="task-edit-modal__header bg-grey-3">
         Lorem ipsum dolor sit amet
@@ -15,6 +19,7 @@
                 class="q-ml-xs"
                 color="primary"
                 icon="eva-arrow-ios-forward-outline"
+                @click="onDialogHide"
               />
               <q-btn color="primary" icon="eva-person-add-outline" round flat />
             </div>
@@ -97,7 +102,7 @@
 </template>
 
 <script lang="ts">
-import { useDialogPluginComponent } from 'quasar';
+import { QDialog, useDialogPluginComponent } from 'quasar';
 import { watch, PropType, reactive, ref } from 'vue';
 import { debounce } from 'ts-debounce';
 
@@ -124,6 +129,7 @@ export default {
     const store = Store.getInstance();
     const isNotSaved = ref(false);
     const isSaving = ref(false);
+    const showTaskModal = ref(true);
 
     watch(store.projectTasks.value, (tasks) => {
       const task = tasks.find((t) => t.id == props.task.id);
@@ -164,6 +170,15 @@ export default {
       }
     }
 
+    function onValueChanged(val: boolean) {
+      if (isNotSaved.value) {
+      } else {
+        // Prevents error on closing dialog while editor is focused
+        (document.activeElement as HTMLElement).blur();
+        showTaskModal.value = val;
+      }
+    }
+
     // REQUIRED; must be called inside of setup()
     const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
       useDialogPluginComponent();
@@ -177,11 +192,14 @@ export default {
 
     return {
       taskEditModel,
+
       isSaving,
       onUpdateDescription,
       saveTask,
       onEnterPressed,
       isNotSaved,
+      showTaskModal,
+      onValueChanged,
       // This is REQUIRED;
       // Need to inject these (from useDialogPluginComponent() call)
       // into the vue scope for the vue html template

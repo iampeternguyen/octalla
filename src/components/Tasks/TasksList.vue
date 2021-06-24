@@ -14,7 +14,7 @@
       @change="onChange"
       itemKey="name"
     >
-      <template #item="{ element, index }">
+      <template #item="{ element }">
         <task-list-item :key="element.id" :task="element"> </task-list-item>
       </template>
     </draggable>
