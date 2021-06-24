@@ -146,7 +146,7 @@
 
 <script lang="ts">
 import Store from 'src/stores';
-import { defineComponent, ref, inject, watch, computed } from 'vue';
+import { defineComponent, ref, inject, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import EditProjectGoal from 'src/components/Projects/ProjectManagementLayout/EditProjectGoal.vue';
 import EditProjectSuccess from 'src/components/Projects/ProjectManagementLayout/EditProjectSuccess.vue';

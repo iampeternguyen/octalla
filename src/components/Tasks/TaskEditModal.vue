@@ -36,16 +36,16 @@
               v-model="taskEditModel.name"
               class="full-width"
               @keydown.enter.exact.prevent="onEnterPressed"
-              @blur="onBlur"
+              @blur="saveTask"
             />
           </div>
-          <div class="row q-mb-md">
+          <div class="column q-mb-md">
             <!-- TODO limit row height (flex-grow?) -->
             <q-editor
-              @keydown.enter.exact.prevent="onEnterPressed"
-              @blur="onBlur"
-              v-model="taskEditModel.description"
+              :model-value="taskEditModel.description"
+              @update:model-value="onUpdateDescription"
               class="full-width"
+              :class="{ notSaved: isNotSaved }"
               :toolbar="[
                 [
                   {
@@ -67,8 +67,24 @@
                 ],
                 ['bold', 'italic', 'strike', 'underline'],
                 ['quote', 'unordered', 'ordered', 'outdent', 'indent'],
+                ['undo', 'redo'],
               ]"
-            />
+            >
+            </q-editor>
+            <div v-if="isNotSaved && !isSaving">
+              <q-linear-progress :value="100" color="red" />
+              <div class="text-caption q-mt-sm">
+                Unsaved changes. Will auto-save when you stop typing.
+              </div>
+            </div>
+            <div v-else-if="!isNotSaved && isSaving">
+              <q-linear-progress :value="100" color="green" />
+              <div class="text-caption q-mt-sm">Changes saved!</div>
+            </div>
+            <div v-else-if="isSaving">
+              <q-linear-progress indeterminate color="yellow" />
+              <div class="text-caption q-mt-sm">Saving changes</div>
+            </div>
           </div>
         </q-card-section>
         <q-separator vertical />
@@ -81,11 +97,12 @@
 </template>
 
 <script lang="ts">
-import { QInput, useDialogPluginComponent } from 'quasar';
-import { ref, PropType, reactive } from 'vue';
-import { db } from 'src/firebase';
+import { useDialogPluginComponent } from 'quasar';
+import { watch, PropType, reactive, ref } from 'vue';
+import { debounce } from 'ts-debounce';
 
-import Task, { TaskData, TASKS_STORENAME } from 'src/models/Task';
+import Task, { TaskData } from 'src/models/Task';
+import Store from 'src/stores';
 
 export default {
   props: {
@@ -104,32 +121,46 @@ export default {
 
   setup(props: { task: Task }) {
     const taskEditModel = reactive<Task>(Task.deserialize(props.task));
+    const store = Store.getInstance();
+    const isNotSaved = ref(false);
+    const isSaving = ref(false);
 
-    const query = db
-      .collection(TASKS_STORENAME)
-      .where('id', '==', props.task.id);
-    const observer = query.onSnapshot((querySnapshot) => {
-      querySnapshot.docChanges().forEach((change) => {
-        if (change.type == 'modified') {
-          const taskData = change.doc.data() as TaskData;
-          Object.keys(taskData).forEach((key) => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            taskEditModel[key] = taskData[key];
-          });
-        }
-      });
+    watch(store.projectTasks.value, (tasks) => {
+      const task = tasks.find((t) => t.id == props.task.id);
+      Object.assign(taskEditModel, task);
     });
+
     function onEnterPressed() {
       (document.activeElement as HTMLElement).blur();
     }
 
-    async function onBlur() {
+    const debouncedSaveTask = debounce(saveTask, 2000);
+
+    async function onUpdateDescription(value: string) {
+      isNotSaved.value = true;
+      isSaving.value = false;
+
+      taskEditModel.description = value;
+      await debouncedSaveTask();
+    }
+
+    function resetIsSavingValue() {
+      isSaving.value = false;
+    }
+
+    const debounceResetIsSaving = debounce(resetIsSavingValue, 2000);
+
+    async function saveTask() {
+      console.log('saving');
       if (
-        Object.keys(taskEditModel).some((key) => {
+        (Object.keys(taskEditModel) as Array<keyof TaskData>).some((key) => {
           return taskEditModel[key] != props.task[key];
         })
       ) {
+        isSaving.value = true;
         await taskEditModel.save();
+        isNotSaved.value = false;
+        await debounceResetIsSaving();
       }
     }
 
@@ -146,8 +177,11 @@ export default {
 
     return {
       taskEditModel,
-      onBlur,
+      isSaving,
+      onUpdateDescription,
+      saveTask,
       onEnterPressed,
+      isNotSaved,
       // This is REQUIRED;
       // Need to inject these (from useDialogPluginComponent() call)
       // into the vue scope for the vue html template

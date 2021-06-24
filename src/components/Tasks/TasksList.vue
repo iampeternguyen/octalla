@@ -33,7 +33,7 @@
 </template>
 <script lang="ts">
 import { QInput } from 'quasar';
-import Task, { TaskData } from 'src/models/Task';
+import Task from 'src/models/Task';
 import Store from 'src/stores';
 import { defineComponent, ref, inject, computed } from 'vue';
 import { useRoute } from 'vue-router';

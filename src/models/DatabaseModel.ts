@@ -13,9 +13,9 @@ export default abstract class DatabaseModel {
     try {
       const data = this.serialize();
       data.last_modified = Date.now();
-
-      const idb = await getIDB();
-      await idb.put(this.STORE_NAME, data, this.id);
+      // TODO can't save record format in Task sort by
+      // const idb = await getIDB();
+      // await idb.put(this.STORE_NAME, data, this.id);
       await db.collection(this.STORE_NAME).doc(this.id).set(data);
     } catch (error) {
       console.log('error saving: ', error);

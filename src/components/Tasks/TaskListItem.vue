@@ -66,7 +66,8 @@ export default defineComponent({
         componentProps: {
           task: props.task,
         },
-      }).onDismiss(() => {});
+      });
+      // .onDismiss(() => {})
     }
 
     return {
