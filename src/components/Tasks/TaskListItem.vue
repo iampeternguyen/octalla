@@ -1,5 +1,5 @@
 <template>
-  <q-card :class="{ isComplete: isComplete }">
+  <q-card :class="{ isComplete: isComplete }" @click.prevent="onTaskClicked">
     <div v-for="(value, key) in task.sort_by" :key="value">
       {{ value }}
       {{ key }}
@@ -31,8 +31,10 @@
 </template>
 
 <script lang="ts">
+import { useQuasar } from 'quasar';
 import Task from 'src/models/Task';
 import { defineComponent, ref, PropType } from 'vue';
+import TaskEditModal from 'src/components/Tasks/TaskEditModal.vue';
 
 export default defineComponent({
   props: {
@@ -42,6 +44,8 @@ export default defineComponent({
     },
   },
   setup(props) {
+    const $q = useQuasar();
+
     const isComplete = ref(props.task.isComplete);
     async function onToggleComplete() {
       await props.task.toggleComplete();
@@ -55,7 +59,23 @@ export default defineComponent({
     async function onDelete() {
       await props.task.delete();
     }
-    return { onToggleStatus, onToggleComplete, onDelete, isComplete };
+
+    function onTaskClicked() {
+      $q.dialog({
+        component: TaskEditModal,
+        componentProps: {
+          task: props.task,
+        },
+      }).onDismiss(() => {});
+    }
+
+    return {
+      onToggleStatus,
+      onToggleComplete,
+      onDelete,
+      onTaskClicked,
+      isComplete,
+    };
   },
 });
 </script>
