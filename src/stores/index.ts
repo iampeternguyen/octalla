@@ -43,27 +43,17 @@ export default class Store {
       activeWorkspace: '',
       activeProjectId: '',
       activeProject: computed(() => {
-        const index = this.#projectState.projectsList.findIndex(
-          (p) => p.id == this.#projectState.activeProjectId
+        return (
+          this.#projectState.projectsList.find(
+            (p) => p.id == this.#projectState.activeProjectId
+          ) || null
         );
-        return this.#projectState.projectsList[index] || null;
       }),
       activeProjectTasks: [],
       activeProjectTaskObserver: null,
       activeWorkspaceProjectObserver: null,
       projectsList: [],
     });
-  }
-
-  async setActiveWorkspace(id: string) {
-    if (
-      this.projectState.value.activeWorkspace == id ||
-      !this.#userState.userSettings
-    )
-      return;
-    this.#projectState.activeWorkspace = id;
-    this.#userState.userSettings.most_recent_workspace = id;
-    await this.#userState.userSettings.save();
   }
 
   public static getInstance(): Store {
@@ -121,7 +111,6 @@ export default class Store {
     await this.setActiveWorkspace(
       this.#userState.userSettings.most_recent_workspace
     );
-    this.watchProjects();
   }
 
   async onUserLoggedOut() {
@@ -134,9 +123,31 @@ export default class Store {
     this.#userState.userSettings = null;
   }
 
-  setActiveProject(projectId: string) {
+  async setActiveProject(projectId: string) {
+    if (this.projectState.value.activeProjectId == projectId) return;
     this.#projectState.activeProjectId = projectId;
     this.watchTasks(projectId);
+
+    if (
+      !this.#userState.userSettings ||
+      this.#userState.userSettings.most_recent_project == projectId
+    )
+      return;
+    this.#userState.userSettings.most_recent_project = projectId;
+    await this.#userState.userSettings.save();
+  }
+
+  async setActiveWorkspace(workspaceId: string) {
+    if (this.projectState.value.activeWorkspace == workspaceId) return;
+    this.#projectState.activeWorkspace = workspaceId;
+    this.watchProjects(workspaceId);
+    if (
+      !this.#userState.userSettings ||
+      this.userState.value.userSettings?.most_recent_workspace == workspaceId
+    )
+      return;
+    this.#userState.userSettings.most_recent_workspace = workspaceId;
+    await this.#userState.userSettings.save();
   }
 
   async onCreateWorkspace(workSpace: Workspace) {
@@ -156,9 +167,7 @@ export default class Store {
   //   });
   // }
 
-  watchProjects() {
-    if (!this.projectState.value.activeWorkspace) return;
-
+  watchProjects(workspaceId: string) {
     // unsubscribe
     if (this.#projectState.activeProjectTaskObserver)
       this.#projectState.activeProjectTaskObserver();
@@ -170,14 +179,14 @@ export default class Store {
 
     const query = db
       .collection(PROJECTS_STORENAME)
-      .where('workspace_id', '==', this.projectState.value.activeWorkspace);
+      .where('workspace_id', '==', workspaceId);
 
     // const observer =
     this.#projectState.activeWorkspaceProjectObserver = query.onSnapshot(
       (querySnapshot) => {
         querySnapshot.docChanges().forEach((change) => {
           const projectData = change.doc.data() as ProjectData;
-          console.log(change.type);
+          console.log('projects change.type:', change.type);
           if (change.type === 'added') {
             const project = Project.deserialize(projectData);
             this.#projectState.projectsList.push(project);
@@ -222,7 +231,7 @@ export default class Store {
       (querySnapshot) => {
         querySnapshot.docChanges().forEach((change) => {
           const taskData = change.doc.data() as TaskData;
-          console.log('change.type ', change.type);
+          console.log('tasks change.type: ', change.type);
           if (change.type === 'added') {
             const task = new Task(taskData.name, taskData);
             if (!task.sort_by.status)

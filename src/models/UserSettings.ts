@@ -9,6 +9,7 @@ export interface UserSettingsData {
   display_name: string;
   email: string;
   most_recent_workspace: string;
+  most_recent_project: string;
   workspaces: string[];
 }
 
@@ -24,6 +25,7 @@ export default class UserSettings
   workspaces: string[];
   email: string;
   most_recent_workspace: string;
+  most_recent_project: string;
 
   constructor(id: string, data?: UserSettingsData) {
     super();
@@ -35,6 +37,7 @@ export default class UserSettings
     this.last_modified = data?.last_modified || Date.now();
     this.email = data?.email || '';
     this.most_recent_workspace = data?.most_recent_workspace || '';
+    this.most_recent_project = data?.most_recent_project || '';
     this.workspaces = data?.workspaces || [];
   }
 
@@ -46,6 +49,7 @@ export default class UserSettings
       display_name: this.display_name,
       email: this.email,
       most_recent_workspace: this.most_recent_workspace,
+      most_recent_project: this.most_recent_project,
       workspaces: this.workspaces,
     };
   }

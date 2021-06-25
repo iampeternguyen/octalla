@@ -3,18 +3,18 @@
   <q-layout view="lHh lpR fFf" :key="activeProject?.id">
     <q-header class="bg-white text-primary shadow-2" height-hint="98">
       <q-toolbar class="row justify-between">
-        <div class="row">
-          <q-btn dense flat round icon="menu" @click="onToggleLeftDrawer" />
+        <q-btn dense flat round icon="menu" @click="onToggleLeftDrawer" />
 
-          <div v-if="activeProject" class="row">
-            <edit-project-name :project="activeProject"></edit-project-name>
+        <edit-project-name
+          v-if="activeProject"
+          :project="activeProject"
+        ></edit-project-name>
 
-            <edit-project-goal
-              class="col-grow"
-              :project="activeProject"
-            ></edit-project-goal>
-          </div>
-        </div>
+        <edit-project-goal
+          v-if="activeProject"
+          class="col-grow"
+          :project="activeProject"
+        ></edit-project-goal>
 
         <q-btn dense flat round icon="menu" @click="onToggleRightDrawer" />
       </q-toolbar>
@@ -177,6 +177,20 @@ export default defineComponent({
 
     if (!store || !store.userState.value.userSettings) return;
 
+    watch(
+      route,
+      async () => {
+        if (route.params.workspace_id) {
+          await store.setActiveWorkspace(route.params.workspace_id.toString());
+        }
+
+        if (route.params.project_id) {
+          await store.setActiveProject(route.params.project_id.toString());
+        }
+      },
+      { immediate: true }
+    );
+
     watchForNewProjectModal();
 
     function watchForNewProjectModal() {
@@ -200,6 +214,20 @@ export default defineComponent({
 
     if (store.userState.value.userSettings.workspaces.length == 0) {
       router.push({ name: 'onboarding' }).catch((err) => console.log(err));
+    } else if (
+      store.userState.value.userSettings.most_recent_workspace &&
+      store.userState.value.userSettings.most_recent_project
+    ) {
+      router
+        .push({
+          name: 'project',
+          params: {
+            workspace_id:
+              store.userState.value.userSettings.most_recent_workspace,
+            project_id: store.userState.value.userSettings.most_recent_project,
+          },
+        })
+        .catch((err) => console.log(err));
     } else if (store.userState.value.userSettings.most_recent_workspace) {
       router
         .push({
@@ -220,20 +248,6 @@ export default defineComponent({
         })
         .catch((err) => console.log(err));
     }
-
-    watch(
-      route,
-      async () => {
-        if (route.params.workspace_id) {
-          await store.setActiveWorkspace(route.params.workspace_id.toString());
-        }
-
-        if (route.params.project_id) {
-          store.setActiveProject(route.params.project_id.toString());
-        }
-      },
-      { immediate: true }
-    );
 
     const projects = store.projectsList;
     const activeProject = store.activeProject;
