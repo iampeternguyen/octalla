@@ -2,10 +2,9 @@
   <router-view />
 </template>
 <script lang="ts">
-import 'src/firebase/index';
 import { defineComponent, provide, watch } from 'vue';
 import { useQuasar } from 'quasar';
-import firebase from 'firebase/app';
+import { auth } from 'src/firebase';
 import NewProjectModal from './components/Projects/NewProjectModal.vue';
 import Store from 'src/stores/';
 
@@ -38,11 +37,6 @@ export default defineComponent({
     // debug purposes
     const userState = store.userState;
     const projectState = store.projectState;
-    firebase.auth().onAuthStateChanged(async (user) => {
-      if (user) {
-        await store.onUserLoggedIn(user);
-      }
-    });
 
     return { userState, projectState };
   },

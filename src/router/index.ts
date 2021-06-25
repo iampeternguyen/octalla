@@ -1,4 +1,6 @@
+import { User } from '@firebase/auth-types';
 import { route } from 'quasar/wrappers';
+import { auth } from 'src/firebase';
 import Store from 'src/stores';
 import {
   createMemoryHistory,
@@ -6,6 +8,7 @@ import {
   createWebHashHistory,
   createWebHistory,
 } from 'vue-router';
+import { isAuthenticated } from './guards';
 import routes from './routes';
 
 /*
@@ -36,18 +39,14 @@ export default route(function (/* { store, ssrContext } */) {
     ),
   });
 
-  Router.beforeEach((to, from, next) => {
-    if (!to.matched.some((record) => record.meta.requiresAuth)) {
-      next();
-      return;
+  Router.beforeEach(async (to, from, next) => {
+    if (to.matched.some((record) => record.meta.requiresAuth)) {
+      if (!(await isAuthenticated())) {
+        next({ name: 'login' });
+        return;
+      }
     }
-    const store = Store.getInstance();
-    console.log(store.userState.value.isLoggedIn);
-    if (store.userState.value.isLoggedIn) {
-      next();
-    } else {
-      next({ name: 'login' });
-    }
+    next();
   });
 
   return Router;
