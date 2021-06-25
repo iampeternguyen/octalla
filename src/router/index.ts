@@ -1,4 +1,5 @@
 import { route } from 'quasar/wrappers';
+import Store from 'src/stores';
 import {
   createMemoryHistory,
   createRouter,
@@ -19,7 +20,9 @@ import routes from './routes';
 export default route(function (/* { store, ssrContext } */) {
   const createHistory = process.env.SERVER
     ? createMemoryHistory
-    : (process.env.VUE_ROUTER_MODE === 'history' ? createWebHistory : createWebHashHistory);
+    : process.env.VUE_ROUTER_MODE === 'history'
+    ? createWebHistory
+    : createWebHashHistory;
 
   const Router = createRouter({
     scrollBehavior: () => ({ left: 0, top: 0 }),
@@ -31,6 +34,20 @@ export default route(function (/* { store, ssrContext } */) {
     history: createHistory(
       process.env.MODE === 'ssr' ? void 0 : process.env.VUE_ROUTER_BASE
     ),
+  });
+
+  Router.beforeEach((to, from, next) => {
+    if (!to.matched.some((record) => record.meta.requiresAuth)) {
+      next();
+      return;
+    }
+    const store = Store.getInstance();
+    console.log(store.userState.value.isLoggedIn);
+    if (store.userState.value.isLoggedIn) {
+      next();
+    } else {
+      next({ name: 'login' });
+    }
   });
 
   return Router;

@@ -1,7 +1,7 @@
 import { reactive, InjectionKey, computed, ref } from 'vue';
 import { User } from '@firebase/auth-types';
 import Task, { TaskData, TASKS_STORENAME } from 'src/models/Task';
-import { db } from 'src/firebase';
+import { auth, db } from 'src/firebase';
 import Project, { ProjectData, PROJECTS_STORENAME } from 'src/models/Project';
 
 interface UserStateInterface {
@@ -91,6 +91,18 @@ export default class Store {
     this.#userState.email = user.email || '';
     this.#userState.display_name = user.displayName || '';
     await this.getProjects();
+  }
+
+  async onUserLoggedOut() {
+    await auth.signOut();
+    this.setUserStateToLoggedOut();
+  }
+
+  setUserStateToLoggedOut() {
+    this.#userState.isLoggedIn = false;
+    this.#userState.user_id = '';
+    this.#userState.email = '';
+    this.#userState.display_name = '';
   }
 
   setActiveProject(projectId: string) {

@@ -71,7 +71,8 @@
                 rounded
               />
             </q-item>
-            <!-- <router-link
+            <router-link
+              v-if="projects"
               class="left-drawer-project-link"
               v-for="project in projects"
               :key="project.id"
@@ -90,7 +91,7 @@
                 default-opened
               >
               </q-expansion-item>
-            </router-link> -->
+            </router-link>
           </q-expansion-item>
 
           <q-item dense active clickable v-ripple>

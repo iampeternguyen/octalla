@@ -7,13 +7,26 @@ const routes: RouteRecordRaw[] = [
     children: [{ path: '', component: () => import('pages/Index.vue') }],
   },
   {
-    path: '/app/workspace/',
-    component: () => import('src/layouts/WorkspaceLayout.vue'),
+    path: '/app/',
+    component: () => import('src/layouts/AppLayout.vue'),
     children: [
       {
-        name: 'project',
+        name: 'app',
         path: '',
-        component: () => import('pages/WorkspaceHome.vue'),
+        component: () => import('src/pages/AppHome.vue'),
+        meta: { requiresAuth: true },
+      },
+    ],
+  },
+  {
+    path: '/app/onboarding',
+    component: () => import('src/layouts/MainLayout.vue'),
+    children: [
+      {
+        name: 'onboarding',
+        path: '',
+        component: () => import('src/pages/CreateWorkspace.vue'),
+        meta: { requiresAuth: true },
       },
     ],
   },
@@ -26,6 +39,7 @@ const routes: RouteRecordRaw[] = [
         name: 'project',
         path: '',
         component: () => import('pages/ProjectManager.vue'),
+        meta: { requiresAuth: true },
       },
     ],
   },
@@ -35,6 +49,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import('src/layouts/MainLayout.vue'),
     children: [
       {
+        name: 'login',
         path: '',
         component: () => import('components/UserRegistration/UserLogin.vue'),
       },

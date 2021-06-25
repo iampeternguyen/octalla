@@ -1,21 +1,23 @@
 <template>
   <q-page class="row items-center justify-evenly">
-    <example-component
-      title="Example component"
-      active
-      :todos="todos"
-      :meta="meta"
-    ></example-component>
+    <q-btn color="primary" icon="check" label="logout" @click="onLogOut" />
   </q-page>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import Store from 'src/stores';
+import { defineComponent, inject } from 'vue';
 
 export default defineComponent({
   name: 'PageIndex',
   setup() {
-    return {};
+    const store = inject(Store.StoreKey);
+    async function onLogOut() {
+      await store?.onUserLoggedOut();
+    }
+    return {
+      onLogOut,
+    };
   },
 });
 </script>
