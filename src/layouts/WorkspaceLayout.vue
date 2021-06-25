@@ -1,15 +1,17 @@
 <template>
-  <q-layout view="lHh lpR fFf" v-if="activeProject" :key="activeProject?.id">
+  <q-layout view="lHh lpR fFf">
     <q-header class="bg-white text-primary shadow-2" height-hint="98">
       <q-toolbar class="row justify-between">
         <q-btn dense flat round icon="menu" @click="onToggleLeftDrawer" />
 
-        <edit-project-name :project="activeProject"></edit-project-name>
+        <div v-if="activeProject">
+          <edit-project-name :project="activeProject"></edit-project-name>
 
-        <edit-project-goal
-          class="col-grow"
-          :project="activeProject"
-        ></edit-project-goal>
+          <edit-project-goal
+            class="col-grow"
+            :project="activeProject"
+          ></edit-project-goal>
+        </div>
 
         <q-btn dense flat round icon="menu" @click="onToggleRightDrawer" />
       </q-toolbar>
@@ -34,7 +36,7 @@
           <q-separator />
 
           <edit-project-success
-            v-if="!miniState"
+            v-if="!miniState && activeProject"
             class="q-my-md"
             :project="activeProject"
           ></edit-project-success>
@@ -69,7 +71,7 @@
                 rounded
               />
             </q-item>
-            <router-link
+            <!-- <router-link
               class="left-drawer-project-link"
               v-for="project in projects"
               :key="project.id"
@@ -88,7 +90,7 @@
                 default-opened
               >
               </q-expansion-item>
-            </router-link>
+            </router-link> -->
           </q-expansion-item>
 
           <q-item dense active clickable v-ripple>
@@ -162,13 +164,13 @@ export default defineComponent({
     const route = useRoute();
     if (!store) return;
 
-    watch(
-      route,
-      () => {
-        store.setActiveProject(route.params.project_id.toString());
-      },
-      { immediate: true }
-    );
+    // watch(
+    //   route,
+    //   () => {
+    //     store.setActiveProject(route.params.project_id.toString());
+    //   },
+    //   { immediate: true }
+    // );
 
     const projects = store.projectsList;
     const activeProject = store.activeProject;

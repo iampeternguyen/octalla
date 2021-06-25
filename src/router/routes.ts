@@ -3,14 +3,23 @@ import { RouteRecordRaw } from 'vue-router';
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    component: () => import('src/layouts/ProjectManagementLayout.vue'),
+    component: () => import('src/layouts/MainLayout.vue'),
+    children: [{ path: '', component: () => import('pages/Index.vue') }],
+  },
+  {
+    path: '/app/workspace/',
+    component: () => import('src/layouts/WorkspaceLayout.vue'),
     children: [
-      { path: '', component: () => import('pages/ProjectManager.vue') },
+      {
+        name: 'project',
+        path: '',
+        component: () => import('pages/WorkspaceHome.vue'),
+      },
     ],
   },
 
   {
-    path: '/project/:project_id',
+    path: '/app/project/:project_id',
     component: () => import('src/layouts/ProjectManagementLayout.vue'),
     children: [
       {
@@ -22,8 +31,8 @@ const routes: RouteRecordRaw[] = [
   },
 
   {
-    path: '/login',
-    component: () => import('src/layouts/ProjectManagementLayout.vue'),
+    path: '/app/login',
+    component: () => import('src/layouts/MainLayout.vue'),
     children: [
       {
         path: '',
