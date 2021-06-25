@@ -1,7 +1,4 @@
-import { User } from '@firebase/auth-types';
 import { route } from 'quasar/wrappers';
-import { auth } from 'src/firebase';
-import Store from 'src/stores';
 import {
   createMemoryHistory,
   createRouter,
@@ -46,6 +43,7 @@ export default route(function (/* { store, ssrContext } */) {
         return;
       }
     }
+
     next();
   });
 

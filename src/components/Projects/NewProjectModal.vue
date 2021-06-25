@@ -144,6 +144,7 @@
 <script lang="ts">
 import { useDialogPluginComponent } from 'quasar';
 import { ref, provide, PropType } from 'vue';
+import { useRoute } from 'vue-router';
 
 import Store from 'src/stores';
 import Project from 'src/models/Project';
@@ -179,12 +180,15 @@ export default {
     const name = ref('');
     const goal = ref('');
     const success = ref('');
+    console.log(useRoute().params.workspace_id.toString());
     async function onAddProject() {
-      const project = new Project(name.value);
+      const project = new Project(
+        name.value,
+        props.store.projectState.value.activeWorkspace
+      );
       project.primary_goal = goal.value;
       project.success_looks_like = success.value;
       await project.save();
-      props.store.onProjectCreated(project);
       onDialogHide();
     }
 

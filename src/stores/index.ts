@@ -3,19 +3,24 @@ import { User } from '@firebase/auth-types';
 import Task, { TaskData, TASKS_STORENAME } from 'src/models/Task';
 import { auth, db } from 'src/firebase';
 import Project, { ProjectData, PROJECTS_STORENAME } from 'src/models/Project';
+import UserSettings, {
+  UserSettingsData,
+  USER_SETTINGS_STORENAME,
+} from 'src/models/UserSettings';
+import Workspace from 'src/models/Workspace';
 
 interface UserStateInterface {
   isLoggedIn: boolean;
-  user_id: string;
-  email: string;
-  display_name: string;
+  userSettings: UserSettings | null;
 }
 
 interface ProjectStateInterface {
+  activeWorkspace: string;
   activeProjectId: string;
   activeProject: Project | null;
   activeProjectTasks: Task[];
   projectsList: Project[];
+  activeWorkspaceProjectObserver: (() => void) | null;
   activeProjectTaskObserver: (() => void) | null;
 }
 
@@ -31,12 +36,11 @@ export default class Store {
   private constructor() {
     this.#userState = reactive({
       isLoggedIn: false,
-      user_id: '',
-      email: '',
-      display_name: '',
+      userSettings: null,
     });
 
     this.#projectState = reactive({
+      activeWorkspace: '',
       activeProjectId: '',
       activeProject: computed(() => {
         const index = this.#projectState.projectsList.findIndex(
@@ -46,8 +50,20 @@ export default class Store {
       }),
       activeProjectTasks: [],
       activeProjectTaskObserver: null,
+      activeWorkspaceProjectObserver: null,
       projectsList: [],
     });
+  }
+
+  async setActiveWorkspace(id: string) {
+    if (
+      this.projectState.value.activeWorkspace == id ||
+      !this.#userState.userSettings
+    )
+      return;
+    this.#projectState.activeWorkspace = id;
+    this.#userState.userSettings.most_recent_workspace = id;
+    await this.#userState.userSettings.save();
   }
 
   public static getInstance(): Store {
@@ -87,10 +103,25 @@ export default class Store {
 
   async onUserLoggedIn(user: User) {
     this.#userState.isLoggedIn = true;
-    this.#userState.user_id = user.uid;
-    this.#userState.email = user.email || '';
-    this.#userState.display_name = user.displayName || '';
-    await this.getProjects();
+    const doc = await db
+      .collection(USER_SETTINGS_STORENAME)
+      .doc(user.uid)
+      .get();
+    let userSettings: UserSettings;
+    if (doc.exists) {
+      userSettings = UserSettings.deserialize(doc.data() as UserSettingsData);
+    } else {
+      userSettings = new UserSettings(user.uid);
+      userSettings.email = user.email || '';
+      userSettings.display_name = user.displayName || '';
+      await userSettings.save();
+    }
+
+    this.#userState.userSettings = userSettings;
+    await this.setActiveWorkspace(
+      this.#userState.userSettings.most_recent_workspace
+    );
+    this.watchProjects();
   }
 
   async onUserLoggedOut() {
@@ -100,9 +131,7 @@ export default class Store {
 
   setUserStateToLoggedOut() {
     this.#userState.isLoggedIn = false;
-    this.#userState.user_id = '';
-    this.#userState.email = '';
-    this.#userState.display_name = '';
+    this.#userState.userSettings = null;
   }
 
   setActiveProject(projectId: string) {
@@ -110,59 +139,72 @@ export default class Store {
     this.watchTasks(projectId);
   }
 
-  onProjectCreated(project: Project) {
-    this.#projectState.projectsList.push(project);
+  async onCreateWorkspace(workSpace: Workspace) {
+    this.#userState.userSettings?.workspaces.push(workSpace.id);
+    await this.#userState.userSettings?.save();
   }
 
-  async getProjects() {
-    const query = await db
-      .collection(PROJECTS_STORENAME)
-      .where('created_by', '==', this.#userState.user_id)
-      .get();
-    query.docs.forEach((snapshot) => {
-      const project = Project.deserialize(snapshot.data() as ProjectData);
-      this.#projectState.projectsList.push(project);
-    });
-  }
-
-  // watchProjects() {
-  //   const query = db
+  // async getProjects() {
+  //   if (!this.projectState.value.activeWorkspace) return;
+  //   const query = await db
   //     .collection(PROJECTS_STORENAME)
-  //     .where('created_by', '==', this.#userState.user_id);
-
-  //   // const observer =
-  //   query.onSnapshot(
-  //     (querySnapshot) => {
-  //       querySnapshot.docChanges().forEach((change) => {
-  //         const projectData = change.doc.data() as ProjectData;
-  //         console.log(change.type);
-  //         if (change.type === 'added') {
-  //           const project = Project.deserialize(projectData);
-  //           this.#projectState.projectsList.push(project);
-  //         }
-  //         if (change.type === 'modified') {
-  //           const index = this.#projectState.activeProjectTasks.findIndex(
-  //             (t) => t.id == projectData.id
-  //           );
-  //           this.#projectState.projectsList.splice(
-  //             index,
-  //             1,
-  //             Project.deserialize(projectData)
-  //           );
-  //         }
-  //         if (change.type === 'removed') {
-  //           const index = this.#projectState.activeProjectTasks.findIndex(
-  //             (t) => t.id == projectData.id
-  //           );
-  //           this.#projectState.projectsList.splice(index, 1);
-  //         }
-  //       });
-  //     },
-  //     (err) => {
-  //       console.log(`Encountered error: ${err.message}`);
-  //     }
-  //   );
+  //     .where('workspace_id', '==', this.projectState.value.activeWorkspace)
+  //     .get();
+  //   query.docs.forEach((snapshot) => {
+  //     const project = Project.deserialize(snapshot.data() as ProjectData);
+  //     this.#projectState.projectsList.push(project);
+  //   });
   // }
+
+  watchProjects() {
+    if (!this.projectState.value.activeWorkspace) return;
+
+    // unsubscribe
+    if (this.#projectState.activeProjectTaskObserver)
+      this.#projectState.activeProjectTaskObserver();
+    // emptying array like this allows for computed to be responsive array=[] does not
+    this.#projectState.projectsList.splice(
+      0,
+      this.#projectState.projectsList.length
+    );
+
+    const query = db
+      .collection(PROJECTS_STORENAME)
+      .where('workspace_id', '==', this.projectState.value.activeWorkspace);
+
+    // const observer =
+    this.#projectState.activeWorkspaceProjectObserver = query.onSnapshot(
+      (querySnapshot) => {
+        querySnapshot.docChanges().forEach((change) => {
+          const projectData = change.doc.data() as ProjectData;
+          console.log(change.type);
+          if (change.type === 'added') {
+            const project = Project.deserialize(projectData);
+            this.#projectState.projectsList.push(project);
+          }
+          if (change.type === 'modified') {
+            const index = this.#projectState.activeProjectTasks.findIndex(
+              (t) => t.id == projectData.id
+            );
+            this.#projectState.projectsList.splice(
+              index,
+              1,
+              Project.deserialize(projectData)
+            );
+          }
+          if (change.type === 'removed') {
+            const index = this.#projectState.activeProjectTasks.findIndex(
+              (t) => t.id == projectData.id
+            );
+            this.#projectState.projectsList.splice(index, 1);
+          }
+        });
+      },
+      (err) => {
+        console.log(`Encountered error: ${err.message}`);
+      }
+    );
+  }
 
   watchTasks(projectId: string) {
     // unsubscribe
@@ -171,7 +213,7 @@ export default class Store {
     // emptying array like this allows for computed to be responsive array=[] does not
     this.#projectState.activeProjectTasks.splice(
       0,
-      this.#projectState.projectsList.length
+      this.#projectState.activeProjectTasks.length
     );
     const query = db
       .collection(TASKS_STORENAME)

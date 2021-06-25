@@ -30,10 +30,22 @@ const routes: RouteRecordRaw[] = [
       },
     ],
   },
+  {
+    path: '/app/:workspace_id/',
+    component: () => import('src/layouts/AppLayout.vue'),
+    children: [
+      {
+        name: 'workspace',
+        path: '',
+        component: () => import('pages/ProjectManager.vue'),
+        meta: { requiresAuth: true },
+      },
+    ],
+  },
 
   {
-    path: '/app/project/:project_id',
-    component: () => import('src/layouts/ProjectManagementLayout.vue'),
+    path: '/app/:workspace_id/:project_id',
+    component: () => import('src/layouts/AppLayout.vue'),
     children: [
       {
         name: 'project',

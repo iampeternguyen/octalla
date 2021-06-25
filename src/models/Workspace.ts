@@ -1,4 +1,4 @@
-import { uid } from 'quasar';
+import { nanoid } from 'nanoid';
 import Store from 'src/stores';
 import DatabaseModel from './DatabaseModel';
 
@@ -23,13 +23,16 @@ export default class Workspace extends DatabaseModel implements WorkspaceData {
   constructor(name: string, data?: WorkspaceData) {
     super();
     // for database model abstract class
+
     this.STORE_NAME = WORKSPACE_STORENAME;
     this.name = name;
     this.created_at = data?.created_at || Date.now();
-    this.id = data?.id || uid();
+    this.id = data?.id || nanoid(8);
     this.last_modified = data?.last_modified || Date.now();
     this.created_by =
-      data?.created_by || Store.getInstance().userState.value.user_id;
+      data?.created_by ||
+      Store.getInstance().userState.value.userSettings?.id ||
+      '';
   }
 
   serialize(): WorkspaceData {

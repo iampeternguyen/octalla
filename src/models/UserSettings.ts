@@ -1,5 +1,3 @@
-import { uid } from 'quasar';
-import Store from 'src/stores';
 import DatabaseModel from './DatabaseModel';
 
 export const USER_SETTINGS_STORENAME = 'user_settings';
@@ -8,8 +6,9 @@ export interface UserSettingsData {
   created_at: number;
   id: string;
   last_modified: number;
-  name: string;
-  created_by: string;
+  display_name: string;
+  email: string;
+  most_recent_workspace: string;
   workspaces: string[];
 }
 
@@ -21,20 +20,21 @@ export default class UserSettings
   STORE_NAME: 'user_settings';
   last_modified: number;
   created_at: number;
-  name: string;
-  created_by: string;
+  display_name: string;
   workspaces: string[];
+  email: string;
+  most_recent_workspace: string;
 
-  constructor(name: string, data?: UserSettingsData) {
+  constructor(id: string, data?: UserSettingsData) {
     super();
     // for database model abstract class
     this.STORE_NAME = USER_SETTINGS_STORENAME;
-    this.name = name;
+    this.display_name = data?.display_name || '';
     this.created_at = data?.created_at || Date.now();
-    this.id = data?.id || uid();
+    this.id = id;
     this.last_modified = data?.last_modified || Date.now();
-    this.created_by =
-      data?.created_by || Store.getInstance().userState.value.user_id;
+    this.email = data?.email || '';
+    this.most_recent_workspace = data?.most_recent_workspace || '';
     this.workspaces = data?.workspaces || [];
   }
 
@@ -43,13 +43,14 @@ export default class UserSettings
       created_at: this.created_at,
       id: this.id,
       last_modified: this.last_modified,
-      name: this.name,
-      created_by: this.created_by,
+      display_name: this.display_name,
+      email: this.email,
+      most_recent_workspace: this.most_recent_workspace,
       workspaces: this.workspaces,
     };
   }
 
-  static deserialize(workspaceData: UserSettingsData): UserSettings {
-    return new UserSettings(workspaceData.name, workspaceData);
+  static deserialize(userSettingsData: UserSettingsData): UserSettings {
+    return new UserSettings(userSettingsData.id, userSettingsData);
   }
 }

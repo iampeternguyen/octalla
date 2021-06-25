@@ -23,9 +23,9 @@ export function isAuthenticated(): Promise<boolean> {
       };
 
       authUser()
-        .then((user) => {
+        .then(async (user) => {
           if (user) {
-            store.onUserLoggedIn(user).catch((err) => console.log(err));
+            await store.onUserLoggedIn(user);
             resolve(true);
           } else {
             resolve(false);

@@ -1,4 +1,4 @@
-import { uid } from 'quasar';
+import { nanoid } from 'nanoid';
 import Store from 'src/stores';
 import DatabaseModel from './DatabaseModel';
 
@@ -41,12 +41,14 @@ export default class Task extends DatabaseModel implements TaskData {
     this.STORE_NAME = TASKS_STORENAME;
     this.created_at = data?.created_at || Date.now();
     this.description = data?.description || '';
-    this.id = data?.id || uid();
+    this.id = data?.id || nanoid();
     this.isComplete = data?.isComplete || false;
     this.last_modified = data?.last_modified || Date.now();
     this.project_id = data?.project_id || '1';
     this.created_by =
-      data?.created_by || Store.getInstance().userState.value.user_id;
+      data?.created_by ||
+      Store.getInstance().userState.value.userSettings?.id ||
+      '';
     this._status = data?.status || 'open';
     this.sort_by = data?.sort_by || {
       status:

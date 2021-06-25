@@ -102,7 +102,7 @@
 </template>
 
 <script lang="ts">
-import { QDialog, useDialogPluginComponent } from 'quasar';
+import { useDialogPluginComponent } from 'quasar';
 import { watch, PropType, reactive, ref } from 'vue';
 import { debounce } from 'ts-debounce';
 

@@ -138,19 +138,25 @@
 
 <script lang="ts">
 import Workspace from 'src/models/Workspace';
-import { defineComponent, ref } from 'vue';
+import Store from 'src/stores';
+import { defineComponent, ref, inject } from 'vue';
+import { useRouter } from 'vue-router';
 
 export default defineComponent({
   setup() {
     const name = ref('');
+    const store = inject(Store.StoreKey);
+    const router = useRouter();
     async function onAddWorkspace() {
       const workspace = new Workspace(name.value);
+      console.log(workspace.id);
 
       await workspace.save();
-      //   props.store.onProjectCreated(project);
+      store?.onCreateWorkspace(workspace);
+      await router.push({ name: 'app' });
     }
 
-    return { step: ref(1), name };
+    return { step: ref(1), name, onAddWorkspace };
   },
 });
 </script>
