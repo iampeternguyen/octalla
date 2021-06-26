@@ -1,5 +1,10 @@
 import { User } from '@firebase/auth-types';
-import { auth } from 'src/firebase';
+import { auth, db } from 'src/firebase';
+import {
+  ROLES_MEMBERS_STORENAME,
+  ROLES_STORENAME,
+  WorkspaceRolesMemberData,
+} from 'src/models/Role';
 import Store from 'src/stores';
 
 export function isAuthenticated(): Promise<boolean> {
@@ -34,4 +39,16 @@ export function isAuthenticated(): Promise<boolean> {
         .catch((err) => reject(err));
     }
   });
+}
+
+export async function canReadWorkspace(workspace_id: string) {
+  const store = Store.getInstance();
+  const doc = await db
+    .collection(ROLES_STORENAME)
+    .doc(workspace_id)
+    .collection(ROLES_MEMBERS_STORENAME)
+    .doc(store.userState.value.userSettings?.id)
+    .get();
+  const role = (doc.data() as WorkspaceRolesMemberData).role;
+  return ['ADMIN', 'MANAGER', 'MEMBER', ' GUEST'].includes(role);
 }

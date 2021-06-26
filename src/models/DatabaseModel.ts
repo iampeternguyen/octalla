@@ -1,9 +1,10 @@
-import { getIDB } from 'src/idb';
+// import { getIDB } from 'src/idb';
 import { TaskData } from './Task';
 import { db } from 'src/firebase';
 import { ProjectData } from './Project';
 import { WorkspaceData } from './Workspace';
 import { UserSettingsData } from './UserSettings';
+import { WorkspaceRolesData } from './Role';
 
 export default abstract class DatabaseModel {
   abstract STORE_NAME: 'tasks' | 'projects' | 'workspaces' | 'user_settings';
@@ -30,8 +31,8 @@ export default abstract class DatabaseModel {
 
   async delete() {
     try {
-      const idb = await getIDB();
-      await idb.delete(this.STORE_NAME, this.id);
+      // const idb = await getIDB();
+      // await idb.delete(this.STORE_NAME, this.id);
       await db.collection(this.STORE_NAME).doc(this.id).delete();
     } catch (error) {
       console.log('error deleting: ', error);

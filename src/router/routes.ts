@@ -1,4 +1,5 @@
 import { RouteRecordRaw } from 'vue-router';
+import { canReadWorkspace } from './guards';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -33,6 +34,13 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/app/:workspace_id/',
     component: () => import('src/layouts/AppLayout.vue'),
+    beforeEnter: async (to, from, next) => {
+      if (await canReadWorkspace(to.params.workspace_id.toString())) {
+        next();
+      } else {
+        next({ name: 'login' });
+      }
+    },
     children: [
       {
         name: 'workspace',

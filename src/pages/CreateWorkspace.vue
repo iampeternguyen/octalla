@@ -137,7 +137,6 @@
 </template>
 
 <script lang="ts">
-import Workspace from 'src/models/Workspace';
 import Store from 'src/stores';
 import { defineComponent, ref, inject } from 'vue';
 import { useRouter } from 'vue-router';
@@ -148,11 +147,7 @@ export default defineComponent({
     const store = inject(Store.StoreKey);
     const router = useRouter();
     async function onAddWorkspace() {
-      const workspace = new Workspace(name.value);
-      console.log(workspace.id);
-
-      await workspace.save();
-      store?.onCreateWorkspace(workspace);
+      await store?.onCreateWorkspace(name.value);
       await router.push({ name: 'app' });
     }
 

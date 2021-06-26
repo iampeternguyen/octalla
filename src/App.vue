@@ -2,9 +2,8 @@
   <router-view />
 </template>
 <script lang="ts">
-import { defineComponent, provide, watch } from 'vue';
-import { useQuasar } from 'quasar';
-import NewProjectModal from './components/Projects/NewProjectModal.vue';
+import { defineComponent, provide } from 'vue';
+
 import Store from 'src/stores/';
 
 export default defineComponent({
@@ -13,7 +12,7 @@ export default defineComponent({
     const store = Store.getInstance();
     provide(Store.StoreKey, store);
 
-    // debug purposes
+    // TODO remove in production
     const userState = store.userState;
     const projectState = store.projectState;
 

@@ -7,7 +7,8 @@ import UserSettings, {
   UserSettingsData,
   USER_SETTINGS_STORENAME,
 } from 'src/models/UserSettings';
-import Workspace from 'src/models/Workspace';
+import Workspace, { WORKSPACE_STORENAME } from 'src/models/Workspace';
+import WorkspaceRoles, { WORKSPACE_ROLE } from 'src/models/Role';
 
 interface UserStateInterface {
   isLoggedIn: boolean;
@@ -139,6 +140,8 @@ export default class Store {
 
   async setActiveWorkspace(workspaceId: string) {
     if (this.projectState.value.activeWorkspace == workspaceId) return;
+    const doc = await db.collection(WORKSPACE_STORENAME).doc(workspaceId).get();
+    console.log(doc.data());
     this.#projectState.activeWorkspace = workspaceId;
     this.watchProjects(workspaceId);
     if (
@@ -150,9 +153,22 @@ export default class Store {
     await this.#userState.userSettings.save();
   }
 
-  async onCreateWorkspace(workSpace: Workspace) {
-    this.#userState.userSettings?.workspaces.push(workSpace.id);
-    await this.#userState.userSettings?.save();
+  async onCreateWorkspace(workspaceName: string) {
+    if (!this.#userState.userSettings)
+      throw 'onCreateWorkspace called when no user settings found';
+
+    const workspace = new Workspace(workspaceName);
+    await workspace.save();
+
+    const role = new WorkspaceRoles(
+      workspace.id,
+      this.#userState.userSettings.id,
+      WORKSPACE_ROLE.ADMIN
+    );
+    await role.save();
+
+    this.#userState.userSettings.most_recent_workspace = workspace.id;
+    await this.#userState.userSettings.save();
   }
 
   // async getProjects() {

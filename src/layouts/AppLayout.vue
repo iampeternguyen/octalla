@@ -211,42 +211,35 @@ export default defineComponent({
         });
       }
     }
-
-    if (store.userState.value.userSettings.workspaces.length == 0) {
+    // TODO and check for workspaces
+    if (!store.userState.value.userSettings.most_recent_workspace) {
       router.push({ name: 'onboarding' }).catch((err) => console.log(err));
-    } else if (
-      store.userState.value.userSettings.most_recent_workspace &&
-      store.userState.value.userSettings.most_recent_project
-    ) {
-      router
-        .push({
-          name: 'project',
-          params: {
-            workspace_id:
-              store.userState.value.userSettings.most_recent_workspace,
-            project_id: store.userState.value.userSettings.most_recent_project,
-          },
-        })
-        .catch((err) => console.log(err));
-    } else if (store.userState.value.userSettings.most_recent_workspace) {
-      router
-        .push({
-          name: 'workspace',
-          params: {
-            workspace_id:
-              store.userState.value.userSettings.most_recent_workspace,
-          },
-        })
-        .catch((err) => console.log(err));
-    } else {
-      router
-        .push({
-          name: 'workspace',
-          params: {
-            workspace_id: store.userState.value.userSettings.workspaces[0],
-          },
-        })
-        .catch((err) => console.log(err));
+    } else if (!route.params.project_id) {
+      if (store.userState.value.userSettings.most_recent_project) {
+        router
+          .push({
+            name: 'project',
+            params: {
+              workspace_id:
+                store.userState.value.userSettings.most_recent_workspace,
+              project_id:
+                store.userState.value.userSettings.most_recent_project,
+            },
+          })
+          .catch((err) => console.log(err));
+      } else if (store.userState.value.userSettings.most_recent_workspace) {
+        router
+          .push({
+            name: 'workspace',
+            params: {
+              workspace_id:
+                store.userState.value.userSettings.most_recent_workspace,
+            },
+          })
+          .catch((err) => console.log(err));
+      } else {
+        //  TODO query db and get a workspace
+      }
     }
 
     const projects = store.projectsList;
