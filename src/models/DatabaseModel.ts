@@ -4,7 +4,6 @@ import { db } from 'src/firebase';
 import { ProjectData } from './Project';
 import { WorkspaceData } from './Workspace';
 import { UserSettingsData } from './UserSettings';
-import { WorkspaceRolesData } from './Role';
 
 export default abstract class DatabaseModel {
   abstract STORE_NAME: 'tasks' | 'projects' | 'workspaces' | 'user_settings';

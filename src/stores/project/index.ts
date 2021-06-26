@@ -10,6 +10,7 @@ const projectState = reactive({
   tasks: [] as Task[],
 });
 
+// getters
 const state = computed(() => projectState);
 const activeProject = computed(() => projectState.activeProject);
 const requestSetActiveProjectWithId = computed(
@@ -17,61 +18,7 @@ const requestSetActiveProjectWithId = computed(
 );
 const tasks = computed(() => projectState.tasks);
 
-let projectTasksObserver = () => {
-  return;
-};
-
-function watchTasks() {
-  if (!activeProject.value) return;
-  // unsubscribe
-  projectTasksObserver();
-  // emptying array like this allows for computed to be responsive array=[] does not
-  emptyTasksList();
-  const query = db
-    .collection(TASKS_STORENAME)
-    .where('project_id', '==', activeProject.value.id);
-  projectTasksObserver = query.onSnapshot(
-    (querySnapshot) => {
-      querySnapshot.docChanges().forEach((change) => {
-        const taskData = change.doc.data() as TaskData;
-        const task = Task.deserialize(taskData);
-
-        if (change.type === 'added') {
-          if (!task.sort_by.status)
-            task.sort_by.status = projectState.tasks.length;
-          addTask(task);
-        }
-        if (change.type === 'modified') {
-          updateTask(task);
-        }
-        if (change.type === 'removed') {
-          removeTask(task);
-        }
-      });
-    },
-    (err) => {
-      console.log(`Encountered error: ${err.message}`);
-    }
-  );
-}
-
-function emptyTasksList() {
-  projectState.tasks.splice(0, projectState.tasks.length);
-}
-
-function updateTask(task: Task) {
-  const index = projectState.tasks.findIndex((t) => t.id == task.id);
-  projectState.tasks.splice(index, 1, task);
-}
-
-function removeTask(task: Task) {
-  const index = projectState.tasks.findIndex((t) => t.id == task.id);
-  projectState.tasks.splice(index, 1);
-}
-
-function addTask(task: Task) {
-  projectState.tasks.push(task);
-}
+// watch active project methods
 
 // TODO protect against invalid project name
 function setActiveProject(projectId: string) {
@@ -84,6 +31,61 @@ function setActiveProject(projectId: string) {
   } else {
     projectState.requestSetActiveProjectWithId = projectId;
   }
+}
+
+let projectTasksObserver = () => {
+  return;
+};
+
+function watchTasks() {
+  if (!activeProject.value) return;
+  // unsubscribe
+  projectTasksObserver();
+  clearProjectTasks();
+  const query = db
+    .collection(TASKS_STORENAME)
+    .where('project_id', '==', activeProject.value.id);
+  projectTasksObserver = query.onSnapshot(
+    (querySnapshot) => {
+      querySnapshot.docChanges().forEach((change) => {
+        const taskData = change.doc.data() as TaskData;
+        const task = Task.deserialize(taskData);
+
+        if (change.type === 'added') {
+          if (!task.sort_by.status)
+            task.sort_by.status = projectState.tasks.length;
+          addProjectTask(task);
+        }
+        if (change.type === 'modified') {
+          updateProjectTask(task);
+        }
+        if (change.type === 'removed') {
+          removeProjectTask(task);
+        }
+      });
+    },
+    (err) => {
+      console.log(`Encountered error: ${err.message}`);
+    }
+  );
+}
+
+function clearProjectTasks() {
+  projectState.tasks.splice(0, projectState.tasks.length);
+}
+
+function updateProjectTask(task: Task) {
+  const index = projectState.tasks.findIndex((t) => t.id == task.id);
+  projectState.tasks.splice(index, 1, task);
+}
+
+function removeProjectTask(task: Task) {
+  const index = projectState.tasks.findIndex((t) => t.id == task.id);
+  projectState.tasks.splice(index, 1);
+}
+
+function addProjectTask(task: Task) {
+  projectState.tasks.push(task);
 }
 
 const projectStore = {

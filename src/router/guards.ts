@@ -5,7 +5,6 @@ import {
   ROLES_STORENAME,
   WorkspaceRolesMemberData,
 } from 'src/models/Role';
-import Store from 'src/stores';
 import userStore from 'src/stores/user';
 import workspaceStore from 'src/stores/workspace';
 

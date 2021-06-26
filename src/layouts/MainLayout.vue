@@ -14,8 +14,7 @@
 </template>
 
 <script lang="ts">
-import Store from 'src/stores';
-import { defineComponent, ref, inject } from 'vue';
+import { defineComponent } from 'vue';
 
 export default defineComponent({
   name: 'MainLayout',
@@ -23,9 +22,6 @@ export default defineComponent({
   components: {},
 
   setup() {
-    const store = inject(Store.StoreKey);
-    if (!store) return;
-
     return {};
   },
 });

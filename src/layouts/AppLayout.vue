@@ -157,7 +157,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, inject, watch } from 'vue';
+import { defineComponent, ref, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import NewProjectModal from 'src/components/Projects/NewProjectModal.vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -167,6 +167,7 @@ import EditProjectName from 'src/components/Projects/ProjectManagementLayout/Edi
 import workspaceStore from 'src/stores/workspace';
 import projectStore from 'src/stores/project';
 import userStore from 'src/stores/user';
+import uiStore from 'src/stores/ui';
 
 export default defineComponent({
   name: 'ProjectManagerLayout',
@@ -194,20 +195,16 @@ export default defineComponent({
     function watchForNewProjectModal() {
       const $q = useQuasar();
       // does not need store
-      // if (store) {
-      //   watch(store.showNewProjectModal.value, (show) => {
-      //     if (show) {
-      //       $q.dialog({
-      //         component: NewProjectModal,
-      //         componentProps: {
-      //           store,
-      //         },
-      //       }).onDismiss(() => {
-      //         store.toggleShowNewProjectModal();
-      //       });
-      //     }
-      //   });
-      // }
+
+      watch(uiStore.state.value, (state) => {
+        if (state.showNewProjectModal) {
+          $q.dialog({
+            component: NewProjectModal,
+          }).onDismiss(() => {
+            uiStore.toggleShowNewProjectModal();
+          });
+        }
+      });
     }
     // TODO and check for workspaces
     if (!userStore.settings.value.most_recent_workspace) {
@@ -268,9 +265,8 @@ export default defineComponent({
     }
 
     function onNewProject() {
-      // if (!store) return;
       console.log('new project');
-      // store.toggleShowNewProjectModal();
+      uiStore.toggleShowNewProjectModal();
     }
 
     return {
