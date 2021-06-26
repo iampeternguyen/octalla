@@ -107,7 +107,7 @@ import { watch, PropType, reactive, ref } from 'vue';
 import { debounce } from 'ts-debounce';
 
 import Task, { TaskData } from 'src/models/Task';
-import Store from 'src/stores';
+import projectStore from 'src/stores/project';
 
 export default {
   props: {
@@ -126,12 +126,11 @@ export default {
 
   setup(props: { task: Task }) {
     const taskEditModel = reactive<Task>(Task.deserialize(props.task));
-    const store = Store.getInstance();
     const isNotSaved = ref(false);
     const isSaving = ref(false);
     const showTaskModal = ref(true);
 
-    watch(store.projectTasks.value, (tasks) => {
+    watch(projectStore.tasks.value, (tasks) => {
       const task = tasks.find((t) => t.id == props.task.id);
       Object.assign(taskEditModel, task);
     });

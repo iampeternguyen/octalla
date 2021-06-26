@@ -1,5 +1,6 @@
 import { nanoid } from 'nanoid';
-import Store from 'src/stores';
+import projectStore from 'src/stores/project';
+import userStore from 'src/stores/user';
 import DatabaseModel from './DatabaseModel';
 
 export const TASKS_STORENAME = 'tasks';
@@ -45,16 +46,12 @@ export default class Task extends DatabaseModel implements TaskData {
     this.isComplete = data?.isComplete || false;
     this.last_modified = data?.last_modified || Date.now();
     this.project_id = data?.project_id || '1';
-    this.created_by =
-      data?.created_by ||
-      Store.getInstance().userState.value.userSettings?.id ||
-      '';
+    this.created_by = data?.created_by || userStore.settings.value?.id || '';
     this._status = data?.status || 'open';
     this.sort_by = data?.sort_by || {
       status:
-        Store.getInstance().projectTasks.value[
-          Store.getInstance().projectTasks.value.length - 1
-        ]?.sort_by.status + 1 || 0,
+        projectStore.tasks.value[projectStore.tasks.value.length - 1]?.sort_by
+          .status + 1 || 0,
     };
   }
 

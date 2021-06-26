@@ -74,32 +74,33 @@
                 rounded
               />
             </q-item>
-            <router-link
-              v-if="projects"
-              class="left-drawer-project-link"
-              v-for="project in projects"
-              :key="project.id"
-              :to="{
-                name: 'project',
-                params: {
-                  project_id: project.id,
-                },
-              }"
-              :class="{
-                'left-drawer-project-link__active': isActive(project.id),
-              }"
-            >
-              <q-expansion-item
-                :class="{ 'bg-orange-1': isActive(project.id) }"
-                dense
-                :header-inset-level="1"
-                expand-icon-toggle
-                expand-separator
-                :label="project.name"
-                default-opened
+            <div v-if="projects">
+              <router-link
+                class="left-drawer-project-link"
+                v-for="project in projects"
+                :key="project.id"
+                :to="{
+                  name: 'project',
+                  params: {
+                    project_id: project.id,
+                  },
+                }"
+                :class="{
+                  'left-drawer-project-link__active': isActive(project.id),
+                }"
               >
-              </q-expansion-item>
-            </router-link>
+                <q-expansion-item
+                  :class="{ 'bg-orange-1': isActive(project.id) }"
+                  dense
+                  :header-inset-level="1"
+                  expand-icon-toggle
+                  expand-separator
+                  :label="project.name"
+                  default-opened
+                >
+                </q-expansion-item>
+              </router-link>
+            </div>
           </q-expansion-item>
 
           <q-item dense active clickable v-ripple>
@@ -156,7 +157,6 @@
 </template>
 
 <script lang="ts">
-import Store from 'src/stores';
 import { defineComponent, ref, inject, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import NewProjectModal from 'src/components/Projects/NewProjectModal.vue';
@@ -164,6 +164,9 @@ import { useRoute, useRouter } from 'vue-router';
 import EditProjectGoal from 'src/components/Projects/ProjectManagementLayout/EditProjectGoal.vue';
 import EditProjectSuccess from 'src/components/Projects/ProjectManagementLayout/EditProjectSuccess.vue';
 import EditProjectName from 'src/components/Projects/ProjectManagementLayout/EditProjectName.vue';
+import workspaceStore from 'src/stores/workspace';
+import projectStore from 'src/stores/project';
+import userStore from 'src/stores/user';
 
 export default defineComponent({
   name: 'ProjectManagerLayout',
@@ -171,21 +174,16 @@ export default defineComponent({
   components: { EditProjectGoal, EditProjectSuccess, EditProjectName },
 
   setup() {
-    const store = inject(Store.StoreKey);
     const route = useRoute();
     const router = useRouter();
 
-    if (!store || !store.userState.value.userSettings) return;
+    if (!userStore.settings.value) return;
 
     watch(
       route,
-      async () => {
-        if (route.params.workspace_id) {
-          await store.setActiveWorkspace(route.params.workspace_id.toString());
-        }
-
+      () => {
         if (route.params.project_id) {
-          await store.setActiveProject(route.params.project_id.toString());
+          projectStore.setActiveProject(route.params.project_id.toString());
         }
       },
       { immediate: true }
@@ -195,45 +193,42 @@ export default defineComponent({
 
     function watchForNewProjectModal() {
       const $q = useQuasar();
-
-      if (store) {
-        watch(store.showNewProjectModal.value, (show) => {
-          if (show) {
-            $q.dialog({
-              component: NewProjectModal,
-              componentProps: {
-                store,
-              },
-            }).onDismiss(() => {
-              store.toggleShowNewProjectModal();
-            });
-          }
-        });
-      }
+      // does not need store
+      // if (store) {
+      //   watch(store.showNewProjectModal.value, (show) => {
+      //     if (show) {
+      //       $q.dialog({
+      //         component: NewProjectModal,
+      //         componentProps: {
+      //           store,
+      //         },
+      //       }).onDismiss(() => {
+      //         store.toggleShowNewProjectModal();
+      //       });
+      //     }
+      //   });
+      // }
     }
     // TODO and check for workspaces
-    if (!store.userState.value.userSettings.most_recent_workspace) {
+    if (!userStore.settings.value.most_recent_workspace) {
       router.push({ name: 'onboarding' }).catch((err) => console.log(err));
     } else if (!route.params.project_id) {
-      if (store.userState.value.userSettings.most_recent_project) {
+      if (userStore.settings.value.most_recent_project) {
         router
           .push({
             name: 'project',
             params: {
-              workspace_id:
-                store.userState.value.userSettings.most_recent_workspace,
-              project_id:
-                store.userState.value.userSettings.most_recent_project,
+              workspace_id: userStore.settings.value.most_recent_workspace,
+              project_id: userStore.settings.value.most_recent_project,
             },
           })
           .catch((err) => console.log(err));
-      } else if (store.userState.value.userSettings.most_recent_workspace) {
+      } else if (userStore.settings.value.most_recent_workspace) {
         router
           .push({
             name: 'workspace',
             params: {
-              workspace_id:
-                store.userState.value.userSettings.most_recent_workspace,
+              workspace_id: userStore.settings.value.most_recent_workspace,
             },
           })
           .catch((err) => console.log(err));
@@ -242,8 +237,8 @@ export default defineComponent({
       }
     }
 
-    const projects = store.projectsList;
-    const activeProject = store.activeProject;
+    const projects = workspaceStore.projects;
+    const activeProject = projectStore.activeProject;
 
     function isActive(project_id: string) {
       return project_id == activeProject.value?.id;
@@ -273,9 +268,9 @@ export default defineComponent({
     }
 
     function onNewProject() {
-      if (!store) return;
+      // if (!store) return;
       console.log('new project');
-      store.toggleShowNewProjectModal();
+      // store.toggleShowNewProjectModal();
     }
 
     return {

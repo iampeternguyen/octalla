@@ -34,7 +34,7 @@
 <script lang="ts">
 import { QInput } from 'quasar';
 import Task from 'src/models/Task';
-import Store from 'src/stores';
+import projectStore from 'src/stores/project';
 import { defineComponent, ref, inject, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import draggable, { ChangeEvent } from 'vuedraggable';
@@ -54,12 +54,10 @@ export default defineComponent({
   },
 
   setup(props) {
-    const store = inject(Store.StoreKey);
     const route = useRoute();
-    if (!store) return;
 
     const taskList = computed(() =>
-      store.projectTasks.value
+      projectStore.tasks.value
         .filter((t) => t.status == props.status.toString())
         .sort((a, b) => a.sort_by.status - b.sort_by.status)
     );

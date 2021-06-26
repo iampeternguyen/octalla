@@ -6,11 +6,12 @@ import {
   WorkspaceRolesMemberData,
 } from 'src/models/Role';
 import Store from 'src/stores';
+import userStore from 'src/stores/user';
+import workspaceStore from 'src/stores/workspace';
 
 export function isAuthenticated(): Promise<boolean> {
   return new Promise((resolve, reject) => {
-    const store = Store.getInstance();
-    if (store.userState.value.isLoggedIn) {
+    if (userStore.isLoggedIn.value) {
       resolve(true);
     } else {
       const authUser: () => Promise<User | null> = () => {
@@ -30,7 +31,7 @@ export function isAuthenticated(): Promise<boolean> {
       authUser()
         .then(async (user) => {
           if (user) {
-            await store.onUserLoggedIn(user);
+            await userStore.onUserLoggedIn(user);
             resolve(true);
           } else {
             resolve(false);
@@ -42,21 +43,19 @@ export function isAuthenticated(): Promise<boolean> {
 }
 // TODO refactor this, redundant code in store
 export async function canReadWorkspace(workspace_id: string) {
-  const store = Store.getInstance();
   if (
-    store.projectState.value.activeWorkspace == workspace_id &&
-    ['ADMIN', 'MANAGER', 'MEMBER', ' GUEST'].includes(
-      store.projectState.value.activeWorkspaceRole
-    )
+    workspaceStore.activeWorkspace.value?.id == workspace_id &&
+    userStore.role.value &&
+    ['ADMIN', 'MANAGER', 'MEMBER', ' GUEST'].includes(userStore.role.value)
   ) {
     return true;
   }
-  console.log('querying db', store.projectState.value.activeWorkspaceRole);
+  console.log('querying db for role', userStore.role.value);
   const doc = await db
     .collection(ROLES_STORENAME)
     .doc(workspace_id)
     .collection(ROLES_MEMBERS_STORENAME)
-    .doc(store.userState.value.userSettings?.id)
+    .doc(userStore.settings.value?.id)
     .get();
   const role = (doc.data() as WorkspaceRolesMemberData).role;
   return ['ADMIN', 'MANAGER', 'MEMBER', ' GUEST'].includes(role);

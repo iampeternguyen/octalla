@@ -143,19 +143,12 @@
 
 <script lang="ts">
 import { useDialogPluginComponent } from 'quasar';
-import { ref, provide, PropType } from 'vue';
+import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 
-import Store from 'src/stores';
 import Project from 'src/models/Project';
 
 export default {
-  props: {
-    store: {
-      type: Object as PropType<Store>,
-      required: true,
-    },
-  },
   components: {},
 
   emits: [
@@ -164,12 +157,10 @@ export default {
     ...useDialogPluginComponent.emits,
   ],
 
-  setup(props: { store: Store }) {
+  setup() {
     // REQUIRED; must be called inside of setup()
     const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
       useDialogPluginComponent();
-
-    provide(Store.StoreKey, props.store);
 
     // dialogRef      - Vue ref to be applied to QDialog
     // onDialogHide   - Function to be used as handler for @hide on QDialog
@@ -180,12 +171,10 @@ export default {
     const name = ref('');
     const goal = ref('');
     const success = ref('');
-    console.log(useRoute().params.workspace_id.toString());
+    const workspaceId = useRoute().params.workspace_id.toString();
+    // TODO redirect on create
     async function onAddProject() {
-      const project = new Project(
-        name.value,
-        props.store.projectState.value.activeWorkspace
-      );
+      const project = new Project(name.value, workspaceId);
       project.primary_goal = goal.value;
       project.success_looks_like = success.value;
       await project.save();

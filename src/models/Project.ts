@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid';
-import Store from 'src/stores';
+import userStore from 'src/stores/user';
 import DatabaseModel from './DatabaseModel';
 
 export const PROJECTS_STORENAME = 'projects';
@@ -43,10 +43,7 @@ export default class Project extends DatabaseModel implements ProjectData {
 
     this.isComplete = data?.isComplete || false;
     this.last_modified = data?.last_modified || Date.now();
-    this.created_by =
-      data?.created_by ||
-      Store.getInstance().userState.value.userSettings?.id ||
-      '';
+    this.created_by = data?.created_by || userStore.settings.value?.id || '';
   }
 
   serialize(): ProjectData {

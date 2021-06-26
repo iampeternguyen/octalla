@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid';
-import Store from 'src/stores';
+import userStore from 'src/stores/user';
 import DatabaseModel from './DatabaseModel';
 
 export const WORKSPACE_STORENAME = 'workspaces';
@@ -29,10 +29,7 @@ export default class Workspace extends DatabaseModel implements WorkspaceData {
     this.created_at = data?.created_at || Date.now();
     this.id = data?.id || nanoid(8);
     this.last_modified = data?.last_modified || Date.now();
-    this.created_by =
-      data?.created_by ||
-      Store.getInstance().userState.value.userSettings?.id ||
-      '';
+    this.created_by = data?.created_by || userStore.settings.value?.id || '';
   }
 
   serialize(): WorkspaceData {

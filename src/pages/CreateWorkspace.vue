@@ -137,18 +137,17 @@
 </template>
 
 <script lang="ts">
-import Store from 'src/stores';
-import { defineComponent, ref, inject } from 'vue';
+import workspaceStore from 'src/stores/workspace';
+import { defineComponent, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 export default defineComponent({
   setup() {
     const name = ref('');
-    const store = inject(Store.StoreKey);
     const router = useRouter();
 
     async function onAddWorkspace() {
-      const workspaceId = await store?.onCreateWorkspace(name.value);
+      const workspaceId = await workspaceStore.createWorkspace(name.value);
       if (workspaceId)
         await router.push({
           name: 'workspace',

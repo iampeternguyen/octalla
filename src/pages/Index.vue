@@ -5,15 +5,14 @@
 </template>
 
 <script lang="ts">
-import Store from 'src/stores';
-import { defineComponent, inject } from 'vue';
+import userStore from 'src/stores/user';
+import { defineComponent } from 'vue';
 
 export default defineComponent({
   name: 'PageIndex',
   setup() {
-    const store = inject(Store.StoreKey);
     async function onLogOut() {
-      await store?.onUserLoggedOut();
+      await userStore.onUserLoggedOut();
     }
     return {
       onLogOut,

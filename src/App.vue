@@ -2,21 +2,20 @@
   <router-view />
 </template>
 <script lang="ts">
-import { defineComponent, provide } from 'vue';
+import { defineComponent } from 'vue';
 
-import Store from 'src/stores/';
+import userStore from './stores/user';
+import projectStore from './stores/project';
+import workspaceStore from './stores/workspace';
 
 export default defineComponent({
   name: 'App',
   setup() {
-    const store = Store.getInstance();
-    provide(Store.StoreKey, store);
+    const userState = userStore.state;
+    const projectState = projectStore.state;
+    const workspaceState = workspaceStore.state;
 
-    // TODO remove in production
-    const userState = store.userState;
-    const projectState = store.projectState;
-
-    return { userState, projectState };
+    return { workspaceState, projectState, userState };
   },
 });
 </script>
