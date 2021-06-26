@@ -8,7 +8,12 @@ import UserSettings, {
   USER_SETTINGS_STORENAME,
 } from 'src/models/UserSettings';
 import Workspace, { WORKSPACE_STORENAME } from 'src/models/Workspace';
-import WorkspaceRoles, { WORKSPACE_ROLE } from 'src/models/Role';
+import WorkspaceRoles, {
+  ROLES_MEMBERS_STORENAME,
+  ROLES_STORENAME,
+  WorkspaceRolesMemberData,
+  WORKSPACE_ROLE,
+} from 'src/models/Role';
 
 interface UserStateInterface {
   isLoggedIn: boolean;
@@ -17,6 +22,7 @@ interface UserStateInterface {
 
 interface ProjectStateInterface {
   activeWorkspace: string;
+  activeWorkspaceRole: WORKSPACE_ROLE | string;
   activeProjectId: string;
   activeProject: Project | null;
   activeProjectTasks: Task[];
@@ -42,6 +48,7 @@ export default class Store {
 
     this.#projectState = reactive({
       activeWorkspace: '',
+      activeWorkspaceRole: '',
       activeProjectId: '',
       activeProject: computed(() => {
         return (
@@ -109,9 +116,10 @@ export default class Store {
     }
 
     this.#userState.userSettings = userSettings;
-    await this.setActiveWorkspace(
-      this.#userState.userSettings.most_recent_workspace
-    );
+    if (userSettings.most_recent_project)
+      await this.setActiveWorkspace(
+        this.#userState.userSettings.most_recent_workspace
+      );
   }
 
   async onUserLoggedOut() {
@@ -127,6 +135,7 @@ export default class Store {
   async setActiveProject(projectId: string) {
     if (this.projectState.value.activeProjectId == projectId) return;
     this.#projectState.activeProjectId = projectId;
+
     this.watchTasks(projectId);
 
     if (
@@ -140,8 +149,21 @@ export default class Store {
 
   async setActiveWorkspace(workspaceId: string) {
     if (this.projectState.value.activeWorkspace == workspaceId) return;
-    const doc = await db.collection(WORKSPACE_STORENAME).doc(workspaceId).get();
-    console.log(doc.data());
+    console.log('setting');
+    // TODO refactor store, getting way too complicated
+    const workspaceDoc = await db
+      .collection(WORKSPACE_STORENAME)
+      .doc(workspaceId)
+      .get();
+    const roleDoc = await db
+      .collection(ROLES_STORENAME)
+      .doc(workspaceId)
+      .collection(ROLES_MEMBERS_STORENAME)
+      .doc(this.#userState.userSettings?.id)
+      .get();
+    this.#projectState.activeWorkspaceRole = (
+      roleDoc.data() as WorkspaceRolesMemberData
+    ).role;
     this.#projectState.activeWorkspace = workspaceId;
     this.watchProjects(workspaceId);
     if (
@@ -151,6 +173,7 @@ export default class Store {
       return;
     this.#userState.userSettings.most_recent_workspace = workspaceId;
     await this.#userState.userSettings.save();
+    console.log('finish setting');
   }
 
   async onCreateWorkspace(workspaceName: string) {
@@ -169,6 +192,10 @@ export default class Store {
 
     this.#userState.userSettings.most_recent_workspace = workspace.id;
     await this.#userState.userSettings.save();
+
+    this.#projectState.activeWorkspace = workspace.id;
+    this.#projectState.activeWorkspaceRole = WORKSPACE_ROLE.ADMIN;
+    return workspace.id;
   }
 
   // async getProjects() {

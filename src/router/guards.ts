@@ -40,9 +40,18 @@ export function isAuthenticated(): Promise<boolean> {
     }
   });
 }
-
+// TODO refactor this, redundant code in store
 export async function canReadWorkspace(workspace_id: string) {
   const store = Store.getInstance();
+  if (
+    store.projectState.value.activeWorkspace == workspace_id &&
+    ['ADMIN', 'MANAGER', 'MEMBER', ' GUEST'].includes(
+      store.projectState.value.activeWorkspaceRole
+    )
+  ) {
+    return true;
+  }
+  console.log('querying db', store.projectState.value.activeWorkspaceRole);
   const doc = await db
     .collection(ROLES_STORENAME)
     .doc(workspace_id)

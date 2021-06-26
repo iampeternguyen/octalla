@@ -146,9 +146,14 @@ export default defineComponent({
     const name = ref('');
     const store = inject(Store.StoreKey);
     const router = useRouter();
+
     async function onAddWorkspace() {
-      await store?.onCreateWorkspace(name.value);
-      await router.push({ name: 'app' });
+      const workspaceId = await store?.onCreateWorkspace(name.value);
+      if (workspaceId)
+        await router.push({
+          name: 'workspace',
+          params: { workspace_id: workspaceId },
+        });
     }
 
     return { step: ref(1), name, onAddWorkspace };
