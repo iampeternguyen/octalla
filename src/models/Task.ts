@@ -20,32 +20,43 @@ export interface TaskData {
   name: string;
   status: string;
   project_id: string;
+  workspace_id: string;
   created_by: string;
   sort_by: Record<string, number>;
 }
 
 export default class Task extends DatabaseModel implements TaskData {
   STORE_NAME: 'tasks';
+  name: string;
   created_at: number;
   description: string;
   id: string;
   isComplete: boolean;
   last_modified: number;
   project_id: string;
+  workspace_id: string;
   created_by: string;
   sort_by: Record<string, number>;
+
   private _status: string;
 
-  constructor(public name: string, data?: TaskData) {
+  constructor(
+    name: string,
+    projectId: string,
+    workspaceId: string,
+    data?: TaskData
+  ) {
     super();
     // for database model abstract class
     this.STORE_NAME = TASKS_STORENAME;
+    this.name = name;
     this.created_at = data?.created_at || Date.now();
     this.description = data?.description || '';
     this.id = data?.id || nanoid();
     this.isComplete = data?.isComplete || false;
     this.last_modified = data?.last_modified || Date.now();
-    this.project_id = data?.project_id || '1';
+    this.project_id = projectId;
+    this.workspace_id = workspaceId;
     this.created_by = data?.created_by || userStore.settings.value?.id || '';
     this._status = data?.status || 'open';
     this.sort_by = data?.sort_by || {
@@ -105,12 +116,18 @@ export default class Task extends DatabaseModel implements TaskData {
       name: this.name,
       project_id: this.project_id,
       created_by: this.created_by,
+      workspace_id: this.workspace_id,
       status: this.status,
       sort_by: this.sort_by,
     };
   }
 
   static deserialize(taskData: TaskData): Task {
-    return new Task(taskData.name, taskData);
+    return new Task(
+      taskData.name,
+      taskData.project_id,
+      taskData.workspace_id,
+      taskData
+    );
   }
 }

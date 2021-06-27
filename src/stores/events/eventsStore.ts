@@ -4,9 +4,14 @@ function beforeWorkspaceDelete() {
   console.log('Workspace is about to be deleted');
 }
 
-async function afterWorkspaceDelete() {
-  console.log('Workspace has been deleted');
-  await userStore.onDeleteWorkspace();
+async function afterWorkspaceCreate(workspaceId: string) {
+  console.log('new workspace created', workspaceId);
+  await userStore.assignRoleAndAddWorkspace(workspaceId);
+}
+
+async function afterWorkspaceDelete(workspaceId: string) {
+  console.log('Workspace has been deleted', workspaceId);
+  await userStore.removeWorkspaceFromSettings(workspaceId);
 }
 
 async function afterWorkspaceSetActive() {
@@ -16,6 +21,7 @@ async function afterWorkspaceSetActive() {
 
 const eventsStore = {
   workspace: {
+    afterWorkspaceCreate,
     beforeWorkspaceDelete,
     afterWorkspaceDelete,
     afterWorkspaceSetActive,

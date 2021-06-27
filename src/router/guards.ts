@@ -15,6 +15,8 @@ export function isAuthenticated(): Promise<boolean> {
 }
 
 export function userHasReadWorkspacePermission() {
+  console.log('guard', userStore.role.value);
+
   if (
     userStore.role.value &&
     [

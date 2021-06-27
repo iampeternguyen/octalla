@@ -1,7 +1,7 @@
 import { db, auth } from 'src/firebase';
 import { reactive, computed } from 'vue';
 import { User } from '@firebase/auth-types';
-import {
+import WorkspaceRoles, {
   ROLES_MEMBERS_STORENAME,
   ROLES_STORENAME,
   WorkspaceRolesMemberData,
@@ -81,6 +81,7 @@ async function setUserRole() {
     .doc(userStore.settings.value?.id)
     .get();
   const role = (doc.data() as WorkspaceRolesMemberData).role;
+  console.log(role);
   userState.role = role;
 }
 
@@ -113,12 +114,30 @@ function userIsAuthenticated(): Promise<boolean> {
   });
 }
 
-async function onDeleteWorkspace() {
+async function removeWorkspaceFromSettings(workspaceId: string) {
   if (!userState.settings) throw 'useer settings missing';
   userState.settings.most_recent_workspace = '';
   userState.settings.most_recent_project = '';
+  const index = userState.settings.workspaces.findIndex(
+    (w) => w == workspaceId
+  );
+  userState.settings.workspaces.splice(index, 1);
+  if (userState.settings.workspaces[0])
+    userState.settings.most_recent_workspace = userState.settings.workspaces[0];
   await userState.settings.save();
-  // TODO what should happen next?
+}
+
+async function assignRoleAndAddWorkspace(workspaceId: string) {
+  if (!userState.settings) throw 'user settings missing';
+  const role = new WorkspaceRoles(
+    workspaceId,
+    userState.settings?.id,
+    WORKSPACE_ROLE.ADMIN
+  );
+  await role.save();
+
+  userState.settings.workspaces.push(workspaceId);
+  await userState.settings.save();
 }
 
 const userStore = {
@@ -129,11 +148,12 @@ const userStore = {
   onUserLoggedIn,
   onUserLoggedOut,
   onActiveWorkspaceChanged,
-  onDeleteWorkspace,
+  removeWorkspaceFromSettings,
   updateMostRecentProject,
   updateMostRecentWorkspace,
   setUserRole,
   userIsAuthenticated,
+  assignRoleAndAddWorkspace,
 };
 
 export default userStore;

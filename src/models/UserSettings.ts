@@ -12,6 +12,7 @@ export interface UserSettingsData {
   email: string;
   most_recent_workspace: string;
   most_recent_project: string;
+  workspaces: string[];
 }
 
 export default class UserSettings
@@ -26,6 +27,7 @@ export default class UserSettings
   email: string;
   most_recent_workspace: string;
   most_recent_project: string;
+  workspaces: string[];
 
   constructor(id: string, data?: UserSettingsData) {
     super();
@@ -38,6 +40,7 @@ export default class UserSettings
     this.email = data?.email || '';
     this.most_recent_workspace = data?.most_recent_workspace || '';
     this.most_recent_project = data?.most_recent_project || '';
+    this.workspaces = data?.workspaces || [];
   }
 
   serialize(): UserSettingsData {
@@ -49,6 +52,7 @@ export default class UserSettings
       email: this.email,
       most_recent_workspace: this.most_recent_workspace,
       most_recent_project: this.most_recent_project,
+      workspaces: this.workspaces,
     };
   }
 

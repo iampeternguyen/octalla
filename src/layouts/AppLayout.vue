@@ -138,9 +138,10 @@
             <q-item-section avatar>
               <q-icon name="drafts" />
             </q-item-section>
-
+            <!-- TODO this doesn't get updated when workspace deleted and moved back to previous space -->
             <q-item-section class="left-drawer-item" v-if="activeWorkspace">
               <router-link
+                :key="activeWorkspace.id"
                 class="left-drawer-project-link"
                 :to="{
                   name: 'workspace-settings',

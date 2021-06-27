@@ -3,7 +3,6 @@ import { reactive, computed } from 'vue';
 import Project, { ProjectData, PROJECTS_STORENAME } from 'src/models/Project';
 import projectStore from '../project/projectStore';
 import userStore from '../user/userStore';
-import WorkspaceRoles, { WORKSPACE_ROLE } from 'src/models/Role';
 import Workspace, {
   WorkspaceData,
   WORKSPACE_STORENAME,
@@ -33,12 +32,7 @@ async function createWorkspace(workspaceName: string) {
   const workspace = new Workspace(workspaceName);
   await workspace.save();
 
-  const role = new WorkspaceRoles(
-    workspace.id,
-    userStore.settings.value.id,
-    WORKSPACE_ROLE.ADMIN
-  );
-  await role.save();
+  await eventsStore.workspace.afterWorkspaceCreate(workspace.id);
 
   await workspaceStore.setActiveWorkspace(workspace.id);
 
@@ -60,13 +54,16 @@ async function deleteWorkspace() {
     return;
   eventsStore.workspace.beforeWorkspaceDelete();
   console.log('permission to delete workspace');
+
   uiStore.updateLoadingMessage(
     `Deleting ${workspaceState.activeSpace.name}... DO NOT CLOSE THIS PAGE`
   );
   uiStore.showLoading();
   await workspaceState.activeSpace.delete();
   uiStore.hideLoading();
-  eventsStore.workspace.afterWorkspaceDelete().catch((err) => console.log(err));
+  await eventsStore.workspace.afterWorkspaceDelete(
+    workspaceState.activeSpace.id
+  );
 }
 
 async function setActiveWorkspace(workspaceId: string) {
@@ -82,9 +79,7 @@ async function setActiveWorkspace(workspaceId: string) {
   );
 
   watchWorkspaceProjects();
-  eventsStore.workspace
-    .afterWorkspaceSetActive()
-    .catch((err) => console.log(err));
+  await eventsStore.workspace.afterWorkspaceSetActive();
 }
 
 let workspaceProjectsObserver = () => {

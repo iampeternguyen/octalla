@@ -67,8 +67,12 @@ export default defineComponent({
 
     async function addTask() {
       if (!text.value) return;
-      const task = new Task(text.value);
-      task.project_id = route.params.project_id.toString();
+      const task = new Task(
+        text.value,
+        route.params.project_id.toString(),
+        route.params.workspace_id.toString()
+      );
+
       task.status = props.status.toString();
       await task.save();
       text.value = '';
