@@ -2,6 +2,8 @@ import DatabaseModel from './DatabaseModel';
 
 export const USER_SETTINGS_STORENAME = 'user_settings';
 
+// TODO refactor this for multiple spaces
+
 export interface UserSettingsData {
   created_at: number;
   id: string;

@@ -60,6 +60,6 @@ export default class Project extends DatabaseModel implements ProjectData {
     };
   }
   static deserialize(projectData: ProjectData) {
-    return new Project(projectData.name, projectData.id, projectData);
+    return new Project(projectData.name, projectData.workspace_id, projectData);
   }
 }

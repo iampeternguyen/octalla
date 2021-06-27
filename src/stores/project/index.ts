@@ -3,6 +3,7 @@ import { reactive, computed } from 'vue';
 import Project from 'src/models/Project';
 import Task, { TaskData, TASKS_STORENAME } from 'src/models/Task';
 import workspaceStore from '../workspace';
+import userStore from '../user';
 
 const projectState = reactive({
   requestSetActiveProjectWithId: '',
@@ -21,12 +22,13 @@ const tasks = computed(() => projectState.tasks);
 // watch active project methods
 
 // TODO protect against invalid project name
-function setActiveProject(projectId: string) {
+async function setActiveProject(projectId: string) {
   const project = workspaceStore.projects.value.find((p) => p.id == projectId);
 
   if (project) {
     projectState.requestSetActiveProjectWithId = '';
     projectState.activeProject = project;
+    await userStore.updateMostRecentProject(project);
     watchTasks();
   } else {
     projectState.requestSetActiveProjectWithId = projectId;

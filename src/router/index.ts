@@ -1,11 +1,12 @@
 import { route } from 'quasar/wrappers';
+import workspaceStore from 'src/stores/workspace';
 import {
   createMemoryHistory,
   createRouter,
   createWebHashHistory,
   createWebHistory,
 } from 'vue-router';
-import { isAuthenticated } from './guards';
+import { userHasReadWorkspacePermission, isAuthenticated } from './guards';
 import routes from './routes';
 
 /*
@@ -39,6 +40,19 @@ export default route(function (/* { store, ssrContext } */) {
   Router.beforeEach(async (to, from, next) => {
     if (to.matched.some((record) => record.meta.requiresAuth)) {
       if (!(await isAuthenticated())) {
+        next({ name: 'login' });
+        return;
+      }
+    }
+
+    if (
+      to.matched.some((record) => record.meta.requiresReadWorkspacePermission)
+    ) {
+      await workspaceStore.setActiveWorkspace(
+        to.params.workspace_id.toString()
+      );
+
+      if (!userHasReadWorkspacePermission()) {
         next({ name: 'login' });
         return;
       }

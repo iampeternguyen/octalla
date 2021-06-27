@@ -8,6 +8,7 @@ import Workspace, {
   WorkspaceData,
   WORKSPACE_STORENAME,
 } from 'src/models/Workspace';
+import { userHasUpdateWorkspacePermission } from 'src/router/guards';
 
 const workspaceState = reactive({
   activeSpace: <Workspace | null>null,
@@ -19,6 +20,7 @@ const activeWorkspace = computed(() => workspaceState.activeSpace);
 const projects = computed(() => workspaceState.projects);
 const state = computed(() => workspaceState);
 
+// create
 async function createWorkspace(workspaceName: string) {
   if (!userStore.settings.value)
     throw 'onCreateWorkspace called when no user settings found';
@@ -33,14 +35,24 @@ async function createWorkspace(workspaceName: string) {
   );
   await role.save();
 
-  await userStore.updateMostRecentWorkspace(workspace.id);
-
   await workspaceStore.setActiveWorkspace(workspace.id);
-  userStore.setUserRole(WORKSPACE_ROLE.ADMIN);
+
   return workspace.id;
 }
 
+// update
+
+async function updateWorkspaceName(name: string) {
+  if (!workspaceState.activeSpace) return;
+  if (userHasUpdateWorkspacePermission())
+    console.log('permission to update workspace');
+  workspaceState.activeSpace.name = name;
+  await workspaceState.activeSpace?.save();
+}
 async function setActiveWorkspace(workspaceId: string) {
+  if (workspaceState.activeSpace?.id == workspaceId) return;
+  console.log('active workspace changed');
+  await userStore.updateMostRecentWorkspace(workspaceId);
   const workspaceDoc = await db
     .collection(WORKSPACE_STORENAME)
     .doc(workspaceId)
@@ -48,6 +60,8 @@ async function setActiveWorkspace(workspaceId: string) {
   workspaceState.activeSpace = Workspace.deserialize(
     workspaceDoc.data() as WorkspaceData
   );
+
+  await userStore.onActiveWorkspaceChanged();
   watchWorkspaceProjects();
 }
 
@@ -120,7 +134,7 @@ const workspaceStore = {
   state,
   setActiveWorkspace,
   createWorkspace,
-  workspaceProjectsObserver,
+  updateWorkspaceName,
 };
 
 // TODO watch active workspace projects

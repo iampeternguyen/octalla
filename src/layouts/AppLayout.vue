@@ -1,5 +1,7 @@
 <template>
+  <!-- TODO move header to page manager ? or move everything not layout focuses to components aka slots? -->
   <!-- the key helps refresh all components when active project is changed -->
+
   <q-layout view="lHh lpR fFf" :key="activeProject?.id">
     <q-header class="bg-white text-primary shadow-2" height-hint="98">
       <q-toolbar class="row justify-between">
@@ -126,6 +128,24 @@
 
             <q-item-section class="left-drawer-item"> Drafts </q-item-section>
           </q-item>
+
+          <q-item dense clickable v-ripple>
+            <q-item-section avatar>
+              <q-icon name="drafts" />
+            </q-item-section>
+
+            <q-item-section class="left-drawer-item" v-if="activeWorkspace">
+              <router-link
+                class="left-drawer-project-link"
+                :to="{
+                  name: 'workspace-settings',
+                  params: { workspace_id: activeWorkspace.id },
+                }"
+              >
+                {{ activeWorkspace.name }}
+              </router-link>
+            </q-item-section>
+          </q-item>
         </q-list>
       </q-scroll-area>
 
@@ -206,36 +226,10 @@ export default defineComponent({
         }
       });
     }
-    // TODO and check for workspaces
-    if (!userStore.settings.value.most_recent_workspace) {
-      router.push({ name: 'onboarding' }).catch((err) => console.log(err));
-    } else if (!route.params.project_id) {
-      if (userStore.settings.value.most_recent_project) {
-        router
-          .push({
-            name: 'project',
-            params: {
-              workspace_id: userStore.settings.value.most_recent_workspace,
-              project_id: userStore.settings.value.most_recent_project,
-            },
-          })
-          .catch((err) => console.log(err));
-      } else if (userStore.settings.value.most_recent_workspace) {
-        router
-          .push({
-            name: 'workspace',
-            params: {
-              workspace_id: userStore.settings.value.most_recent_workspace,
-            },
-          })
-          .catch((err) => console.log(err));
-      } else {
-        //  TODO query db and get a workspace
-      }
-    }
 
     const projects = workspaceStore.projects;
     const activeProject = projectStore.activeProject;
+    const activeWorkspace = workspaceStore.state.value.activeSpace;
 
     function isActive(project_id: string) {
       return project_id == activeProject.value?.id;
@@ -271,6 +265,7 @@ export default defineComponent({
 
     return {
       leftDrawerOpen,
+      activeWorkspace,
       onToggleLeftDrawer,
       miniState,
       onToggleRightDrawer,

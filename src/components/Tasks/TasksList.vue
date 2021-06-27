@@ -35,7 +35,7 @@
 import { QInput } from 'quasar';
 import Task from 'src/models/Task';
 import projectStore from 'src/stores/project';
-import { defineComponent, ref, inject, computed } from 'vue';
+import { defineComponent, ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import draggable, { ChangeEvent } from 'vuedraggable';
 import TaskListItem from './TaskListItem.vue';
