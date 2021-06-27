@@ -43,9 +43,9 @@ async function createWorkspace(workspaceName: string) {
 // update
 
 async function updateWorkspaceName(name: string) {
-  if (!workspaceState.activeSpace) return;
-  if (userHasUpdateWorkspacePermission())
-    console.log('permission to update workspace');
+  if (!workspaceState.activeSpace || !userHasUpdateWorkspacePermission())
+    return;
+  console.log('permission to update workspace');
   workspaceState.activeSpace.name = name;
   await workspaceState.activeSpace?.save();
 }
@@ -89,9 +89,11 @@ function watchWorkspaceProjects() {
         if (change.type === 'added') {
           addWorkspaceProject(project);
           if (project.id == projectStore.requestSetActiveProjectWithId.value) {
-            projectStore.setActiveProject(
-              projectStore.requestSetActiveProjectWithId.value
-            );
+            projectStore
+              .setActiveProject(
+                projectStore.requestSetActiveProjectWithId.value
+              )
+              .catch((err) => console.log(err));
           }
         }
         if (change.type === 'modified') {
