@@ -1,14 +1,19 @@
 import { db } from 'src/firebase';
 import { reactive, computed } from 'vue';
 import Project, { ProjectData, PROJECTS_STORENAME } from 'src/models/Project';
-import projectStore from '../project';
-import userStore from '../user';
+import projectStore from '../project/projectStore';
+import userStore from '../user/userStore';
 import WorkspaceRoles, { WORKSPACE_ROLE } from 'src/models/Role';
 import Workspace, {
   WorkspaceData,
   WORKSPACE_STORENAME,
 } from 'src/models/Workspace';
-import { userHasUpdateWorkspacePermission } from 'src/router/guards';
+import {
+  userHasDeleteWorkspacePermission,
+  userHasUpdateWorkspacePermission,
+} from 'src/router/guards';
+import uiStore from '../ui/uiStore';
+import eventsStore from '../events/eventsStore';
 
 const workspaceState = reactive({
   activeSpace: <Workspace | null>null,
@@ -49,6 +54,21 @@ async function updateWorkspaceName(name: string) {
   workspaceState.activeSpace.name = name;
   await workspaceState.activeSpace?.save();
 }
+
+async function deleteWorkspace() {
+  if (!workspaceState.activeSpace || !userHasDeleteWorkspacePermission())
+    return;
+  eventsStore.workspace.beforeWorkspaceDelete();
+  console.log('permission to delete workspace');
+  uiStore.updateLoadingMessage(
+    `Deleting ${workspaceState.activeSpace.name}... DO NOT CLOSE THIS PAGE`
+  );
+  uiStore.showLoading();
+  await workspaceState.activeSpace.delete();
+  uiStore.hideLoading();
+  eventsStore.workspace.afterWorkspaceDelete().catch((err) => console.log(err));
+}
+
 async function setActiveWorkspace(workspaceId: string) {
   if (workspaceState.activeSpace?.id == workspaceId) return;
   console.log('active workspace changed');
@@ -61,8 +81,10 @@ async function setActiveWorkspace(workspaceId: string) {
     workspaceDoc.data() as WorkspaceData
   );
 
-  await userStore.onActiveWorkspaceChanged();
   watchWorkspaceProjects();
+  eventsStore.workspace
+    .afterWorkspaceSetActive()
+    .catch((err) => console.log(err));
 }
 
 let workspaceProjectsObserver = () => {
@@ -137,6 +159,7 @@ const workspaceStore = {
   setActiveWorkspace,
   createWorkspace,
   updateWorkspaceName,
+  deleteWorkspace,
 };
 
 // TODO watch active workspace projects

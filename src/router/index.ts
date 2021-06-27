@@ -1,5 +1,5 @@
 import { route } from 'quasar/wrappers';
-import workspaceStore from 'src/stores/workspace';
+import workspaceStore from 'src/stores/workspace/workspaceStore';
 import {
   createMemoryHistory,
   createRouter,

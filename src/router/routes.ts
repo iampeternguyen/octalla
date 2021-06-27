@@ -1,5 +1,5 @@
-import projectStore from 'src/stores/project';
-import userStore from 'src/stores/user';
+import projectStore from 'src/stores/project/projectStore';
+import userStore from 'src/stores/user/userStore';
 import { RouteRecordRaw } from 'vue-router';
 
 const routes: RouteRecordRaw[] = [

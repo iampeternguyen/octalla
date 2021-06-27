@@ -4,6 +4,7 @@ import { db } from 'src/firebase';
 import { ProjectData } from './Project';
 import { WorkspaceData } from './Workspace';
 import { UserSettingsData } from './UserSettings';
+import { Query, FirebaseFirestore } from '@firebase/firestore-types';
 
 export default abstract class DatabaseModel {
   abstract STORE_NAME: 'tasks' | 'projects' | 'workspaces' | 'user_settings';
@@ -30,11 +31,36 @@ export default abstract class DatabaseModel {
 
   async delete() {
     try {
-      // const idb = await getIDB();
-      // await idb.delete(this.STORE_NAME, this.id);
       await db.collection(this.STORE_NAME).doc(this.id).delete();
     } catch (error) {
       console.log('error deleting: ', error);
     }
+  }
+
+  async deleteQueryBatch(
+    db: FirebaseFirestore,
+    query: Query,
+    resolve: () => unknown
+  ) {
+    const snapshot = await query.get();
+
+    const batchSize = snapshot.size;
+    if (batchSize === 0) {
+      // When there are no documents left, we are done
+      resolve();
+      return;
+    }
+
+    // Delete documents in a batch
+    const batch = db.batch();
+    snapshot.docs.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+    await batch.commit();
+
+    // Recurse on the next process tick, to avoid
+    // exploding the stack.
+    // TODO move this to backend api
+    this.deleteQueryBatch(db, query, resolve).catch((err) => console.log(err));
   }
 }

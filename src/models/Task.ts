@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid';
-import projectStore from 'src/stores/project';
-import userStore from 'src/stores/user';
+import projectStore from 'src/stores/project/projectStore';
+import userStore from 'src/stores/user/userStore';
 import DatabaseModel from './DatabaseModel';
 
 export const TASKS_STORENAME = 'tasks';

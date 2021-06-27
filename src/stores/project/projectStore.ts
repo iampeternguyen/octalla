@@ -2,8 +2,8 @@ import { db } from 'src/firebase';
 import { reactive, computed } from 'vue';
 import Project from 'src/models/Project';
 import Task, { TaskData, TASKS_STORENAME } from 'src/models/Task';
-import workspaceStore from '../workspace';
-import userStore from '../user';
+import workspaceStore from '../workspace/workspaceStore';
+import userStore from '../user/userStore';
 
 const projectState = reactive({
   requestSetActiveProjectWithId: '',

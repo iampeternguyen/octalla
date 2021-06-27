@@ -7,7 +7,7 @@ import {
   WorkspaceRolesMemberData,
   WORKSPACE_ROLE,
 } from 'src/models/Role';
-import workspaceStore from '../workspace';
+import workspaceStore from '../workspace/workspaceStore';
 import UserSettings, {
   UserSettingsData,
   USER_SETTINGS_STORENAME,
@@ -59,7 +59,6 @@ async function onUserLoggedIn(user: User) {
   }
 
   userState.settings = userSettings;
-  // TODO chain event to setting active workspace
 }
 
 async function onUserLoggedOut() {
@@ -114,6 +113,14 @@ function userIsAuthenticated(): Promise<boolean> {
   });
 }
 
+async function onDeleteWorkspace() {
+  if (!userState.settings) throw 'useer settings missing';
+  userState.settings.most_recent_workspace = '';
+  userState.settings.most_recent_project = '';
+  await userState.settings.save();
+  // TODO what should happen next?
+}
+
 const userStore = {
   settings,
   isLoggedIn,
@@ -122,6 +129,7 @@ const userStore = {
   onUserLoggedIn,
   onUserLoggedOut,
   onActiveWorkspaceChanged,
+  onDeleteWorkspace,
   updateMostRecentProject,
   updateMostRecentWorkspace,
   setUserRole,

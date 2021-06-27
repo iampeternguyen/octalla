@@ -1,6 +1,8 @@
 import { nanoid } from 'nanoid';
-import userStore from 'src/stores/user';
+import { db } from 'src/firebase';
+import userStore from 'src/stores/user/userStore';
 import DatabaseModel from './DatabaseModel';
+import { PROJECTS_STORENAME } from './Project';
 
 export const WORKSPACE_STORENAME = 'workspaces';
 
@@ -40,6 +42,16 @@ export default class Workspace extends DatabaseModel implements WorkspaceData {
       name: this.name,
       created_by: this.created_by,
     };
+  }
+
+  async delete() {
+    const query = db
+      .collection(PROJECTS_STORENAME)
+      .where('workspace_id', '==', this.id);
+    await this.deleteQueryBatch(db, query, async () => {
+      console.log('successfully deleted all projects. now deleting workspace');
+      await super.delete();
+    });
   }
 
   static deserialize(workspaceData: WorkspaceData): Workspace {

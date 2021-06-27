@@ -101,6 +101,11 @@
                   default-opened
                 >
                 </q-expansion-item>
+                <q-btn
+                  color="red"
+                  icon="delete"
+                  @click.prevent="onDeleteProject(project)"
+                />
               </router-link>
             </div>
           </q-expansion-item>
@@ -184,10 +189,11 @@ import { useRoute, useRouter } from 'vue-router';
 import EditProjectGoal from 'src/components/Projects/ProjectManagementLayout/EditProjectGoal.vue';
 import EditProjectSuccess from 'src/components/Projects/ProjectManagementLayout/EditProjectSuccess.vue';
 import EditProjectName from 'src/components/Projects/ProjectManagementLayout/EditProjectName.vue';
-import workspaceStore from 'src/stores/workspace';
-import projectStore from 'src/stores/project';
-import userStore from 'src/stores/user';
-import uiStore from 'src/stores/ui';
+import workspaceStore from 'src/stores/workspace/workspaceStore';
+import projectStore from 'src/stores/project/projectStore';
+import userStore from 'src/stores/user/userStore';
+import uiStore from 'src/stores/ui/uiStore';
+import Project from 'src/models/Project';
 
 export default defineComponent({
   name: 'ProjectManagerLayout',
@@ -202,9 +208,11 @@ export default defineComponent({
 
     watch(
       route,
-      () => {
+      async () => {
         if (route.params.project_id) {
-          projectStore.setActiveProject(route.params.project_id.toString());
+          await projectStore.setActiveProject(
+            route.params.project_id.toString()
+          );
         }
       },
       { immediate: true }
@@ -263,6 +271,10 @@ export default defineComponent({
       uiStore.toggleShowNewProjectModal();
     }
 
+    async function onDeleteProject(project: Project) {
+      await project.delete();
+    }
+
     return {
       leftDrawerOpen,
       activeWorkspace,
@@ -275,6 +287,7 @@ export default defineComponent({
       projects,
       isActive,
       activeProject,
+      onDeleteProject,
     };
   },
 });

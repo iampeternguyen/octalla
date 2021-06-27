@@ -107,7 +107,7 @@ import { watch, PropType, reactive, ref } from 'vue';
 import { debounce } from 'ts-debounce';
 
 import Task, { TaskData } from 'src/models/Task';
-import projectStore from 'src/stores/project';
+import projectStore from 'src/stores/project/projectStore';
 
 export default {
   props: {

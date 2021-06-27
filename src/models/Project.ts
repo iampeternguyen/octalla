@@ -1,6 +1,8 @@
 import { nanoid } from 'nanoid';
-import userStore from 'src/stores/user';
+import { db } from 'src/firebase';
+import userStore from 'src/stores/user/userStore';
 import DatabaseModel from './DatabaseModel';
+import { TASKS_STORENAME } from './Task';
 
 export const PROJECTS_STORENAME = 'projects';
 
@@ -58,6 +60,16 @@ export default class Project extends DatabaseModel implements ProjectData {
       success_looks_like: this.success_looks_like,
       workspace_id: this.workspace_id,
     };
+  }
+
+  async delete() {
+    const query = db
+      .collection(TASKS_STORENAME)
+      .where('project_id', '==', this.id);
+    await this.deleteQueryBatch(db, query, async () => {
+      console.log('successfully deleted all tasks. now deleting project');
+      await super.delete();
+    });
   }
   static deserialize(projectData: ProjectData) {
     return new Project(projectData.name, projectData.workspace_id, projectData);

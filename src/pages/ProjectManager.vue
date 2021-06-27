@@ -13,7 +13,7 @@ import { defineComponent, ref } from 'vue';
 
 import { TASKS_STATUS_OPTIONS } from 'src/models/Task';
 import TasksList from 'src/components/Tasks/TasksList.vue';
-import projectStore from 'src/stores/project';
+import projectStore from 'src/stores/project/projectStore';
 
 export default defineComponent({
   components: {

@@ -12,11 +12,18 @@
       @blur="onWorkspaceNameSave"
     >
     </q-input>
+
+    <q-btn
+      color="red"
+      icon="delete"
+      label="delete workspace"
+      @click="onDeleteWorkspace"
+    />
   </div>
 </template>
 <script lang="ts">
 import { QInput } from 'quasar';
-import workspaceStore from 'src/stores/workspace';
+import workspaceStore from 'src/stores/workspace/workspaceStore';
 import { defineComponent, ref } from 'vue';
 
 export default defineComponent({
@@ -34,7 +41,17 @@ export default defineComponent({
       await workspaceStore.updateWorkspaceName(name.value);
     }
 
-    return { name, workspaceNameInput, onWorkspaceNameSave, onEnterPressed };
+    async function onDeleteWorkspace() {
+      await workspaceStore.deleteWorkspace();
+    }
+
+    return {
+      name,
+      workspaceNameInput,
+      onWorkspaceNameSave,
+      onEnterPressed,
+      onDeleteWorkspace,
+    };
   },
 });
 </script>

@@ -34,7 +34,7 @@
 <script lang="ts">
 import { QInput } from 'quasar';
 import Task from 'src/models/Task';
-import projectStore from 'src/stores/project';
+import projectStore from 'src/stores/project/projectStore';
 import { defineComponent, ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import draggable, { ChangeEvent } from 'vuedraggable';
