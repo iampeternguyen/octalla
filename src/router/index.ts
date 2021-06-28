@@ -1,5 +1,6 @@
 import { route } from 'quasar/wrappers';
 import projectStore from 'src/stores/project/projectStore';
+import uiStore from 'src/stores/ui/uiStore';
 import workspaceStore from 'src/stores/workspace/workspaceStore';
 import {
   createMemoryHistory,
@@ -50,6 +51,12 @@ export default route(function (/* { store, ssrContext } */) {
     if (
       to.matched.some((record) => record.meta.requiresReadWorkspacePermission)
     ) {
+      // TODO add custom loading screen for initial db query
+      if (!workspaceStore.activeWorkspace.value) {
+        uiStore.updateLoadingMessage('processing');
+        uiStore.showLoading();
+      }
+
       try {
         await workspaceStore.setActiveWorkspace(
           to.params.workspace_id.toString()
@@ -58,9 +65,11 @@ export default route(function (/* { store, ssrContext } */) {
         console.log(error);
         next({ name: '404' });
         return;
+      } finally {
+        uiStore.hideLoading();
       }
       if (!permissions.workspace.canRead()) {
-        console.log('deneid');
+        uiStore.hideLoading();
         next({ name: '404' });
         return;
       }
@@ -86,7 +95,6 @@ export default route(function (/* { store, ssrContext } */) {
 
       console.log('project permissions');
       if (!project || !permissions.project.canCRU(project)) {
-        console.log('denied');
         next({ name: '404' });
         return;
       }
