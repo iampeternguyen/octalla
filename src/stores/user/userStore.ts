@@ -69,6 +69,8 @@ async function onUserLoggedOut() {
 }
 
 async function onActiveWorkspaceChanged() {
+  if (!workspaceStore.activeWorkspace.value) return;
+  await updateMostRecentWorkspace(workspaceStore.activeWorkspace.value.id);
   await setUserRole();
 }
 

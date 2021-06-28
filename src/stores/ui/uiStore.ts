@@ -1,4 +1,4 @@
-import { reactive, computed } from 'vue';
+import { reactive, computed, ref } from 'vue';
 
 import {
   Loading,
@@ -13,8 +13,35 @@ const uiState = reactive({
   loadingMessage: '',
 });
 
+const appLayoutLeftDrawerOpen = ref(true);
+const appLayoutLeftDrawerMini = ref(false);
+
 const state = computed(() => uiState);
 
+// Workspace Left Drawer
+
+function onToggleProjectLeftDrawer() {
+  appLayoutLeftDrawerOpen.value = !appLayoutLeftDrawerOpen.value;
+}
+
+function onProjectLeftDrawerClicked(e: Event) {
+  // if in "mini" state and user
+  // click on drawer, we switch it to "normal" mode
+  if (appLayoutLeftDrawerMini.value) {
+    appLayoutLeftDrawerMini.value = false;
+
+    // notice we have registered an event with capture flag;
+    // we need to stop further propagation as this click is
+    // intended for switching drawer to "normal" mode only
+    e.stopPropagation();
+  }
+}
+
+function collapseProjectLeftDrawer() {
+  appLayoutLeftDrawerMini.value = true;
+}
+
+// Loading Modal
 function toggleShowNewProjectModal() {
   uiState.showNewProjectModal = !uiState.showNewProjectModal;
 }
@@ -47,5 +74,12 @@ const uiStore = {
   updateLoadingMessage,
   showLoading,
   hideLoading,
+  appLeftDrawer: {
+    open: appLayoutLeftDrawerOpen,
+    mini: appLayoutLeftDrawerMini,
+    onToggleProjectLeftDrawer,
+    onProjectLeftDrawerClicked,
+    collapseProjectLeftDrawer,
+  },
 };
 export default uiStore;

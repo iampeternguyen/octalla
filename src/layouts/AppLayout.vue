@@ -3,25 +3,6 @@
   <!-- the key helps refresh all components when active project is changed -->
 
   <q-layout view="lHh lpR fFf" :key="activeProject?.id">
-    <q-header class="bg-white text-primary shadow-2" height-hint="98">
-      <q-toolbar class="row justify-between">
-        <q-btn dense flat round icon="menu" @click="onToggleLeftDrawer" />
-
-        <edit-project-name
-          v-if="activeProject"
-          :project="activeProject"
-        ></edit-project-name>
-
-        <edit-project-goal
-          v-if="activeProject"
-          class="col-grow"
-          :project="activeProject"
-        ></edit-project-goal>
-
-        <q-btn dense flat round icon="menu" @click="onToggleRightDrawer" />
-      </q-toolbar>
-    </q-header>
-
     <q-drawer
       show-if-above
       v-model="leftDrawerOpen"
@@ -167,13 +148,9 @@
           unelevated
           color="secondary"
           icon="chevron_left"
-          @click="miniState = true"
+          @click="toMiniDrawer"
         />
       </div>
-    </q-drawer>
-
-    <q-drawer v-model="rightDrawerOpen" side="right" bordered overlay>
-      <!-- drawer content -->
     </q-drawer>
 
     <q-page-container>
@@ -183,12 +160,10 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch } from 'vue';
+import { defineComponent, computed, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import NewProjectModal from 'src/components/Projects/NewProjectModal.vue';
-import EditProjectGoal from 'src/components/Projects/ProjectManagementLayout/EditProjectGoal.vue';
 import EditProjectSuccess from 'src/components/Projects/ProjectManagementLayout/EditProjectSuccess.vue';
-import EditProjectName from 'src/components/Projects/ProjectManagementLayout/EditProjectName.vue';
 import workspaceStore from 'src/stores/workspace/workspaceStore';
 import projectStore from 'src/stores/project/projectStore';
 import userStore from 'src/stores/user/userStore';
@@ -198,7 +173,7 @@ import Project from 'src/models/Project';
 export default defineComponent({
   name: 'ProjectManagerLayout',
 
-  components: { EditProjectGoal, EditProjectSuccess, EditProjectName },
+  components: { EditProjectSuccess },
 
   setup() {
     if (!userStore.settings.value) return;
@@ -227,29 +202,6 @@ export default defineComponent({
     function isActive(project_id: string) {
       return project_id == activeProject.value?.id;
     }
-    const leftDrawerOpen = ref(true);
-    const rightDrawerOpen = ref(false);
-    const miniState = ref(false);
-    function onToggleLeftDrawer() {
-      leftDrawerOpen.value = !leftDrawerOpen.value;
-    }
-
-    function onToggleRightDrawer() {
-      rightDrawerOpen.value = !rightDrawerOpen.value;
-    }
-
-    function onDrawerClick(e: Event) {
-      // if in "mini" state and user
-      // click on drawer, we switch it to "normal" mode
-      if (miniState.value) {
-        miniState.value = false;
-
-        // notice we have registered an event with capture flag;
-        // we need to stop further propagation as this click is
-        // intended for switching drawer to "normal" mode only
-        e.stopPropagation();
-      }
-    }
 
     function onNewProject() {
       console.log('new project');
@@ -261,13 +213,12 @@ export default defineComponent({
     }
 
     return {
-      leftDrawerOpen,
+      leftDrawerOpen: uiStore.appLeftDrawer.open,
       activeWorkspace,
-      onToggleLeftDrawer,
-      miniState,
-      onToggleRightDrawer,
-      onDrawerClick,
-      rightDrawerOpen,
+      onToggleLeftDrawer: uiStore.appLeftDrawer.onToggleProjectLeftDrawer,
+      miniState: uiStore.appLeftDrawer.mini,
+      onDrawerClick: uiStore.appLeftDrawer.onProjectLeftDrawerClicked,
+      toMiniDrawer: uiStore.appLeftDrawer.collapseProjectLeftDrawer,
       onNewProject,
       projects,
       isActive,

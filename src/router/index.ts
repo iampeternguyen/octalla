@@ -1,4 +1,5 @@
 import { route } from 'quasar/wrappers';
+import projectStore from 'src/stores/project/projectStore';
 import workspaceStore from 'src/stores/workspace/workspaceStore';
 import {
   createMemoryHistory,
@@ -36,7 +37,6 @@ export default route(function (/* { store, ssrContext } */) {
       process.env.MODE === 'ssr' ? void 0 : process.env.VUE_ROUTER_BASE
     ),
   });
-  // TODO route guard for workspace
   Router.beforeEach(async (to, from, next) => {
     if (to.matched.some((record) => record.meta.requiresAuth)) {
       if (!(await isAuthenticated())) {
@@ -48,12 +48,21 @@ export default route(function (/* { store, ssrContext } */) {
     if (
       to.matched.some((record) => record.meta.requiresReadWorkspacePermission)
     ) {
-      await workspaceStore.setActiveWorkspace(
-        to.params.workspace_id.toString()
-      );
+      try {
+        await workspaceStore.setActiveWorkspace(
+          to.params.workspace_id.toString()
+        );
+        // TODO create readProjectPermissionGuard
+        if (to.params.project_id) {
+          await projectStore.setActiveProject(to.params.project_id.toString());
+        }
+      } catch (error) {
+        next({ name: '404' });
+        return;
+      }
 
       if (!userHasReadWorkspacePermission()) {
-        next({ name: 'login' });
+        next({ name: '404' });
         return;
       }
     }

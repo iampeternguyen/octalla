@@ -14,7 +14,8 @@ const routes: RouteRecordRaw[] = [
     beforeEnter: (to, from, next) => {
       if (
         !userStore.settings.value ||
-        !userStore.settings.value.most_recent_workspace
+        (!userStore.settings.value.most_recent_workspace &&
+          !userStore.settings.value.workspaces)
       ) {
         next({ name: 'onboarding' });
       } else if (
@@ -39,7 +40,12 @@ const routes: RouteRecordRaw[] = [
           },
         });
       } else {
-        next();
+        next({
+          name: 'workspace',
+          params: {
+            workspace_id: userStore.settings.value.workspaces[0],
+          },
+        });
       }
     },
     children: [
@@ -97,10 +103,6 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/app/:workspace_id/:project_id',
     component: () => import('src/layouts/AppLayout.vue'),
-    beforeEnter: async (to, from, next) => {
-      await projectStore.setActiveProject(to.params.project_id.toString());
-      next();
-    },
     children: [
       {
         name: 'project',
@@ -127,6 +129,7 @@ const routes: RouteRecordRaw[] = [
   // but you can also remove it
   {
     path: '/:catchAll(.*)*',
+    name: '404',
     component: () => import('pages/Error404.vue'),
   },
 ];

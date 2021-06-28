@@ -71,7 +71,6 @@ async function deleteWorkspace() {
 async function setActiveWorkspace(workspaceId: string) {
   if (workspaceState.activeSpace?.id == workspaceId) return;
   console.log('active workspace changed');
-  await userStore.updateMostRecentWorkspace(workspaceId);
   const workspaceDoc = await db
     .collection(WORKSPACE_STORENAME)
     .doc(workspaceId)
@@ -79,7 +78,6 @@ async function setActiveWorkspace(workspaceId: string) {
   workspaceState.activeSpace = Workspace.deserialize(
     workspaceDoc.data() as WorkspaceData
   );
-
   watchWorkspaceProjects();
   await eventsStore.workspace.afterWorkspaceSetActive();
 }
