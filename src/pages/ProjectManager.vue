@@ -14,11 +14,21 @@
         :project="activeProject"
       ></edit-project-goal>
 
-      <q-btn dense flat round icon="menu" @click="onToggleRightDrawer" />
+      <q-btn
+        dense
+        flat
+        round
+        icon="eva-info-outline"
+        @click="onToggleRightDrawer"
+      />
     </q-toolbar>
   </q-header>
   <q-drawer v-model="rightDrawerOpen" side="right" bordered overlay>
-    <!-- drawer content -->
+    <edit-project-success
+      v-if="activeProject"
+      class="q-my-md"
+      :project="activeProject"
+    ></edit-project-success>
   </q-drawer>
 
   <q-page class="row q-gutter-md" padding>
@@ -38,6 +48,8 @@ import TasksList from 'src/components/Tasks/TasksList.vue';
 import projectStore from 'src/stores/project/projectStore';
 import EditProjectName from 'src/components/Projects/ProjectManagementLayout/EditProjectName.vue';
 import EditProjectGoal from 'src/components/Projects/ProjectManagementLayout/EditProjectGoal.vue';
+import EditProjectSuccess from 'src/components/Projects/ProjectManagementLayout/EditProjectSuccess.vue';
+
 import uiStore from 'src/stores/ui/uiStore';
 
 export default defineComponent({
@@ -45,6 +57,7 @@ export default defineComponent({
     TasksList,
     EditProjectName,
     EditProjectGoal,
+    EditProjectSuccess,
   },
   setup() {
     const tasks = projectStore.tasks;

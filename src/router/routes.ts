@@ -1,4 +1,3 @@
-import projectStore from 'src/stores/project/projectStore';
 import userStore from 'src/stores/user/userStore';
 import { RouteRecordRaw } from 'vue-router';
 
@@ -108,7 +107,11 @@ const routes: RouteRecordRaw[] = [
         name: 'project',
         path: '',
         component: () => import('pages/ProjectManager.vue'),
-        meta: { requiresAuth: true, requiresReadWorkspacePermission: true },
+        meta: {
+          requiresAuth: true,
+          requiresReadWorkspacePermission: true,
+          requiresCRUProjectPermissions: true,
+        },
       },
     ],
   },

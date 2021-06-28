@@ -21,12 +21,6 @@
 
           <q-separator />
 
-          <edit-project-success
-            v-if="!miniState && activeProject"
-            class="q-my-md"
-            :project="activeProject"
-          ></edit-project-success>
-
           <q-item dense clickable v-ripple>
             <q-item-section avatar>
               <q-icon name="eva-bell-outline" />
@@ -85,7 +79,7 @@
                 <q-btn
                   color="red"
                   icon="delete"
-                  @click.stop="onDeleteProject(project)"
+                  @click.prevent.stop="onDeleteProject(project)"
                 />
               </router-link>
             </div>
@@ -160,23 +154,23 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, watch } from 'vue';
+import { defineComponent, watch } from 'vue';
 import { useQuasar } from 'quasar';
+import { useRouter } from 'vue-router';
+import eventsStore from 'src/stores/events/eventsStore';
 import NewProjectModal from 'src/components/Projects/NewProjectModal.vue';
-import EditProjectSuccess from 'src/components/Projects/ProjectManagementLayout/EditProjectSuccess.vue';
-import workspaceStore from 'src/stores/workspace/workspaceStore';
-import projectStore from 'src/stores/project/projectStore';
-import userStore from 'src/stores/user/userStore';
-import uiStore from 'src/stores/ui/uiStore';
 import Project from 'src/models/Project';
-
+import projectStore from 'src/stores/project/projectStore';
+import uiStore from 'src/stores/ui/uiStore';
+import userStore from 'src/stores/user/userStore';
+import workspaceStore from 'src/stores/workspace/workspaceStore';
 export default defineComponent({
   name: 'ProjectManagerLayout',
 
-  components: { EditProjectSuccess },
-
   setup() {
     if (!userStore.settings.value) return;
+
+    const router = useRouter();
 
     watchForNewProjectModal();
 
@@ -209,7 +203,9 @@ export default defineComponent({
     }
 
     async function onDeleteProject(project: Project) {
-      await project.delete();
+      await eventsStore.project.onProjectDelete(project);
+      if (project.id == activeProject.value?.id)
+        await router.push({ name: 'app' });
     }
 
     return {

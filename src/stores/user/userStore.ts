@@ -68,12 +68,6 @@ async function onUserLoggedOut() {
   userState.role = null;
 }
 
-async function onActiveWorkspaceChanged() {
-  if (!workspaceStore.activeWorkspace.value) return;
-  await updateMostRecentWorkspace(workspaceStore.activeWorkspace.value.id);
-  await setUserRole();
-}
-
 async function setUserRole() {
   console.log('querying db for role');
   const doc = await db
@@ -142,6 +136,15 @@ async function assignRoleAndAddWorkspace(workspaceId: string) {
   await userState.settings.save();
 }
 
+async function removeProjectIfMostRecent(projectId: string) {
+  if (!userState.settings) return;
+
+  if (userState.settings.most_recent_project == projectId) {
+    userState.settings.most_recent_project = '';
+    await userState.settings.save();
+  }
+}
+
 const userStore = {
   settings,
   isLoggedIn,
@@ -149,7 +152,7 @@ const userStore = {
   state,
   onUserLoggedIn,
   onUserLoggedOut,
-  onActiveWorkspaceChanged,
+  removeProjectIfMostRecent,
   removeWorkspaceFromSettings,
   updateMostRecentProject,
   updateMostRecentWorkspace,

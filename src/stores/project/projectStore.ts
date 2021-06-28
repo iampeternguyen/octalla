@@ -3,8 +3,9 @@ import { reactive, computed } from 'vue';
 import Project from 'src/models/Project';
 import Task, { TaskData, TASKS_STORENAME } from 'src/models/Task';
 import workspaceStore from '../workspace/workspaceStore';
-import userStore from '../user/userStore';
 import eventsStore from '../events/eventsStore';
+import permissions from 'src/router/permissions';
+import uiStore from '../ui/uiStore';
 
 const projectState = reactive({
   requestSetActiveProjectWithId: '',
@@ -32,6 +33,25 @@ async function setActiveProject(projectId: string) {
   } else {
     throw 'Project not found';
   }
+}
+
+async function deleteProject(project: Project) {
+  if (!permissions.project.canDelete(project)) return;
+
+  console.log('permission to delete project');
+
+  uiStore.updateLoadingMessage(
+    `Deleting ${project.name}... DO NOT CLOSE THIS PAGE`
+  );
+  uiStore.showLoading();
+  if (projectState.activeProject && projectState.activeProject.id == project.id)
+    projectState.activeProject = null;
+  await project.delete();
+  uiStore.hideLoading();
+
+  // const id = workspaceState.activeSpace.id;
+  // workspaceState.activeSpace = null;
+  // return id;
 }
 
 let projectTasksObserver = () => {
@@ -93,6 +113,7 @@ const projectStore = {
   tasks,
   state,
   setActiveProject,
+  deleteProject,
 };
 
 export default projectStore;

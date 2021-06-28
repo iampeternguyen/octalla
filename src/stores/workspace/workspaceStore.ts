@@ -7,10 +7,7 @@ import Workspace, {
   WorkspaceData,
   WORKSPACE_STORENAME,
 } from 'src/models/Workspace';
-import {
-  userHasDeleteWorkspacePermission,
-  userHasUpdateWorkspacePermission,
-} from 'src/router/guards';
+import permissions from 'src/router/permissions';
 import uiStore from '../ui/uiStore';
 import eventsStore from '../events/eventsStore';
 
@@ -42,16 +39,14 @@ async function createWorkspace(workspaceName: string) {
 // update
 
 async function updateWorkspaceName(name: string) {
-  if (!workspaceState.activeSpace || !userHasUpdateWorkspacePermission())
-    return;
+  if (!workspaceState.activeSpace || !permissions.workspace.canUpdate()) return;
   console.log('permission to update workspace');
   workspaceState.activeSpace.name = name;
   await workspaceState.activeSpace?.save();
 }
 
 async function deleteWorkspace() {
-  if (!workspaceState.activeSpace || !userHasDeleteWorkspacePermission())
-    return;
+  if (!workspaceState.activeSpace || !permissions.workspace.canDelete()) return;
 
   console.log('permission to delete workspace');
 

@@ -7,7 +7,7 @@ import {
   createWebHashHistory,
   createWebHistory,
 } from 'vue-router';
-import { userHasReadWorkspacePermission, isAuthenticated } from './guards';
+import permissions from './permissions';
 import routes from './routes';
 
 /*
@@ -38,13 +38,15 @@ export default route(function (/* { store, ssrContext } */) {
     ),
   });
   Router.beforeEach(async (to, from, next) => {
+    // requiresAuth
     if (to.matched.some((record) => record.meta.requiresAuth)) {
-      if (!(await isAuthenticated())) {
+      if (!(await permissions.user.isAuth())) {
         next({ name: 'login' });
         return;
       }
     }
 
+    // requiresReadWorkspace
     if (
       to.matched.some((record) => record.meta.requiresReadWorkspacePermission)
     ) {
@@ -52,7 +54,24 @@ export default route(function (/* { store, ssrContext } */) {
         await workspaceStore.setActiveWorkspace(
           to.params.workspace_id.toString()
         );
-        // TODO create readProjectPermissionGuard
+      } catch (error) {
+        console.log(error);
+        next({ name: '404' });
+        return;
+      }
+      if (!permissions.workspace.canRead()) {
+        console.log('deneid');
+        next({ name: '404' });
+        return;
+      }
+    }
+
+    // requires CRU workspace
+
+    if (
+      to.matched.some((record) => record.meta.requiresCRUProjectPermissions)
+    ) {
+      try {
         if (to.params.project_id) {
           await projectStore.setActiveProject(to.params.project_id.toString());
         }
@@ -61,7 +80,13 @@ export default route(function (/* { store, ssrContext } */) {
         return;
       }
 
-      if (!userHasReadWorkspacePermission()) {
+      const project = workspaceStore.projects.value.find(
+        (p) => p.id == to.params.project_id.toString()
+      );
+
+      console.log('project permissions');
+      if (!project || !permissions.project.canCRU(project)) {
+        console.log('denied');
         next({ name: '404' });
         return;
       }

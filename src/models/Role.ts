@@ -4,7 +4,7 @@ export enum WORKSPACE_ROLE {
   ADMIN = 'ADMIN',
   MANAGER = 'MANAGER',
   MEMBER = 'MEMBER',
-  GUEST = ' GUEST',
+  GUEST = 'GUEST',
 }
 export const ROLES_STORENAME = 'roles';
 export const ROLES_MEMBERS_STORENAME = 'members';
