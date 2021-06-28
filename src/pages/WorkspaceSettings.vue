@@ -23,6 +23,7 @@
 </template>
 <script lang="ts">
 import { QInput } from 'quasar';
+import eventsStore from 'src/stores/events/eventsStore';
 import workspaceStore from 'src/stores/workspace/workspaceStore';
 import { defineComponent, ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -45,7 +46,7 @@ export default defineComponent({
     }
 
     const onDeleteWorkspace = async () => {
-      await workspaceStore.deleteWorkspace();
+      await eventsStore.workspace.onWorkspaceDelete();
       await router.push({ name: 'app' });
     };
 

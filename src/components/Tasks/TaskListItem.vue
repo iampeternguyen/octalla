@@ -1,8 +1,7 @@
 <template>
   <q-card :class="{ isComplete: isComplete }" @click.prevent="onTaskClicked">
-    <div v-for="(value, key) in task.sort_by" :key="value">
-      {{ value }}
-      {{ key }}
+    <div>
+      {{ task.sort_by }}
     </div>
     <q-btn color="secondary" :label="task.status" @click="onToggleStatus" />
     <q-card-section>
@@ -23,7 +22,7 @@
           round
           text-color="red"
           icon="eva-trash-2-outline"
-          @click="onDelete"
+          @click.stop="onDelete"
         />
       </div>
     </q-card-section>

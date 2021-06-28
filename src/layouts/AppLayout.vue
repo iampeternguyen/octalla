@@ -104,7 +104,7 @@
                 <q-btn
                   color="red"
                   icon="delete"
-                  @click.prevent="onDeleteProject(project)"
+                  @click.stop="onDeleteProject(project)"
                 />
               </router-link>
             </div>
@@ -186,7 +186,6 @@
 import { defineComponent, ref, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import NewProjectModal from 'src/components/Projects/NewProjectModal.vue';
-import { useRoute, useRouter } from 'vue-router';
 import EditProjectGoal from 'src/components/Projects/ProjectManagementLayout/EditProjectGoal.vue';
 import EditProjectSuccess from 'src/components/Projects/ProjectManagementLayout/EditProjectSuccess.vue';
 import EditProjectName from 'src/components/Projects/ProjectManagementLayout/EditProjectName.vue';
@@ -202,22 +201,7 @@ export default defineComponent({
   components: { EditProjectGoal, EditProjectSuccess, EditProjectName },
 
   setup() {
-    const route = useRoute();
-    const router = useRouter();
-
     if (!userStore.settings.value) return;
-
-    watch(
-      route,
-      async () => {
-        if (route.params.project_id) {
-          await projectStore.setActiveProject(
-            route.params.project_id.toString()
-          );
-        }
-      },
-      { immediate: true }
-    );
 
     watchForNewProjectModal();
 

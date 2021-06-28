@@ -22,7 +22,7 @@ export interface TaskData {
   project_id: string;
   workspace_id: string;
   created_by: string;
-  sort_by: Record<string, number>;
+  sort_by: number;
 }
 
 export default class Task extends DatabaseModel implements TaskData {
@@ -36,7 +36,7 @@ export default class Task extends DatabaseModel implements TaskData {
   project_id: string;
   workspace_id: string;
   created_by: string;
-  sort_by: Record<string, number>;
+  sort_by: number;
 
   private _status: string;
 
@@ -59,11 +59,11 @@ export default class Task extends DatabaseModel implements TaskData {
     this.workspace_id = workspaceId;
     this.created_by = data?.created_by || userStore.settings.value?.id || '';
     this._status = data?.status || 'open';
-    this.sort_by = data?.sort_by || {
-      status:
-        projectStore.tasks.value[projectStore.tasks.value.length - 1]?.sort_by
-          .status + 1 || 0,
-    };
+    this.sort_by =
+      data?.sort_by ||
+      projectStore.tasks.value[projectStore.tasks.value.length - 1]?.sort_by +
+        1 ||
+      0;
   }
 
   get status() {

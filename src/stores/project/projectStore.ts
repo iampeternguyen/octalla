@@ -54,8 +54,6 @@ function watchTasks() {
         const task = Task.deserialize(taskData);
 
         if (change.type === 'added') {
-          if (!task.sort_by.status)
-            task.sort_by.status = projectState.tasks.length;
           addProjectTask(task);
         }
         if (change.type === 'modified') {

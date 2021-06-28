@@ -59,7 +59,7 @@ export default defineComponent({
     const taskList = computed(() =>
       projectStore.tasks.value
         .filter((t) => t.status == props.status.toString())
-        .sort((a, b) => a.sort_by.status - b.sort_by.status)
+        .sort((a, b) => a.sort_by - b.sort_by)
     );
 
     const addTaskInputRef = ref<QInput | null>(null);
@@ -88,6 +88,13 @@ export default defineComponent({
         newIndex = evt.added.newIndex;
         task = evt.added.element;
         task.status = props.status.toString();
+        console.log(
+          'added',
+          task.name,
+          newIndex,
+          taskList.value[newIndex].name,
+          taskList.value[newIndex - 1].name
+        );
 
         if (taskList.value.length <= 1) {
           await task.save();
@@ -95,13 +102,13 @@ export default defineComponent({
         }
 
         if (newIndex == 0) {
-          task.sort_by.status = taskList.value[newIndex].sort_by.status / 2;
+          task.sort_by = taskList.value[newIndex].sort_by / 2;
         } else if (newIndex == taskList.value.length - 1) {
-          task.sort_by.status = taskList.value[newIndex].sort_by.status + 1;
+          task.sort_by = taskList.value[newIndex].sort_by + 1;
         } else {
-          task.sort_by.status =
-            (taskList.value[newIndex].sort_by.status +
-              taskList.value[newIndex + 1].sort_by.status) /
+          task.sort_by =
+            (taskList.value[newIndex].sort_by +
+              taskList.value[newIndex - 1].sort_by) /
             2;
         }
         await task.save();
@@ -112,13 +119,13 @@ export default defineComponent({
         task = evt.moved.element;
 
         if (newIndex == 0) {
-          task.sort_by.status = taskList.value[newIndex + 1].sort_by.status / 2;
+          task.sort_by = taskList.value[newIndex + 1].sort_by / 2;
         } else if (newIndex == taskList.value.length - 1) {
-          task.sort_by.status = taskList.value[newIndex - 1].sort_by.status + 1;
+          task.sort_by = taskList.value[newIndex - 1].sort_by + 1;
         } else {
-          task.sort_by.status =
-            (taskList.value[newIndex + 1].sort_by.status +
-              taskList.value[newIndex + -1].sort_by.status) /
+          task.sort_by =
+            (taskList.value[newIndex + 1].sort_by +
+              taskList.value[newIndex + -1].sort_by) /
             2;
         }
         await task.save();

@@ -52,7 +52,7 @@ async function updateWorkspaceName(name: string) {
 async function deleteWorkspace() {
   if (!workspaceState.activeSpace || !userHasDeleteWorkspacePermission())
     return;
-  eventsStore.workspace.beforeWorkspaceDelete();
+
   console.log('permission to delete workspace');
 
   uiStore.updateLoadingMessage(
@@ -60,10 +60,12 @@ async function deleteWorkspace() {
   );
   uiStore.showLoading();
   await workspaceState.activeSpace.delete();
+
   uiStore.hideLoading();
-  await eventsStore.workspace.afterWorkspaceDelete(
-    workspaceState.activeSpace.id
-  );
+
+  const id = workspaceState.activeSpace.id;
+  workspaceState.activeSpace = null;
+  return id;
 }
 
 async function setActiveWorkspace(workspaceId: string) {

@@ -1,17 +1,16 @@
 import userStore from '../user/userStore';
+import workspaceStore from '../workspace/workspaceStore';
 
-function beforeWorkspaceDelete() {
+async function onWorkspaceDelete() {
   console.log('Workspace is about to be deleted');
+  const id = await workspaceStore.deleteWorkspace();
+  if (!id) throw 'error deleting workspace';
+  await userStore.removeWorkspaceFromSettings(id);
 }
 
 async function afterWorkspaceCreate(workspaceId: string) {
   console.log('new workspace created', workspaceId);
   await userStore.assignRoleAndAddWorkspace(workspaceId);
-}
-
-async function afterWorkspaceDelete(workspaceId: string) {
-  console.log('Workspace has been deleted', workspaceId);
-  await userStore.removeWorkspaceFromSettings(workspaceId);
 }
 
 async function afterWorkspaceSetActive() {
@@ -22,8 +21,7 @@ async function afterWorkspaceSetActive() {
 const eventsStore = {
   workspace: {
     afterWorkspaceCreate,
-    beforeWorkspaceDelete,
-    afterWorkspaceDelete,
+    onWorkspaceDelete,
     afterWorkspaceSetActive,
   },
 };
