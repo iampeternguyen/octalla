@@ -6,6 +6,7 @@ import workspaceStore from '../workspace/workspaceStore';
 import eventsStore from '../events/eventsStore';
 import permissions from 'src/router/permissions';
 import uiStore from '../ui/uiStore';
+import userStore from '../user/userStore';
 
 const projectState = reactive({
   requestSetActiveProjectWithId: '',
@@ -63,15 +64,22 @@ function watchTasks() {
   // unsubscribe
   projectTasksObserver();
   clearProjectTasks();
+
   const query = db
     .collection(TASKS_STORENAME)
+    .where('workspace_id', '==', activeProject.value.workspace_id)
     .where('project_id', '==', activeProject.value.id);
+  console.log(
+    'watching tasks',
+    userStore.state.value.role,
+    activeProject.value.id
+  );
   projectTasksObserver = query.onSnapshot(
     (querySnapshot) => {
       querySnapshot.docChanges().forEach((change) => {
         const taskData = change.doc.data() as TaskData;
         const task = Task.deserialize(taskData);
-
+        console.log('task change type:', change.type);
         if (change.type === 'added') {
           addProjectTask(task);
         }

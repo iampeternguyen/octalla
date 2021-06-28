@@ -18,8 +18,6 @@ function isAuthenticated(): Promise<boolean> {
 }
 
 function userHasReadWorkspacePermission() {
-  console.log('role', userStore.role.value);
-
   if (
     userStore.role.value &&
     [
