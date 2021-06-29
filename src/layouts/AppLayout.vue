@@ -76,11 +76,6 @@
                   default-opened
                 >
                 </q-expansion-item>
-                <q-btn
-                  color="red"
-                  icon="delete"
-                  @click.prevent.stop="onDeleteProject(project)"
-                />
               </router-link>
             </div>
           </q-expansion-item>
@@ -201,7 +196,7 @@ export default defineComponent({
       console.log('new project');
       uiStore.toggleShowNewProjectModal();
     }
-
+    // TODO move method
     async function onDeleteProject(project: Project) {
       await eventsStore.project.onProjectDelete(project);
       if (project.id == activeProject.value?.id)
@@ -219,7 +214,6 @@ export default defineComponent({
       projects,
       isActive,
       activeProject,
-      onDeleteProject,
     };
   },
 });
