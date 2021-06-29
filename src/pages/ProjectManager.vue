@@ -24,11 +24,13 @@
     </q-toolbar>
   </q-header>
   <q-drawer v-model="rightDrawerOpen" side="right" bordered overlay>
-    <edit-project-success
+    <!-- <edit-project-success
       v-if="activeProject"
       class="q-my-md"
       :project="activeProject"
-    ></edit-project-success>
+    ></edit-project-success> -->
+
+    <workspace-projects-nested-list></workspace-projects-nested-list>
   </q-drawer>
 
   <q-page class="row q-gutter-md" padding>
@@ -51,6 +53,7 @@ import EditProjectGoal from 'src/components/Projects/ProjectManagementLayout/Edi
 import EditProjectSuccess from 'src/components/Projects/ProjectManagementLayout/EditProjectSuccess.vue';
 
 import uiStore from 'src/stores/ui/uiStore';
+import WorkspaceProjectsNestedList from 'src/components/Workspace/WorkspaceProjectsNestedList.vue';
 
 export default defineComponent({
   components: {
@@ -58,6 +61,7 @@ export default defineComponent({
     EditProjectName,
     EditProjectGoal,
     EditProjectSuccess,
+    WorkspaceProjectsNestedList,
   },
   setup() {
     const tasks = projectStore.tasks;
