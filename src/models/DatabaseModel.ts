@@ -28,7 +28,8 @@ export default abstract class DatabaseModel {
       console.log('error saving: ', error);
     }
   }
-
+  // TODO maybe make delete just change a field in the database and not actually delete so that data can be recovered
+  // TODO work on visibility settings for each of the models: public/workspace/private & included / excluded users Maybe create project level roles for this?
   async delete() {
     try {
       await db.collection(this.STORE_NAME).doc(this.id).delete();

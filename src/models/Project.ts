@@ -65,6 +65,7 @@ export default class Project extends DatabaseModel implements ProjectData {
   async delete() {
     const query = db
       .collection(TASKS_STORENAME)
+      .where('workspace_id', '==', this.workspace_id)
       .where('project_id', '==', this.id);
     await this.deleteQueryBatch(db, query, async () => {
       console.log('successfully deleted all tasks. now deleting project');
