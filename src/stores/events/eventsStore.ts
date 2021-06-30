@@ -40,6 +40,11 @@ async function onProjectDelete(project: Project) {
   await userStore.removeProjectIfMostRecent(id);
 }
 
+async function onProjectAdded(unsavedProject: Project) {
+  console.log('Adding project to workspace');
+  await workspaceStore.addProjectToWorkspace(unsavedProject);
+}
+
 const eventsStore = {
   workspace: {
     afterWorkspaceCreate,
@@ -49,6 +54,7 @@ const eventsStore = {
   project: {
     afterProjectSetActive,
     onProjectDelete,
+    onProjectAdded,
   },
 };
 

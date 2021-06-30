@@ -76,6 +76,11 @@
                   default-opened
                 >
                 </q-expansion-item>
+                <q-btn
+                  color="primary"
+                  icon="delete"
+                  @click.stop.prevent="onDeleteProject(project)"
+                />
               </router-link>
             </div>
           </q-expansion-item>
@@ -206,6 +211,7 @@ export default defineComponent({
     return {
       leftDrawerOpen: uiStore.appLeftDrawer.open,
       activeWorkspace,
+      onDeleteProject,
       onToggleLeftDrawer: uiStore.appLeftDrawer.onToggleProjectLeftDrawer,
       miniState: uiStore.appLeftDrawer.mini,
       onDrawerClick: uiStore.appLeftDrawer.onProjectLeftDrawerClicked,

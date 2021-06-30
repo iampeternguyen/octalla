@@ -10,6 +10,7 @@ import Workspace, {
 import permissions from 'src/router/permissions';
 import uiStore from '../ui/uiStore';
 import eventsStore from '../events/eventsStore';
+import Folder, { FolderData } from 'src/models/Folder';
 
 const workspaceState = reactive({
   activeSpace: <Workspace | null>null,
@@ -19,6 +20,9 @@ const workspaceState = reactive({
 // getters
 const activeWorkspace = computed(() => workspaceState.activeSpace);
 const projects = computed(() => workspaceState.projects);
+const projectsStructure = computed(
+  () => workspaceState.activeSpace?.projects_structure || []
+);
 const state = computed(() => workspaceState);
 
 // create
@@ -80,6 +84,16 @@ async function setActiveWorkspace(workspaceId: string) {
 let workspaceProjectsObserver = () => {
   return;
 };
+
+async function addProjectToWorkspace(project: Project) {
+  await project.save();
+  if (workspaceState.activeSpace) {
+    workspaceState.activeSpace.projects_structure.push(
+      Folder.convertProjectToFolder(project).serialize()
+    );
+    await workspaceState.activeSpace.save();
+  }
+}
 
 function watchWorkspaceProjects() {
   console.log('watching projects');
@@ -146,10 +160,12 @@ const workspaceStore = {
   activeWorkspace,
   projects,
   state,
+  projectsStructure,
   setActiveWorkspace,
   createWorkspace,
   updateWorkspaceName,
   deleteWorkspace,
+  addProjectToWorkspace,
 };
 
 // TODO watch active workspace projects

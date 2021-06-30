@@ -147,6 +147,7 @@ import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import Project from 'src/models/Project';
+import eventsStore from 'src/stores/events/eventsStore';
 
 export default {
   components: {},
@@ -177,7 +178,7 @@ export default {
       const project = new Project(name.value, workspaceId);
       project.primary_goal = goal.value;
       project.success_looks_like = success.value;
-      await project.save();
+      await eventsStore.project.onProjectAdded(project);
       onDialogHide();
     }
 

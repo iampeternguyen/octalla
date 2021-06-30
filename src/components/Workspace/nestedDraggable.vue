@@ -1,16 +1,25 @@
 <template>
   <draggable
     class="dragArea"
-    tag="ul"
-    :list="tasks"
+    :list="folders"
     :group="{ name: 'g1' }"
     item-key="name"
   >
     <template #item="{ element }">
-      <li>
-        <p>{{ element.name }}</p>
-        <nested-draggable :tasks="element.children" />
-      </li>
+      <div>
+        <q-expansion-item
+          dense
+          expand-icon-toggle
+          expand-separator
+          :label="element.name"
+          default-opened
+        >
+          <nested-draggable
+            tag="ul"
+            :folders="element.children"
+          ></nested-draggable>
+        </q-expansion-item>
+      </div>
     </template>
   </draggable>
 </template>
@@ -18,7 +27,7 @@
 import draggable from 'vuedraggable';
 export default {
   props: {
-    tasks: {
+    folders: {
       required: true,
       type: Array,
     },
@@ -30,9 +39,20 @@ export default {
   name: 'nested-draggable',
 };
 </script>
-<style scoped>
+<style lang="scss" scoped>
 .dragArea {
   min-height: 50px;
   outline: 1px dashed;
+}
+
+.left-drawer-project-link {
+  text-decoration: none;
+  font-size: 1.4rem;
+  color: $grey-8;
+
+  &__active {
+    color: $primary;
+    font-weight: 500;
+  }
 }
 </style>

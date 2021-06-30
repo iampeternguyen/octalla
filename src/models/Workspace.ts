@@ -2,6 +2,7 @@ import { nanoid } from 'nanoid';
 import { db } from 'src/firebase';
 import userStore from 'src/stores/user/userStore';
 import DatabaseModel from './DatabaseModel';
+import Folder, { FolderData } from './Folder';
 import { PROJECTS_STORENAME } from './Project';
 import { ROLES_MEMBERS_STORENAME, ROLES_STORENAME } from './Role';
 import { TASKS_STORENAME } from './Task';
@@ -14,6 +15,7 @@ export interface WorkspaceData {
   last_modified: number;
   name: string;
   created_by: string;
+  projects_structure: FolderData[];
 }
 
 export default class Workspace extends DatabaseModel implements WorkspaceData {
@@ -22,6 +24,7 @@ export default class Workspace extends DatabaseModel implements WorkspaceData {
   last_modified: number;
   created_at: number;
   name: string;
+  projects_structure: FolderData[];
   created_by: string;
 
   constructor(name: string, data?: WorkspaceData) {
@@ -33,6 +36,7 @@ export default class Workspace extends DatabaseModel implements WorkspaceData {
     this.created_at = data?.created_at || Date.now();
     this.id = data?.id || nanoid(8);
     this.last_modified = data?.last_modified || Date.now();
+    this.projects_structure = data?.projects_structure || [];
     this.created_by = data?.created_by || userStore.settings.value?.id || '';
   }
 
@@ -43,6 +47,7 @@ export default class Workspace extends DatabaseModel implements WorkspaceData {
       last_modified: this.last_modified,
       name: this.name,
       created_by: this.created_by,
+      projects_structure: this.projects_structure,
     };
   }
 
