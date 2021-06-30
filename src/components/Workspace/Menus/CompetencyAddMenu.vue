@@ -7,6 +7,17 @@
       :competency="competency"
     ></competency-field-input>
     <competency-field-input :formState="formState"></competency-field-input>
+    <competency-field-input
+      :formState="formState"
+      v-for="index in count"
+      :key="index"
+    ></competency-field-input>
+    <q-btn
+      color="primary"
+      icon="check"
+      label="+ Competency"
+      @click="addField"
+    />
     <div>
       <q-btn label="Submit" type="submit" color="primary" />
       <q-btn label="Reset" type="reset" color="primary" flat class="q-ml-sm" />
@@ -28,6 +39,7 @@ export default defineComponent({
     const formState = reactive({
       saving: false,
     });
+    const count = ref(0);
 
     const competencies = workspaceStore.state.value.competencies;
 
@@ -38,13 +50,18 @@ export default defineComponent({
     function onSave() {
       formState.saving = !formState.saving;
     }
+    function addField() {
+      count.value++;
+    }
     return {
       name,
       description,
       formState,
+      addField,
       onFormSubmit,
       onSave,
       competencies,
+      count,
     };
   },
 });
