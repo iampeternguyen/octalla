@@ -44,6 +44,7 @@ async function onProjectDelete(project: Project) {
 
 async function onProjectAdded(unsavedProject: Project) {
   console.log('Adding project to workspace');
+  // workspaceStore is already watching for new projects
   await workspaceStore.addProjectToWorkspace(unsavedProject);
 }
 

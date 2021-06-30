@@ -28,18 +28,9 @@
       <q-toolbar-title> Toolbar </q-toolbar-title>
       <q-btn flat dense icon="apps" class="q-mr-xs" label="Group by: Status">
         <q-menu transition-show="jump-down" transition-hide="jump-up">
-          <q-list style="min-width: 100px">
-            <q-item clickable>
-              <q-item-section>Having fun</q-item-section>
-            </q-item>
-            <q-item clickable>
-              <q-item-section>Crazy for transitions</q-item-section>
-            </q-item>
-            <q-separator />
-            <q-item clickable>
-              <q-item-section>Mind blown</q-item-section>
-            </q-item>
-          </q-list>
+          <div style="min-width: 100px">
+            <competency-add-menu></competency-add-menu>
+          </div>
         </q-menu>
       </q-btn>
       <q-btn flat round dense icon="assignment_ind" @click="addCompetency" />
@@ -71,6 +62,7 @@ import projectStore from 'src/stores/project/projectStore';
 import EditProjectName from 'src/components/Projects/ProjectManagementLayout/EditProjectName.vue';
 import EditProjectGoal from 'src/components/Projects/ProjectManagementLayout/EditProjectGoal.vue';
 import EditProjectSuccess from 'src/components/Projects/ProjectManagementLayout/EditProjectSuccess.vue';
+import CompetencyAddMenu from 'src/components/Workspace/Menus/CompetencyAddMenu.vue';
 
 import uiStore from 'src/stores/ui/uiStore';
 import Competency from 'src/models/Competency';
@@ -81,6 +73,7 @@ export default defineComponent({
     EditProjectName,
     EditProjectGoal,
     EditProjectSuccess,
+    CompetencyAddMenu,
   },
   setup() {
     const tasks = projectStore.tasks;
