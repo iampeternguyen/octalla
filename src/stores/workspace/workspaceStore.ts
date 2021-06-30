@@ -10,11 +10,16 @@ import Workspace, {
 import permissions from 'src/router/permissions';
 import uiStore from '../ui/uiStore';
 import eventsStore from '../events/eventsStore';
-import Folder, { FolderData } from 'src/models/Folder';
+import Folder from 'src/models/Folder';
+import Competency, {
+  COMPETENCIES_STORENAME,
+  CompetencyData,
+} from 'src/models/Competency';
 
 const workspaceState = reactive({
   activeSpace: <Workspace | null>null,
   projects: [] as Project[],
+  competencies: [] as Competency[],
 });
 
 // getters
@@ -81,10 +86,6 @@ async function setActiveWorkspace(workspaceId: string) {
   await eventsStore.workspace.afterWorkspaceSetActive();
 }
 
-let workspaceProjectsObserver = () => {
-  return;
-};
-
 async function addProjectToWorkspace(project: Project) {
   await project.save();
   if (workspaceState.activeSpace) {
@@ -94,6 +95,10 @@ async function addProjectToWorkspace(project: Project) {
     await workspaceState.activeSpace.save();
   }
 }
+
+let workspaceProjectsObserver = () => {
+  return;
+};
 
 function watchWorkspaceProjects() {
   console.log('watching projects');
@@ -136,6 +141,51 @@ function watchWorkspaceProjects() {
   );
 }
 
+let workspaceCompetenciesObserver = () => {
+  return;
+};
+
+function watchWorkspaceCompetencies() {
+  console.log('watching competencies');
+  // unsubscribe
+  workspaceCompetenciesObserver();
+  workspaceState.competencies.splice(0, workspaceState.competencies.length);
+
+  const query = db
+    .collection(COMPETENCIES_STORENAME)
+    .doc(workspaceState.activeSpace?.id)
+    .collection(COMPETENCIES_STORENAME);
+
+  workspaceCompetenciesObserver = query.onSnapshot(
+    (querySnapshot) => {
+      querySnapshot.docChanges().forEach((change) => {
+        const competencyData = change.doc.data() as CompetencyData;
+        const competency = Competency.deserialize(competencyData);
+
+        console.log('competency change.type:', change.type);
+        if (change.type === 'added') {
+          workspaceState.competencies.push(competency);
+        }
+        if (change.type === 'modified') {
+          const index = workspaceState.competencies.findIndex(
+            (comp) => comp.id == competency.id
+          );
+          workspaceState.competencies.splice(index, 1, competency);
+        }
+        if (change.type === 'removed') {
+          const index = workspaceState.competencies.findIndex(
+            (comp) => comp.id == competency.id
+          );
+          workspaceState.competencies.splice(index, 1);
+        }
+      });
+    },
+    (err) => {
+      console.log(`Encountered error: ${err.message}`);
+    }
+  );
+}
+
 // workspace project methods
 
 function clearWorkspaceProjects() {
@@ -166,6 +216,7 @@ const workspaceStore = {
   updateWorkspaceName,
   deleteWorkspace,
   addProjectToWorkspace,
+  watchWorkspaceCompetencies,
 };
 
 // TODO watch active workspace projects

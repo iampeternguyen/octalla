@@ -20,6 +20,8 @@ async function afterWorkspaceSetActive() {
   if (!workspaceStore.activeWorkspace.value)
     throw "workspace wasn't set to active";
 
+  workspaceStore.watchWorkspaceCompetencies();
+
   await userStore.setUserRole();
   if (permissions.workspace.canRead())
     await userStore.updateMostRecentWorkspace(

@@ -24,14 +24,32 @@
         />
       </q-toolbar>
     </q-header>
+    <q-toolbar class="bg-purple text-white">
+      <q-toolbar-title> Toolbar </q-toolbar-title>
+      <q-btn flat dense icon="apps" class="q-mr-xs" label="Group by: Status">
+        <q-menu transition-show="jump-down" transition-hide="jump-up">
+          <q-list style="min-width: 100px">
+            <q-item clickable>
+              <q-item-section>Having fun</q-item-section>
+            </q-item>
+            <q-item clickable>
+              <q-item-section>Crazy for transitions</q-item-section>
+            </q-item>
+            <q-separator />
+            <q-item clickable>
+              <q-item-section>Mind blown</q-item-section>
+            </q-item>
+          </q-list>
+        </q-menu>
+      </q-btn>
+      <q-btn flat round dense icon="assignment_ind" @click="addCompetency" />
+    </q-toolbar>
     <q-drawer v-model="rightDrawerOpen" side="right" bordered overlay>
-      <!-- <edit-project-success
-      v-if="activeProject"
-      class="q-my-md"
-      :project="activeProject"
-    ></edit-project-success> -->
-
-      <workspace-projects-nested-list></workspace-projects-nested-list>
+      <edit-project-success
+        v-if="activeProject"
+        class="q-my-md"
+        :project="activeProject"
+      ></edit-project-success>
     </q-drawer>
 
     <q-page class="row q-gutter-md" padding>
@@ -55,7 +73,7 @@ import EditProjectGoal from 'src/components/Projects/ProjectManagementLayout/Edi
 import EditProjectSuccess from 'src/components/Projects/ProjectManagementLayout/EditProjectSuccess.vue';
 
 import uiStore from 'src/stores/ui/uiStore';
-import WorkspaceProjectsNestedList from 'src/components/Workspace/WorkspaceProjectsNestedList.vue';
+import Competency from 'src/models/Competency';
 
 export default defineComponent({
   components: {
@@ -63,7 +81,6 @@ export default defineComponent({
     EditProjectName,
     EditProjectGoal,
     EditProjectSuccess,
-    WorkspaceProjectsNestedList,
   },
   setup() {
     const tasks = projectStore.tasks;
@@ -80,12 +97,21 @@ export default defineComponent({
       rightDrawerOpen.value = !rightDrawerOpen.value;
     }
 
+    async function addCompetency() {
+      const competency = new Competency(
+        'Learning',
+        activeProject.value?.workspace_id || ''
+      );
+      await competency.save();
+    }
+
     return {
       text,
       filteredTasks,
       tasks,
       TASKS_STATUS_OPTIONS,
       activeProject,
+      addCompetency,
       onToggleLeftDrawer: uiStore.appLeftDrawer.onToggleProjectLeftDrawer,
       onToggleRightDrawer,
       rightDrawerOpen,

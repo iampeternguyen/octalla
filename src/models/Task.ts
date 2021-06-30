@@ -20,6 +20,7 @@ export interface TaskData {
   name: string;
   status: string;
   project_id: string;
+  competency: string;
   workspace_id: string;
   created_by: string;
   sort_by: number;
@@ -34,6 +35,7 @@ export default class Task extends DatabaseModel implements TaskData {
   isComplete: boolean;
   last_modified: number;
   project_id: string;
+  competency: string;
   workspace_id: string;
   created_by: string;
   sort_by: number;
@@ -56,6 +58,7 @@ export default class Task extends DatabaseModel implements TaskData {
     this.isComplete = data?.isComplete || false;
     this.last_modified = data?.last_modified || Date.now();
     this.project_id = projectId;
+    this.competency = data?.competency || '';
     this.workspace_id = workspaceId;
     this.created_by = data?.created_by || userStore.settings.value?.id || '';
     this._status = data?.status || 'open';
@@ -117,6 +120,7 @@ export default class Task extends DatabaseModel implements TaskData {
       project_id: this.project_id,
       created_by: this.created_by,
       workspace_id: this.workspace_id,
+      competency: this.competency,
       status: this.status,
       sort_by: this.sort_by,
     };

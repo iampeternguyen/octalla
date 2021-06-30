@@ -44,7 +44,7 @@ export default class WorkspaceRoles implements WorkspaceRolesData {
     try {
       this.last_modified = Date.now();
 
-      await db.collection(this.STORE_NAME).doc(this.id).set({
+      await db.collection(this.STORE_NAME).doc().set({
         id: this.id,
         created_at: this.created_at,
         last_modified: this.last_modified,

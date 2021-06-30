@@ -5,23 +5,17 @@ import { ProjectData } from './Project';
 import { WorkspaceData } from './Workspace';
 import { UserSettingsData } from './UserSettings';
 import { Query, FirebaseFirestore } from '@firebase/firestore-types';
-import { FolderData } from './Folder';
 
 export default abstract class DatabaseModel {
-  abstract STORE_NAME:
-    | 'tasks'
-    | 'projects'
-    | 'workspaces'
-    | 'user_settings'
-    | 'folders';
+  abstract STORE_NAME: 'tasks' | 'projects' | 'workspaces' | 'user_settings';
+
   abstract id: string;
   abstract last_modified: number;
   abstract serialize():
     | TaskData
     | ProjectData
     | WorkspaceData
-    | UserSettingsData
-    | FolderData;
+    | UserSettingsData;
 
   async save() {
     try {
