@@ -89,7 +89,7 @@ async function addProjectToWorkspace(project: Project) {
   await project.save();
   if (workspaceState.activeSpace) {
     workspaceState.activeSpace.projects_structure.push(
-      Folder.convertProjectToFolder(project).serialize()
+      Folder.ConvertProjectToFolderData(project)
     );
     await workspaceState.activeSpace.save();
   }

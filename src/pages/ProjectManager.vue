@@ -1,45 +1,47 @@
 <template>
-  <q-header class="bg-white text-primary shadow-2" height-hint="98">
-    <q-toolbar class="row justify-between">
-      <q-btn dense flat round icon="menu" @click="onToggleLeftDrawer" />
+  <div :key="activeProject?.id">
+    <q-header class="bg-white text-primary shadow-2" height-hint="98">
+      <q-toolbar class="row justify-between">
+        <q-btn dense flat round icon="menu" @click="onToggleLeftDrawer" />
 
-      <edit-project-name
-        v-if="activeProject"
-        :project="activeProject"
-      ></edit-project-name>
+        <edit-project-name
+          v-if="activeProject"
+          :project="activeProject"
+        ></edit-project-name>
 
-      <edit-project-goal
-        v-if="activeProject"
-        class="col-grow"
-        :project="activeProject"
-      ></edit-project-goal>
+        <edit-project-goal
+          v-if="activeProject"
+          class="col-grow"
+          :project="activeProject"
+        ></edit-project-goal>
 
-      <q-btn
-        dense
-        flat
-        round
-        icon="eva-info-outline"
-        @click="onToggleRightDrawer"
-      />
-    </q-toolbar>
-  </q-header>
-  <q-drawer v-model="rightDrawerOpen" side="right" bordered overlay>
-    <!-- <edit-project-success
+        <q-btn
+          dense
+          flat
+          round
+          icon="eva-info-outline"
+          @click="onToggleRightDrawer"
+        />
+      </q-toolbar>
+    </q-header>
+    <q-drawer v-model="rightDrawerOpen" side="right" bordered overlay>
+      <!-- <edit-project-success
       v-if="activeProject"
       class="q-my-md"
       :project="activeProject"
     ></edit-project-success> -->
 
-    <workspace-projects-nested-list></workspace-projects-nested-list>
-  </q-drawer>
+      <workspace-projects-nested-list></workspace-projects-nested-list>
+    </q-drawer>
 
-  <q-page class="row q-gutter-md" padding>
-    <tasks-list
-      v-for="status in TASKS_STATUS_OPTIONS"
-      :key="status"
-      :status="status"
-    ></tasks-list>
-  </q-page>
+    <q-page class="row q-gutter-md" padding>
+      <tasks-list
+        v-for="status in TASKS_STATUS_OPTIONS"
+        :key="status"
+        :status="status"
+      ></tasks-list>
+    </q-page>
+  </div>
 </template>
 
 <script lang="ts">

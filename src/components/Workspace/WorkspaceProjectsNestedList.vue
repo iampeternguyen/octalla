@@ -1,9 +1,6 @@
 <template>
-  <div class="row">
-    <div class="col-8">
-      <h3>Nested draggable</h3>
-      <nested-draggable :folders="folders" />
-    </div>
+  <div class="q-pl-md">
+    <nested-draggable class="draggable" :folders="folders" />
   </div>
 </template>
 
@@ -30,4 +27,8 @@ export default defineComponent({
   },
 });
 </script>
-<style scoped></style>
+<style scoped>
+.draggable {
+  width: 100%;
+}
+</style>

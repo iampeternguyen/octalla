@@ -2,7 +2,7 @@
   <!-- TODO move header to page manager ? or move everything not layout focuses to components aka slots? -->
   <!-- the key helps refresh all components when active project is changed -->
 
-  <q-layout view="lHh lpR fFf" :key="activeProject?.id">
+  <q-layout view="lHh lpR fFf">
     <q-drawer
       show-if-above
       v-model="leftDrawerOpen"
@@ -52,36 +52,7 @@
               />
             </q-item>
             <div v-if="projects">
-              <router-link
-                class="left-drawer-project-link"
-                v-for="project in projects"
-                :key="project.id"
-                :to="{
-                  name: 'project',
-                  params: {
-                    project_id: project.id,
-                  },
-                }"
-                :class="{
-                  'left-drawer-project-link__active': isActive(project.id),
-                }"
-              >
-                <q-expansion-item
-                  :class="{ 'bg-orange-1': isActive(project.id) }"
-                  dense
-                  :header-inset-level="1"
-                  expand-icon-toggle
-                  expand-separator
-                  :label="project.name"
-                  default-opened
-                >
-                </q-expansion-item>
-                <q-btn
-                  color="primary"
-                  icon="delete"
-                  @click.stop.prevent="onDeleteProject(project)"
-                />
-              </router-link>
+              <workspace-projects-nested-list></workspace-projects-nested-list>
             </div>
           </q-expansion-item>
 
@@ -164,8 +135,12 @@ import projectStore from 'src/stores/project/projectStore';
 import uiStore from 'src/stores/ui/uiStore';
 import userStore from 'src/stores/user/userStore';
 import workspaceStore from 'src/stores/workspace/workspaceStore';
+import WorkspaceProjectsNestedList from 'src/components/Workspace/WorkspaceProjectsNestedList.vue';
 export default defineComponent({
   name: 'ProjectManagerLayout',
+  components: {
+    WorkspaceProjectsNestedList,
+  },
 
   setup() {
     if (!userStore.settings.value) return;

@@ -3,29 +3,59 @@
     class="dragArea"
     :list="folders"
     :group="{ name: 'g1' }"
-    item-key="name"
+    item-key="id"
   >
     <template #item="{ element }">
-      <div>
-        <q-expansion-item
-          dense
-          expand-icon-toggle
-          expand-separator
-          :label="element.name"
-          default-opened
+      <div class="row">
+        <q-icon
+          name="eva-browser-outline"
+          class="handle"
+          :class="{
+            'text-primary': isActive(element.id),
+          }"
+        />
+        <router-link
+          class="left-drawer-project-link folder"
+          :to="{
+            name: 'project',
+            params: {
+              project_id: element.id,
+            },
+          }"
+          :class="{
+            'left-drawer-project-link__active': isActive(element.id),
+          }"
         >
-          <nested-draggable
-            tag="ul"
-            :folders="element.children"
-          ></nested-draggable>
-        </q-expansion-item>
+          <q-expansion-item
+            dense
+            expand-icon-toggle
+            :expand-icon-class="{ 'text-primary': isActive(element.id) }"
+            default-opened
+          >
+            <template v-slot:header>
+              <q-item-section> {{ element.name }} </q-item-section>
+
+              <q-item-section side>
+                <div class="row items-center"></div>
+              </q-item-section>
+            </template>
+            <nested-draggable
+              :folders="element.children"
+              class="q-pl-md"
+            ></nested-draggable>
+          </q-expansion-item>
+        </router-link>
       </div>
     </template>
   </draggable>
 </template>
-<script>
+
+<script lang="ts">
 import draggable from 'vuedraggable';
-export default {
+import { defineComponent, ref, watch } from 'vue';
+import projectStore from 'src/stores/project/projectStore';
+
+export default defineComponent({
   props: {
     folders: {
       required: true,
@@ -37,12 +67,35 @@ export default {
     draggable,
   },
   name: 'nested-draggable',
-};
+  setup() {
+    const activeProject = projectStore.activeProject;
+
+    function isActive(project_id: string) {
+      return project_id == activeProject.value?.id;
+    }
+    return {
+      isActive,
+    };
+  },
+});
 </script>
 <style lang="scss" scoped>
 .dragArea {
-  min-height: 50px;
-  outline: 1px dashed;
+  min-height: 2rem;
+  width: 100%;
+  //   outline: 1px dashed;
+}
+.handle {
+  padding-top: 0.8rem;
+  cursor: move;
+}
+.folder {
+  flex-grow: 1;
+  &-header {
+    :hover {
+      background-color: $grey-3;
+    }
+  }
 }
 
 .left-drawer-project-link {
@@ -54,5 +107,9 @@ export default {
     color: $primary;
     font-weight: 500;
   }
+}
+
+ul {
+  margin-left: 0rem;
 }
 </style>

@@ -13,7 +13,7 @@ export interface FolderData {
   children: Array<FolderData>;
 }
 
-export default class Folder extends DatabaseModel implements FolderData {
+export default class Folder implements FolderData {
   STORE_NAME: 'folders';
   id: string;
   type: 'folder' | 'project';
@@ -24,7 +24,6 @@ export default class Folder extends DatabaseModel implements FolderData {
   children: Array<FolderData>;
 
   constructor(name: string, data?: FolderData) {
-    super();
     this.STORE_NAME = 'folders';
     this.id = data?.id || nanoid();
     this.created_at = data?.created_at || Date.now();
@@ -35,8 +34,8 @@ export default class Folder extends DatabaseModel implements FolderData {
     this.is_root = data?.is_root || false;
   }
 
-  static convertProjectToFolder(project: Project): Folder {
-    return new Folder(project.name, {
+  static ConvertProjectToFolderData(project: Project): FolderData {
+    return {
       id: project.id,
       name: project.name,
       created_at: project.created_at,
@@ -44,7 +43,7 @@ export default class Folder extends DatabaseModel implements FolderData {
       is_root: false,
       type: 'project',
       children: [],
-    });
+    };
   }
   serialize(): FolderData {
     return {
