@@ -2,7 +2,7 @@ import { nanoid } from 'nanoid';
 import { db } from 'src/firebase';
 import userStore from 'src/stores/user/userStore';
 import DatabaseModel from './DatabaseModel';
-import Folder, { FolderData } from './Folder';
+import { FolderData } from './Folder';
 import { PROJECTS_STORENAME } from './Project';
 import { ROLES_MEMBERS_STORENAME, ROLES_STORENAME } from './Role';
 import { TASKS_STORENAME } from './Task';

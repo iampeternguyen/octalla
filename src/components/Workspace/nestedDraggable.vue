@@ -52,7 +52,7 @@
 
 <script lang="ts">
 import draggable from 'vuedraggable';
-import { defineComponent, ref, watch } from 'vue';
+import { defineComponent } from 'vue';
 import projectStore from 'src/stores/project/projectStore';
 
 export default defineComponent({

@@ -5,9 +5,17 @@ import { ProjectData } from './Project';
 import { WorkspaceData } from './Workspace';
 import { UserSettingsData } from './UserSettings';
 import { Query, FirebaseFirestore } from '@firebase/firestore-types';
+import { CompetencyData } from './Competency';
+import { WorkspaceRolesData } from './Role';
 
 export default abstract class DatabaseModel {
-  abstract STORE_NAME: 'tasks' | 'projects' | 'workspaces' | 'user_settings';
+  abstract STORE_NAME:
+    | 'tasks'
+    | 'projects'
+    | 'workspaces'
+    | 'user_settings'
+    | 'roles'
+    | 'competencies';
 
   abstract id: string;
   abstract last_modified: number;
@@ -15,7 +23,9 @@ export default abstract class DatabaseModel {
     | TaskData
     | ProjectData
     | WorkspaceData
-    | UserSettingsData;
+    | UserSettingsData
+    | WorkspaceRolesData
+    | CompetencyData;
 
   async save() {
     try {

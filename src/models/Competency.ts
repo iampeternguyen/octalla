@@ -15,7 +15,10 @@ export interface CompetencyData {
   description: string;
 }
 
-export default class Competency implements CompetencyData {
+export default class Competency
+  extends DatabaseModel
+  implements CompetencyData
+{
   STORE_NAME: 'competencies';
   created_at: number;
   created_by: string;
@@ -26,6 +29,7 @@ export default class Competency implements CompetencyData {
   workspace_id: string;
 
   constructor(name: string, workspace_id: string, data?: CompetencyData) {
+    super();
     // for database model abstract class
     this.STORE_NAME = COMPETENCIES_STORENAME;
 

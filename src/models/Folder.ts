@@ -1,5 +1,4 @@
 import { nanoid } from 'nanoid';
-import DatabaseModel from './DatabaseModel';
 import Project from './Project';
 
 export interface FolderData {

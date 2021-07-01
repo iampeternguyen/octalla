@@ -4,7 +4,7 @@ import { User } from '@firebase/auth-types';
 import WorkspaceRoles, {
   ROLES_MEMBERS_STORENAME,
   ROLES_STORENAME,
-  WorkspaceRolesMemberData,
+  WorkspaceRolesData,
   WORKSPACE_ROLE,
 } from 'src/models/Role';
 import workspaceStore from '../workspace/workspaceStore';
@@ -76,7 +76,7 @@ async function setUserRole() {
     .collection(ROLES_MEMBERS_STORENAME)
     .doc(userStore.settings.value?.id)
     .get();
-  const role = (doc.data() as WorkspaceRolesMemberData).role;
+  const role = (doc.data() as WorkspaceRolesData).role;
   console.log(role);
   userState.role = role;
 }
