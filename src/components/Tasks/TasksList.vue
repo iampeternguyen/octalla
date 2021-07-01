@@ -35,6 +35,7 @@
 import { QInput } from 'quasar';
 import Task from 'src/models/Task';
 import projectStore from 'src/stores/project/projectStore';
+import workspaceStore from 'src/stores/workspace/workspaceStore';
 import { defineComponent, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import draggable, { ChangeEvent } from 'vuedraggable';
@@ -70,7 +71,11 @@ export default defineComponent({
           if (props.category == 'status') {
             return t[props.category] == props.field.toString();
           } else if (props.category == 'competency' && props.field != 'Empty') {
-            return t[props.category] == props.field.toString();
+            const id =
+              workspaceStore.state.value.competencies.find(
+                (comp) => comp.name == props.field
+              )?.id || '';
+            return t[props.category] == id;
           } else if (props.category == 'competency' && props.field == 'Empty') {
             return t[props.category] == '';
           }
@@ -92,10 +97,15 @@ export default defineComponent({
         route.params.project_id.toString(),
         route.params.workspace_id.toString()
       );
-      if (props.category == 'status' || props.category == 'competency') {
-        props.field == 'Empty'
-          ? (task[props.category] = '')
-          : (task[props.category] = props.field.toString());
+      if (props.category == 'status' && props.field != 'Empty') {
+        task[props.category] = props.field.toString();
+      } else if (props.category == 'competency' && props.field != 'Empty') {
+        task[props.category] =
+          workspaceStore.state.value.competencies.find(
+            (comp) => comp.name == props.field
+          )?.id || '';
+      } else if (props.field == 'Empty' && props.category == 'competency') {
+        task[props.category] = '';
       }
       await task.save();
       text.value = '';
@@ -110,10 +120,15 @@ export default defineComponent({
         newIndex = evt.added.newIndex;
         task = evt.added.element;
 
-        if (props.category == 'status' || props.category == 'competency') {
-          props.field == 'Empty'
-            ? (task[props.category] = '')
-            : (task[props.category] = props.field.toString());
+        if (props.category == 'status' && props.field != 'Empty') {
+          task[props.category] = props.field.toString();
+        } else if (props.category == 'competency' && props.field != 'Empty') {
+          task[props.category] =
+            workspaceStore.state.value.competencies.find(
+              (comp) => comp.name == props.field
+            )?.id || '';
+        } else if (props.field == 'Empty' && props.category == 'competency') {
+          task[props.category] = '';
         }
 
         if (taskList.value.length <= 1) {
