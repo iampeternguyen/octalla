@@ -75,7 +75,7 @@ export default defineComponent({
             return t[props.category] == '';
           }
         })
-        .sort((a, b) => a.sort_by - b.sort_by);
+        .sort((a, b) => a.order - b.order);
     }
 
     watch(projectStore.tasks.value, (tasks) => {
@@ -128,13 +128,13 @@ export default defineComponent({
       }
 
       if (newIndex == 0) {
-        task.sort_by = taskList.value[newIndex + 1].sort_by / 2;
+        task.order = taskList.value[newIndex + 1].order / 2;
       } else if (newIndex == taskList.value.length - 1) {
-        task.sort_by = taskList.value[newIndex - 1].sort_by + 1;
+        task.order = taskList.value[newIndex - 1].order + 1;
       } else {
-        task.sort_by =
-          (taskList.value[newIndex + 1].sort_by +
-            taskList.value[newIndex - 1].sort_by) /
+        task.order =
+          (taskList.value[newIndex + 1].order +
+            taskList.value[newIndex - 1].order) /
           2;
       }
       await task.save();
@@ -151,4 +151,8 @@ export default defineComponent({
 });
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.tasks-list {
+  max-width: 20rem;
+}
+</style>

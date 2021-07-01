@@ -1,38 +1,85 @@
 <template>
-  <q-card :class="{ isComplete: isComplete }" @click.prevent="onTaskClicked">
-    <div>
-      {{ task.sort_by }}
-    </div>
-    <q-btn color="secondary" :label="task.status" @click="onToggleStatus" />
+  <q-card
+    :class="{ isComplete: isComplete }"
+    @click.stop="onTaskClicked"
+    @mouseenter="taskHovered = true"
+    @mouseleave="taskHovered = false"
+  >
     <q-card-section>
-      <div class="row justify-between items-center">
-        <div class="task-name">{{ task.name }}</div>
+      <div class="row q-py-sm justify-between">
+        <div>{{ task.name }}</div>
         <q-btn
+          size="sm"
+          color="grey-5 q-pa-none"
+          icon="eva-calendar-outline"
           flat
-          round
-          :text-color="isComplete ? 'green-4' : 'grey-4'"
-          icon="eva-checkmark-circle-outline"
-          @click="onToggleComplete"
-        />
+          dense
+          rounded
+          @click.stop
+          :label="task.due_date ? dueDateFriendly : ''"
+        >
+          <q-menu
+            transition-show="jump-down"
+            transition-hide="jump-up"
+            :offset="[0, 20]"
+            @hide="checkDueDate"
+          >
+            <q-list bordered>
+              <q-date v-model="dueDate" minimal mask="YYYY-MM-DD HH:mm" />
+            </q-list>
+          </q-menu>
+        </q-btn>
       </div>
-      <div class="row justify-between-items-center">
-        <q-space />
+    </q-card-section>
+    <q-card-section>
+      <div class="row q-pb-sm">
+        <q-icon size="xs" color="grey-5" name="notes"> </q-icon>
+      </div>
+    </q-card-section>
+    <q-card-section v-if="taskHovered" class="bg-deep-purple-1">
+      <div class="row q-py-sm justify-between">
         <q-btn
+          size="sm"
+          class="q-px-xs"
+          color="grey-5"
+          icon="eva-pricetags-outline"
           flat
-          round
-          text-color="red"
-          icon="eva-trash-2-outline"
-          @click.stop="onDelete"
-        />
+          rounded
+        >
+          <q-tooltip class="bg-secondary">Add Tags</q-tooltip>
+        </q-btn>
+
+        <div>
+          <q-btn
+            size="sm"
+            class="q-px-xs"
+            color="grey-5"
+            icon="eva-checkmark-outline"
+            flat
+            rounded
+          >
+            <q-tooltip class="bg-secondary">Mark Complete</q-tooltip>
+          </q-btn>
+          <q-btn
+            size="sm"
+            class="q-px-xs"
+            color="grey-5"
+            icon="eva-more-horizontal-outline"
+            flat
+            rounded
+          >
+            <q-tooltip class="bg-secondary">More Options</q-tooltip>
+          </q-btn>
+        </div>
       </div>
     </q-card-section>
   </q-card>
 </template>
 
 <script lang="ts">
-import { useQuasar } from 'quasar';
+import { useQuasar, date } from 'quasar';
 import Task from 'src/models/Task';
-import { defineComponent, ref, PropType } from 'vue';
+import { defineComponent, ref, PropType, computed } from 'vue';
 import TaskEditModal from 'src/components/Tasks/TaskEditModal.vue';
 
 export default defineComponent({
@@ -46,13 +93,11 @@ export default defineComponent({
     const $q = useQuasar();
 
     const isComplete = ref(props.task.isComplete);
+
+    const taskHovered = ref(false);
     async function onToggleComplete() {
       await props.task.toggleComplete();
       isComplete.value = !isComplete.value;
-    }
-
-    async function onToggleStatus() {
-      await props.task.toggleStatus();
     }
 
     async function onDelete() {
@@ -69,23 +114,59 @@ export default defineComponent({
       // .onDismiss(() => {})
     }
 
+    const dueDateFriendly = computed(() =>
+      date.formatDate(props.task.due_date, 'MMM D')
+    );
+
+    const format = date.formatDate(Date.now(), 'YYYY-MM-DD HH:mm');
+    const dueDate = ref(format);
+
+    async function checkDueDate() {
+      if (
+        props.task.due_date !=
+        date.extractDate(dueDate.value, 'YYYY-MM-DD HH:mm').getTime()
+      ) {
+        const task = props.task;
+        task.due_date = date
+          .extractDate(dueDate.value, 'YYYY-MM-DD HH:mm')
+          .getTime();
+        await task.save();
+      }
+    }
+
     return {
-      onToggleStatus,
       onToggleComplete,
       onDelete,
       onTaskClicked,
+      checkDueDate,
       isComplete,
+      dueDate,
+      dueDateFriendly,
+      taskHovered,
     };
   },
 });
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+.q-card__section {
+  padding: 0 1rem;
+}
+
 .q-card {
   font-size: 1.4rem;
+  :hover {
+    cursor: pointer;
+  }
 }
 
 .isComplete {
   opacity: 0.7;
+}
+
+.q-btn {
+  :hover {
+    color: $secondary;
+  }
 }
 </style>

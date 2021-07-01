@@ -1,4 +1,17 @@
 // app global css in SCSS form
+@font-face {
+  font-family: 'Noto Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: url(./fonts/noto-sans-v12-vietnamese_latin-regular.woff);
+}
+
+@font-face {
+  font-family: 'Noto Sans';
+  font-style: normal;
+  font-weight: 700;
+  src: url(./fonts/noto-sans-v12-vietnamese_latin-700.woff);
+}
 
 html {
   font-size: 62.5%;
@@ -8,6 +21,7 @@ html {
 body {
   font-size: 1.6rem;
   color: $grey-8;
+  font-family: 'Noto Sans';
 }
 
 .text-caption {

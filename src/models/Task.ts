@@ -17,13 +17,14 @@ export interface TaskData {
   id: string;
   isComplete: boolean;
   last_modified: number;
+  due_date: number;
   name: string;
   status: string;
   project_id: string;
   competency: string;
   workspace_id: string;
   created_by: string;
-  sort_by: number;
+  order: number;
 }
 
 export default class Task extends DatabaseModel implements TaskData {
@@ -36,9 +37,10 @@ export default class Task extends DatabaseModel implements TaskData {
   last_modified: number;
   project_id: string;
   competency: string;
+  due_date: number;
   workspace_id: string;
   created_by: string;
-  sort_by: number;
+  order: number;
 
   private _status: string;
 
@@ -62,9 +64,10 @@ export default class Task extends DatabaseModel implements TaskData {
     this.workspace_id = workspaceId;
     this.created_by = data?.created_by || userStore.settings.value?.id || '';
     this._status = data?.status || 'open';
-    this.sort_by =
-      data?.sort_by ||
-      projectStore.tasks.value[projectStore.tasks.value.length - 1]?.sort_by +
+    this.due_date = data?.due_date || 0;
+    this.order =
+      data?.order ||
+      projectStore.tasks.value[projectStore.tasks.value.length - 1]?.order +
         1 ||
       0;
   }
@@ -122,7 +125,8 @@ export default class Task extends DatabaseModel implements TaskData {
       workspace_id: this.workspace_id,
       competency: this.competency,
       status: this.status,
-      sort_by: this.sort_by,
+      order: this.order,
+      due_date: this.due_date,
     };
   }
 
