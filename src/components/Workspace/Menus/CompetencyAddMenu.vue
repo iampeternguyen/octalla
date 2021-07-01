@@ -53,6 +53,10 @@ export default defineComponent({
     function addField() {
       count.value++;
     }
+
+    function onReset() {
+      console.log('reset');
+    }
     return {
       name,
       description,
@@ -60,6 +64,7 @@ export default defineComponent({
       addField,
       onFormSubmit,
       onSave,
+      onReset,
       competencies,
       count,
     };

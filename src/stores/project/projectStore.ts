@@ -17,23 +17,20 @@ const projectState = reactive({
 // getters
 const state = computed(() => projectState);
 const activeProject = computed(() => projectState.activeProject);
+const activeProjectGroupBy = computed(
+  () => projectState.activeProject?.group_by
+);
 const requestSetActiveProjectWithId = computed(
   () => projectState.requestSetActiveProjectWithId
 );
 const tasks = computed(() => projectState.tasks);
 
-// watch active project methods
+// MODIFY PROJECTS
 
-async function setActiveProject(projectId: string) {
-  const project = workspaceStore.projects.value.find((p) => p.id == projectId);
-  if (project) {
-    projectState.requestSetActiveProjectWithId = '';
-    projectState.activeProject = project;
-    watchTasks();
-    await eventsStore.project.afterProjectSetActive(project);
-  } else {
-    throw 'Project not found';
-  }
+async function projectGroupBy(field: string) {
+  if (!projectState.activeProject) return;
+  projectState.activeProject.group_by = field;
+  await projectState.activeProject.save();
 }
 
 async function deleteProject(project: Project) {
@@ -53,6 +50,20 @@ async function deleteProject(project: Project) {
   // const id = workspaceState.activeSpace.id;
   // workspaceState.activeSpace = null;
   // return id;
+}
+
+// watch active project methods
+
+async function setActiveProject(projectId: string) {
+  const project = workspaceStore.projects.value.find((p) => p.id == projectId);
+  if (project) {
+    projectState.requestSetActiveProjectWithId = '';
+    projectState.activeProject = project;
+    watchTasks();
+    await eventsStore.project.afterProjectSetActive(project);
+  } else {
+    throw 'Project not found';
+  }
 }
 
 let projectTasksObserver = () => {
@@ -120,8 +131,10 @@ const projectStore = {
   requestSetActiveProjectWithId,
   tasks,
   state,
+  activeProjectGroupBy,
   setActiveProject,
   deleteProject,
+  projectGroupBy,
 };
 
 export default projectStore;

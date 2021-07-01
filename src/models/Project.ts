@@ -15,6 +15,7 @@ export interface ProjectData {
   id: string;
   isComplete: boolean;
   last_modified: number;
+  group_by: string;
   name: string;
 }
 
@@ -28,6 +29,7 @@ export default class Project extends DatabaseModel implements ProjectData {
   last_modified: number;
   name: string;
   primary_goal: string;
+  group_by: string;
   success_looks_like: string;
   workspace_id: string;
 
@@ -46,6 +48,7 @@ export default class Project extends DatabaseModel implements ProjectData {
     this.isComplete = data?.isComplete || false;
     this.last_modified = data?.last_modified || Date.now();
     this.created_by = data?.created_by || userStore.settings.value?.id || '';
+    this.group_by = data?.group_by || 'status';
   }
 
   serialize(): ProjectData {
@@ -59,6 +62,7 @@ export default class Project extends DatabaseModel implements ProjectData {
       primary_goal: this.primary_goal,
       success_looks_like: this.success_looks_like,
       workspace_id: this.workspace_id,
+      group_by: this.group_by,
     };
   }
 

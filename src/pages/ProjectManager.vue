@@ -26,14 +26,51 @@
     </q-header>
     <q-toolbar class="bg-purple text-white">
       <q-toolbar-title> Toolbar </q-toolbar-title>
-      <q-btn flat dense icon="apps" class="q-mr-xs" label="Group by: Status">
+      <q-btn
+        flat
+        dense
+        icon="apps"
+        class="q-mr-xs"
+        :label="`Group by: ${groupCategory}`"
+      >
         <q-menu transition-show="jump-down" transition-hide="jump-up">
-          <div style="min-width: 100px">
-            <competency-add-menu></competency-add-menu>
-          </div>
+          <q-list dense style="min-width: 100px">
+            <q-item clickable v-close-popup>
+              <q-item-section>Open...</q-item-section>
+            </q-item>
+            <q-item clickable @click="groupBy('status')">
+              <q-item-section>Status</q-item-section>
+            </q-item>
+            <q-separator />
+            <q-item
+              class="items-center"
+              clickable
+              @click="groupBy('competency')"
+              @mouseenter="isCompetencyHovered = true"
+              @mouseleave="isCompetencyHovered = false"
+            >
+              <q-item-section>Competencies</q-item-section>
+              <q-item-section side :class="{ invisible: !isCompetencyHovered }">
+                <q-btn
+                  color="primary"
+                  flat
+                  icon="eva-edit-outline"
+                  round
+                  @click.stop.prevent
+                >
+                  <q-menu anchor="top end" self="top start">
+                    <competency-add-menu></competency-add-menu>
+                  </q-menu>
+                </q-btn>
+              </q-item-section>
+            </q-item>
+            <q-separator />
+            <q-item clickable v-close-popup>
+              <q-item-section>Quit</q-item-section>
+            </q-item>
+          </q-list>
         </q-menu>
       </q-btn>
-      <q-btn flat round dense icon="assignment_ind" @click="addCompetency" />
     </q-toolbar>
     <q-drawer v-model="rightDrawerOpen" side="right" bordered overlay>
       <edit-project-success
@@ -45,16 +82,22 @@
 
     <q-page class="row q-gutter-md" padding>
       <tasks-list
-        v-for="status in TASKS_STATUS_OPTIONS"
-        :key="status"
-        :status="status"
+        v-for="field in group"
+        :key="field"
+        :category="groupCategory"
+        :field="field"
+      ></tasks-list>
+      <tasks-list
+        v-if="groupCategory != 'status'"
+        :category="groupCategory"
+        field="Empty"
       ></tasks-list>
     </q-page>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { defineComponent, ref, watch, computed } from 'vue';
 
 import { TASKS_STATUS_OPTIONS } from 'src/models/Task';
 import TasksList from 'src/components/Tasks/TasksList.vue';
@@ -66,6 +109,8 @@ import CompetencyAddMenu from 'src/components/Workspace/Menus/CompetencyAddMenu.
 
 import uiStore from 'src/stores/ui/uiStore';
 import Competency from 'src/models/Competency';
+import eventsStore from 'src/stores/events/eventsStore';
+import workspaceStore from 'src/stores/workspace/workspaceStore';
 
 export default defineComponent({
   components: {
@@ -81,6 +126,21 @@ export default defineComponent({
 
     const text = ref('');
     const rightDrawerOpen = ref(false);
+    const group = ref(TASKS_STATUS_OPTIONS);
+    const groupCategory = ref('status');
+    const isCompetencyHovered = ref(false);
+    watch(projectStore.activeProjectGroupBy, (groupBy) => {
+      if (groupBy == 'competency') {
+        groupCategory.value = groupBy;
+
+        group.value = workspaceStore.state.value.competencies.map(
+          (comp) => comp.name
+        );
+      } else if (groupBy == 'status') {
+        groupCategory.value = groupBy;
+        group.value = TASKS_STATUS_OPTIONS;
+      }
+    });
 
     function filteredTasks(status: string) {
       return tasks.value.filter((t) => t.status == status);
@@ -90,12 +150,10 @@ export default defineComponent({
       rightDrawerOpen.value = !rightDrawerOpen.value;
     }
 
-    async function addCompetency() {
-      const competency = new Competency(
-        'Learning',
-        activeProject.value?.workspace_id || ''
-      );
-      await competency.save();
+    async function groupBy(field: string) {
+      if (field != activeProject.value?.group_by) {
+        await eventsStore.project.onProjectsGroupBy(field);
+      }
     }
 
     return {
@@ -104,10 +162,13 @@ export default defineComponent({
       tasks,
       TASKS_STATUS_OPTIONS,
       activeProject,
-      addCompetency,
       onToggleLeftDrawer: uiStore.appLeftDrawer.onToggleProjectLeftDrawer,
       onToggleRightDrawer,
       rightDrawerOpen,
+      groupBy,
+      group,
+      isCompetencyHovered,
+      groupCategory,
     };
   },
 });

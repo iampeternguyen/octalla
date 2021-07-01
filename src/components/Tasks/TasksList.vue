@@ -3,7 +3,7 @@
     <q-card class="project-list-category-card q-mb-md">
       <q-card-section class="q-py-sm">
         <div class="project-list-category-card__name-text">
-          {{ status }}
+          {{ field.toUpperCase() }}
         </div>
       </q-card-section>
     </q-card>
@@ -42,7 +42,11 @@ import TaskListItem from './TaskListItem.vue';
 export default defineComponent({
   name: 'TasksList',
   props: {
-    status: {
+    category: {
+      type: String,
+      required: true,
+    },
+    field: {
       type: String,
       required: true,
     },
@@ -56,16 +60,26 @@ export default defineComponent({
   setup(props) {
     const route = useRoute();
 
-    const taskList = ref(
-      projectStore.tasks.value
-        .filter((t) => t.status == props.status.toString())
-        .sort((a, b) => a.sort_by - b.sort_by)
+    const taskList = ref<Task[]>(
+      filterTaskList(projectStore.tasks.value as Task[])
     );
 
-    watch(projectStore.tasks.value, (tasks) => {
-      taskList.value = tasks
-        .filter((t) => t.status == props.status.toString())
+    function filterTaskList(tasks: Task[]) {
+      return tasks
+        .filter((t) => {
+          if (props.category == 'status') {
+            return t[props.category] == props.field.toString();
+          } else if (props.category == 'competency' && props.field != 'Empty') {
+            return t[props.category] == props.field.toString();
+          } else if (props.category == 'competency' && props.field == 'Empty') {
+            return t[props.category] == '';
+          }
+        })
         .sort((a, b) => a.sort_by - b.sort_by);
+    }
+
+    watch(projectStore.tasks.value, (tasks) => {
+      taskList.value = filterTaskList(tasks as Task[]);
     });
 
     const addTaskInputRef = ref<QInput | null>(null);
@@ -78,8 +92,11 @@ export default defineComponent({
         route.params.project_id.toString(),
         route.params.workspace_id.toString()
       );
-
-      task.status = props.status.toString();
+      if (props.category == 'status' || props.category == 'competency') {
+        props.field == 'Empty'
+          ? (task[props.category] = '')
+          : (task[props.category] = props.field.toString());
+      }
       await task.save();
       text.value = '';
       addTaskInputRef.value?.resetValidation();
@@ -92,7 +109,13 @@ export default defineComponent({
       if (evt.added) {
         newIndex = evt.added.newIndex;
         task = evt.added.element;
-        task.status = props.status.toString();
+
+        if (props.category == 'status' || props.category == 'competency') {
+          props.field == 'Empty'
+            ? (task[props.category] = '')
+            : (task[props.category] = props.field.toString());
+        }
+
         if (taskList.value.length <= 1) {
           await task.save();
           return;

@@ -48,6 +48,10 @@ async function onProjectAdded(unsavedProject: Project) {
   await workspaceStore.addProjectToWorkspace(unsavedProject);
 }
 
+async function onProjectsGroupBy(field: string) {
+  await projectStore.projectGroupBy(field);
+}
+
 const eventsStore = {
   workspace: {
     afterWorkspaceCreate,
@@ -58,6 +62,7 @@ const eventsStore = {
     afterProjectSetActive,
     onProjectDelete,
     onProjectAdded,
+    onProjectsGroupBy,
   },
 };
 
