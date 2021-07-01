@@ -1,7 +1,28 @@
 <template>
   <div class="row">
-    <q-input dense v-model="name" type="text" label="Name" class="q-mr-md" />
-    <q-input dense v-model="description" type="text" label="Description" />
+    <q-input
+      dense
+      outlined
+      v-model="name"
+      type="text"
+      label="Name"
+      class="q-mr-md"
+    />
+    <q-input
+      dense
+      outlined
+      v-model="description"
+      type="text"
+      label="Description"
+    />
+    <q-btn
+      color="red"
+      flat
+      round
+      icon="eva-trash-2-outline"
+      @click="onDelete"
+      v-if="hasCompetency"
+    />
   </div>
 </template>
 <script lang="ts">
@@ -24,6 +45,8 @@ export default defineComponent({
     const name = ref('');
     const description = ref('');
 
+    const hasCompetency = props.competency instanceof Competency;
+
     if (props.competency) {
       name.value = props.competency.name.toString();
       description.value = props.competency.description.toString();
@@ -31,6 +54,10 @@ export default defineComponent({
 
     watch(props.formState, async (formState) => {
       if (!formState.saving) return;
+      if (name.value == '') {
+        formState.saving = false;
+        return;
+      }
       if (
         props.competency &&
         (props.competency.name != name.value.trim() ||
@@ -41,6 +68,7 @@ export default defineComponent({
         competency.name = name.value;
         competency.description = description.value;
         await competency.save();
+        formState.saving = false;
       } else if (!props.competency && workspaceStore.activeWorkspace.value) {
         const competency = new Competency(
           name.value,
@@ -50,11 +78,21 @@ export default defineComponent({
         name.value = '';
         description.value = '';
         await competency.save();
+        formState.saving = false;
       }
     });
+
+    async function onDelete() {
+      if (props.competency) {
+        console.log('deleting competency');
+        await props.competency.delete();
+      }
+    }
     return {
       name,
       description,
+      onDelete,
+      hasCompetency,
     };
   },
 });

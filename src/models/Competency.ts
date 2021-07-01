@@ -54,20 +54,28 @@ export default class Competency implements CompetencyData {
     try {
       this.last_modified = Date.now();
 
-      await db.collection(this.STORE_NAME).doc(this.workspace_id).set({
-        id: this.workspace_id,
-        created_at: this.created_at,
-        last_modified: this.last_modified,
-      });
-
       await db
         .collection(COMPETENCIES_STORENAME)
         .doc(this.workspace_id)
         .collection(COMPETENCIES_STORENAME)
         .doc(this.id)
-        .set({ id: this.id, name: this.name, description: this.description });
+        .set(this.serialize());
     } catch (error) {
       console.log('error saving: ', error);
+    }
+  }
+
+  async delete() {
+    try {
+      console.log('deleting', this.workspace_id, this.id);
+      await db
+        .collection(COMPETENCIES_STORENAME)
+        .doc(this.workspace_id)
+        .collection(COMPETENCIES_STORENAME)
+        .doc(this.id)
+        .delete();
+    } catch (error) {
+      console.log(error);
     }
   }
 

@@ -1,26 +1,20 @@
 <template>
   <q-form @submit.prevent="onSave" @reset="onReset" class="q-gutter-md q-pa-md">
+    <!-- TODO allow multiple saving and only save competencies that have been changed -->
     <competency-field-input
       :formState="formState"
       v-for="competency in competencies"
       :key="competency.id"
       :competency="competency"
     ></competency-field-input>
-    <competency-field-input :formState="formState"></competency-field-input>
     <competency-field-input
       :formState="formState"
       v-for="index in count"
       :key="index"
     ></competency-field-input>
-    <q-btn
-      color="primary"
-      icon="check"
-      label="+ Competency"
-      @click="addField"
-    />
+    <q-btn color="accent" flat label="+ Competency" @click="addField" />
     <div>
-      <q-btn label="Submit" type="submit" color="primary" />
-      <q-btn label="Reset" type="reset" color="primary" flat class="q-ml-sm" />
+      <q-btn label="Save" type="submit" color="primary" />
     </div>
   </q-form>
 </template>
