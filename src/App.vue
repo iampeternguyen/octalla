@@ -8,6 +8,7 @@ import userStore from './stores/user/userStore';
 import projectStore from './stores/project/projectStore';
 import workspaceStore from './stores/workspace/workspaceStore';
 import uiStore from './stores/ui/uiStore';
+import UserViewModel from './viewmodels/UserViewModel';
 
 export default defineComponent({
   name: 'App',
@@ -17,7 +18,9 @@ export default defineComponent({
     const workspaceState = workspaceStore.state;
     const uiState = uiStore.state;
 
-    return { workspaceState, projectState, userState, uiState };
+    const settings = UserViewModel.settings;
+
+    return { workspaceState, projectState, userState, uiState, settings };
   },
 });
 </script>

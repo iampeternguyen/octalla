@@ -159,6 +159,8 @@ const userStore = {
   setUserRole,
   userIsAuthenticated,
   assignRoleAndAddWorkspace,
+
+  _userState: userState,
 };
 
 export default userStore;

@@ -2,6 +2,8 @@ import { route } from 'quasar/wrappers';
 import projectStore from 'src/stores/project/projectStore';
 import uiStore from 'src/stores/ui/uiStore';
 import workspaceStore from 'src/stores/workspace/workspaceStore';
+import UserViewModel from 'src/viewmodels/UserViewModel';
+import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
 import {
   createMemoryHistory,
   createRouter,
@@ -41,7 +43,7 @@ export default route(function (/* { store, ssrContext } */) {
   Router.beforeEach(async (to, from, next) => {
     // requiresAuth
     if (to.matched.some((record) => record.meta.requiresAuth)) {
-      if (!(await permissions.user.isAuth())) {
+      if (!(await UserViewModel.isLoggedIn())) {
         next({ name: 'login' });
         return;
       }
@@ -58,7 +60,7 @@ export default route(function (/* { store, ssrContext } */) {
       }
 
       try {
-        await workspaceStore.setActiveWorkspace(
+        await WorkspaceViewModel.setActiveWorkspace(
           to.params.workspace_id.toString()
         );
       } catch (error) {

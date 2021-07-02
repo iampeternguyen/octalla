@@ -1,4 +1,5 @@
 import userStore from 'src/stores/user/userStore';
+import UserViewModel from 'src/viewmodels/UserViewModel';
 import { RouteRecordRaw } from 'vue-router';
 
 const routes: RouteRecordRaw[] = [
@@ -11,41 +12,42 @@ const routes: RouteRecordRaw[] = [
     path: '/app/',
     component: () => import('src/layouts/AppLayout.vue'),
     beforeEnter: (to, from, next) => {
-      if (
-        !userStore.settings.value ||
-        (!userStore.settings.value.most_recent_workspace &&
-          !userStore.settings.value.workspaces)
-      ) {
-        next({ name: 'onboarding' });
-      } else if (
-        userStore.settings.value.most_recent_project &&
-        userStore.settings.value.most_recent_workspace
-      ) {
-        next({
-          name: 'project',
-          params: {
-            workspace_id: userStore.settings.value.most_recent_workspace,
-            project_id: userStore.settings.value.most_recent_project,
-          },
-        });
-      } else if (
-        !userStore.settings.value.most_recent_project &&
-        userStore.settings.value.most_recent_workspace
-      ) {
-        next({
-          name: 'workspace',
-          params: {
-            workspace_id: userStore.settings.value.most_recent_workspace,
-          },
-        });
-      } else {
-        next({
-          name: 'workspace',
-          params: {
-            workspace_id: userStore.settings.value.workspaces[0],
-          },
-        });
-      }
+      // TODO FIX THIS
+      // if (
+      //   !UserViewModel.settings.value ||
+      //   (!UserViewModel.settings.value.most_recent_workspace &&
+      //     !UserViewModel.settings.value.workspaces)
+      // ) {
+      //   next({ name: 'onboarding' });
+      // } else if (
+      //   UserViewModel.settings.value.most_recent_project &&
+      //   UserViewModel.settings.value.most_recent_workspace
+      // ) {
+      //   next({
+      //     name: 'project',
+      //     params: {
+      //       workspace_id: UserViewModel.settings.value.most_recent_workspace,
+      //       project_id: UserViewModel.settings.value.most_recent_project,
+      //     },
+      //   });
+      // } else if (
+      //   !UserViewModel.settings.value.most_recent_project &&
+      //   UserViewModel.settings.value.most_recent_workspace
+      // ) {
+      //   next({
+      //     name: 'workspace',
+      //     params: {
+      //       workspace_id: UserViewModel.settings.value.most_recent_workspace,
+      //     },
+      //   });
+      // } else {
+      //   next({
+      //     name: 'workspace',
+      //     params: {
+      //       workspace_id: UserViewModel.settings.value.workspaces[0],
+      //     },
+      //   });
+      // }
     },
     children: [
       {

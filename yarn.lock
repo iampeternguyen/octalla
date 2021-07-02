@@ -1660,6 +1660,11 @@
   resolved "https://registry.yarnpkg.com/@types/parse-json/-/parse-json-4.0.0.tgz#2f8bb441434d163b35fb8ffdccd7138927ffb8c0"
   integrity sha512-//oorEZjL6sbPcKUaCdIGlIUeH26mgzimjBB77G6XRgnDl/L5wOnpyBGRe/Mmf5CVW3PwEBE1NjiMZ/ssFh4wA==
 
+"@types/pubsub-js@^1.8.2":
+  version "1.8.2"
+  resolved "https://registry.yarnpkg.com/@types/pubsub-js/-/pubsub-js-1.8.2.tgz#4f4592dd28a2c832f60ffca99e4a991886db682e"
+  integrity sha512-cj3ZoAopr2ZmUYwRuXUiq48PlfNj5sBcUIkBnSJunfXlmf6y8o2kx4l70h1X1j0fR3IBorPrPM3B9SoyWwoqLg==
+
 "@types/qs@*":
   version "6.9.6"
   resolved "https://registry.yarnpkg.com/@types/qs/-/qs-6.9.6.tgz#df9c3c8b31a247ec315e6996566be3171df4b3b1"
@@ -5883,10 +5888,10 @@ prr@~1.0.1:
   resolved "https://registry.yarnpkg.com/prr/-/prr-1.0.1.tgz#d3fc114ba06995a45ec6893f484ceb1d78f5f476"
   integrity sha1-0/wRS6BplaRexok/SEzrHXj19HY=
 
-publish-subscribe-js@^1.1.6:
-  version "1.1.6"
-  resolved "https://registry.yarnpkg.com/publish-subscribe-js/-/publish-subscribe-js-1.1.6.tgz#db7b4087ae2dc7822ab8936acbee3f9bb1a37af9"
-  integrity sha512-ZZ2ZU+RoYgdHarXFL5Pc90pWZbRv45NleVQG3WQlwvpq126I/3P0jWQZVr7C0xL40sNoHXkvb5SjBAe8qwOQrg==
+pubsub-js@^1.9.3:
+  version "1.9.3"
+  resolved "https://registry.yarnpkg.com/pubsub-js/-/pubsub-js-1.9.3.tgz#674eea4d568d0402e0527cdb10e2aab7b55621d2"
+  integrity sha512-FhYYlPNOywTh7zN38u5AlG67emA47w6JZd7YgdQU1w8gQbZhhIGxVM0AQosdaINHb2ALb+fhfnVyBJAt4D4IzA==
 
 pump@^3.0.0:
   version "3.0.0"
