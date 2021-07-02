@@ -5883,6 +5883,11 @@ prr@~1.0.1:
   resolved "https://registry.yarnpkg.com/prr/-/prr-1.0.1.tgz#d3fc114ba06995a45ec6893f484ceb1d78f5f476"
   integrity sha1-0/wRS6BplaRexok/SEzrHXj19HY=
 
+publish-subscribe-js@^1.1.6:
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/publish-subscribe-js/-/publish-subscribe-js-1.1.6.tgz#db7b4087ae2dc7822ab8936acbee3f9bb1a37af9"
+  integrity sha512-ZZ2ZU+RoYgdHarXFL5Pc90pWZbRv45NleVQG3WQlwvpq126I/3P0jWQZVr7C0xL40sNoHXkvb5SjBAe8qwOQrg==
+
 pump@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/pump/-/pump-3.0.0.tgz#b4a2116815bde2f4e1ea602354e8c75565107a64"
