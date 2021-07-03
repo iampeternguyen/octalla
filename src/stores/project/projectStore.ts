@@ -1,16 +1,17 @@
 import { db } from 'src/firebase';
 import { reactive, computed } from 'vue';
-import Project from 'src/models/Project';
+import Project, { ProjectData } from 'src/models/Project';
 import Task, { TaskData, TASKS_STORENAME } from 'src/models/Task';
 import workspaceStore from '../workspace/workspaceStore';
 import eventsStore from '../events/eventsStore';
 import permissions from 'src/router/permissions';
 import uiStore from '../ui/uiStore';
 import userStore from '../user/userStore';
+import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
 
 const projectState = reactive({
   requestSetActiveProjectWithId: '',
-  activeProject: <Project | null>null,
+  activeProject: <ProjectData | null>null,
   tasks: [] as Task[],
 });
 
@@ -27,10 +28,10 @@ const tasks = computed(() => projectState.tasks);
 
 // MODIFY PROJECTS
 
-async function projectGroupBy(field: string) {
+function projectGroupBy(field: string) {
   if (!projectState.activeProject) return;
   projectState.activeProject.group_by = field;
-  await projectState.activeProject.save();
+  // await projectState.activeProject.save();
 }
 
 async function deleteProject(project: Project) {
@@ -54,13 +55,15 @@ async function deleteProject(project: Project) {
 
 // watch active project methods
 
-async function setActiveProject(projectId: string) {
-  const project = workspaceStore.projects.value.find((p) => p.id == projectId);
+function setActiveProject(projectId: string) {
+  const project = WorkspaceViewModel.projects.value.find(
+    (p) => p.id == projectId
+  );
   if (project) {
     projectState.requestSetActiveProjectWithId = '';
     projectState.activeProject = project;
     watchTasks();
-    await eventsStore.project.afterProjectSetActive(project);
+    // await eventsStore.project.afterProjectSetActive(project);
   } else {
     throw 'Project not found';
   }

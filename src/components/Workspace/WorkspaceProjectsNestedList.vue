@@ -7,8 +7,8 @@
 <script lang="ts">
 import nestedDraggable from './NestedDraggable.vue';
 import { defineComponent, ref, watch } from 'vue';
-import workspaceStore from 'src/stores/workspace/workspaceStore';
 import { FolderData } from 'src/models/Folder';
+import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
 
 export default defineComponent({
   name: 'nested-example',
@@ -18,11 +18,12 @@ export default defineComponent({
     nestedDraggable,
   },
   setup() {
-    const folders = ref<FolderData[]>(workspaceStore.projectsStructure.value);
+    const folders = ref<FolderData[]>(
+      WorkspaceViewModel.workspaceFolderStructure.value
+    );
 
-    watch(workspaceStore.projectsStructure, (projectsStructure) => {
-      if (projectsStructure) folders.value = projectsStructure;
-    });
+    // TODO save folder structure computed with setter? check the other draggable for reacting to changes
+
     return { folders };
   },
 });

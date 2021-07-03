@@ -6,7 +6,7 @@ import { WorkspaceData } from './Workspace';
 import { UserSettingsData } from './UserSettings';
 import { Query, FirebaseFirestore } from '@firebase/firestore-types';
 import { CompetencyData } from './Competency';
-import { WorkspaceRolesData } from './Role';
+import { WorkspaceRoleData } from './Role';
 
 export default abstract class DatabaseModel {
   abstract STORE_NAME:
@@ -24,7 +24,7 @@ export default abstract class DatabaseModel {
     | ProjectData
     | WorkspaceData
     | UserSettingsData
-    | WorkspaceRolesData
+    | WorkspaceRoleData
     | CompetencyData;
 
   async save() {

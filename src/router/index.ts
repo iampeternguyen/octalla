@@ -54,7 +54,7 @@ export default route(function (/* { store, ssrContext } */) {
       to.matched.some((record) => record.meta.requiresReadWorkspacePermission)
     ) {
       // TODO add custom loading screen for initial db query
-      if (!workspaceStore.activeWorkspace.value) {
+      if (!WorkspaceViewModel.activeSpace.value) {
         uiStore.updateLoadingMessage('processing');
         uiStore.showLoading();
       }
@@ -63,6 +63,7 @@ export default route(function (/* { store, ssrContext } */) {
         await WorkspaceViewModel.setActiveWorkspace(
           to.params.workspace_id.toString()
         );
+        // TODO set user role
       } catch (error) {
         console.log(error);
         next({ name: '404' });
@@ -70,7 +71,9 @@ export default route(function (/* { store, ssrContext } */) {
       } finally {
         uiStore.hideLoading();
       }
+
       if (!permissions.workspace.canRead()) {
+        console.log("can't read");
         uiStore.hideLoading();
         next({ name: '404' });
         return;
@@ -82,24 +85,22 @@ export default route(function (/* { store, ssrContext } */) {
     if (
       to.matched.some((record) => record.meta.requiresCRUProjectPermissions)
     ) {
-      try {
-        if (to.params.project_id) {
-          await projectStore.setActiveProject(to.params.project_id.toString());
-        }
-      } catch (error) {
-        next({ name: '404' });
-        return;
-      }
-
-      const project = workspaceStore.projects.value.find(
-        (p) => p.id == to.params.project_id.toString()
-      );
-
-      console.log('project permissions');
-      if (!project || !permissions.project.canCRU(project)) {
-        next({ name: '404' });
-        return;
-      }
+      // try {
+      //   if (to.params.project_id) {
+      //     await projectStore.setActiveProject(to.params.project_id.toString());
+      //   }
+      // } catch (error) {
+      //   next({ name: '404' });
+      //   return;
+      // }
+      // const project = workspaceStore.projects.value.find(
+      //   (p) => p.id == to.params.project_id.toString()
+      // );
+      // console.log('project permissions');
+      // if (!project || !permissions.project.canCRU(project)) {
+      //   next({ name: '404' });
+      //   return;
+      // }
     }
 
     next();

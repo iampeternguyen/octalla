@@ -136,6 +136,7 @@ import uiStore from 'src/stores/ui/uiStore';
 import userStore from 'src/stores/user/userStore';
 import workspaceStore from 'src/stores/workspace/workspaceStore';
 import WorkspaceProjectsNestedList from 'src/components/Workspace/WorkspaceProjectsNestedList.vue';
+import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
 export default defineComponent({
   name: 'ProjectManagerLayout',
   components: {
@@ -164,9 +165,9 @@ export default defineComponent({
       });
     }
 
-    const projects = workspaceStore.projects;
+    const projects = WorkspaceViewModel.projects;
     const activeProject = projectStore.activeProject;
-    const activeWorkspace = workspaceStore.state.value.activeSpace;
+    const activeWorkspace = WorkspaceViewModel.activeSpace;
 
     function isActive(project_id: string) {
       return project_id == activeProject.value?.id;

@@ -10,7 +10,7 @@ export enum WORKSPACE_ROLE {
 export const ROLES_STORENAME = 'roles';
 export const ROLES_MEMBERS_STORENAME = 'members';
 
-export interface WorkspaceRolesData {
+export interface WorkspaceRoleData {
   id: string;
   role: WORKSPACE_ROLE;
   workspace_id: string;
@@ -19,9 +19,9 @@ export interface WorkspaceRolesData {
   last_modified: number;
 }
 
-export default class WorkspaceRoles
+export default class WorkspaceRole
   extends DatabaseModel
-  implements WorkspaceRolesData
+  implements WorkspaceRoleData
 {
   STORE_NAME: 'roles';
   id: string;
@@ -35,7 +35,7 @@ export default class WorkspaceRoles
     workspace_id: string,
     user_id: string,
     role: WORKSPACE_ROLE,
-    data?: WorkspaceRolesData
+    data?: WorkspaceRoleData
   ) {
     super();
     // for database model abstract class
@@ -74,7 +74,7 @@ export default class WorkspaceRoles
       .delete();
   }
 
-  serialize(): WorkspaceRolesData {
+  serialize(): WorkspaceRoleData {
     return {
       created_at: this.created_at,
       last_modified: this.last_modified,
@@ -85,8 +85,8 @@ export default class WorkspaceRoles
     };
   }
 
-  static deserialize(rolesData: WorkspaceRolesData): WorkspaceRoles {
-    return new WorkspaceRoles(
+  static deserialize(rolesData: WorkspaceRoleData): WorkspaceRole {
+    return new WorkspaceRole(
       rolesData.id,
       rolesData.user_id,
       rolesData.role,

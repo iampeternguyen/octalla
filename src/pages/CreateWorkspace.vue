@@ -137,7 +137,7 @@
 </template>
 
 <script lang="ts">
-import workspaceStore from 'src/stores/workspace/workspaceStore';
+import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
 import { defineComponent, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -147,11 +147,11 @@ export default defineComponent({
     const router = useRouter();
 
     async function onAddWorkspace() {
-      const workspaceId = await workspaceStore.createWorkspace(name.value);
-      if (workspaceId)
+      const workspace = await WorkspaceViewModel.createWorkspace(name.value);
+      if (workspace)
         await router.push({
           name: 'workspace',
-          params: { workspace_id: workspaceId },
+          params: { workspace_id: workspace.id },
         });
     }
 

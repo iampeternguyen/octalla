@@ -4,27 +4,37 @@ import { User } from '@firebase/auth-types';
 import PubSub from 'pubsub-js';
 
 import BroadcastEvent, {
+  EVENT_ACTIVE_WORKSPACE_SET,
   EVENT_USER_AUTHENTICATED,
+  EVENT_WORKSPACE_CREATED,
+  EVENT_WORKSPACE_DELETED,
 } from 'src/events/BroadcastEvents';
 import AppRepository from 'src/repository/AppRepository';
 import UserSettings, { UserSettingsData } from 'src/models/UserSettings';
 import userStore from 'src/stores/user/userStore';
+import { WORKSPACE_ROLE } from 'src/models/Role';
+import { WorkspaceData } from 'src/models/Workspace';
 
 // Subscriptions
-PubSub.subscribe(EVENT_USER_AUTHENTICATED, async (_msg: string, user: User) => {
-  console.log('subscribed to login', user);
-  try {
-    await fetchUserSettings(user);
-  } catch (error) {
-    console.log(error);
+PubSub.subscribe(
+  EVENT_WORKSPACE_CREATED,
+  async (_msg: string, workspace: WorkspaceData) => {
+    await addWorkspaceToSettings(workspace);
   }
-});
+);
+
+PubSub.subscribe(
+  EVENT_WORKSPACE_DELETED,
+  async (_msg: string, workspace: WorkspaceData) => {
+    await removeWorkspaceFromSettings(workspace);
+  }
+);
 
 // state
 const _isLoggedIn = ref(false);
 const _attemptedLogIn = ref(false);
 const _settings = ref<UserSettingsData | null>(null);
-
+const _role = ref<WORKSPACE_ROLE | null>(null);
 // getters
 const isLoggedIn = async () => {
   if (_isLoggedIn.value) return _isLoggedIn.value;
@@ -35,6 +45,26 @@ const isLoggedIn = async () => {
 };
 
 const settings = computed(() => _settings.value);
+const role = computed(() => _role.value);
+
+// workspace changes
+async function addWorkspaceToSettings(workspace: WorkspaceData) {
+  if (!_settings.value) throw 'user settings missing';
+
+  _settings.value.workspaces.push(workspace.id);
+  await AppRepository.user.updateUserSettings(_settings.value);
+}
+
+async function removeWorkspaceFromSettings(workspace: WorkspaceData) {
+  if (!_settings.value) throw 'useer settings missing';
+  _settings.value.most_recent_workspace = '';
+  _settings.value.most_recent_project = '';
+  const index = _settings.value.workspaces.findIndex((w) => w == workspace.id);
+  _settings.value.workspaces.splice(index, 1);
+  if (_settings.value.workspaces[0])
+    _settings.value.most_recent_workspace = _settings.value.workspaces[0];
+  await AppRepository.user.updateUserSettings(_settings.value);
+}
 
 // Auth Methods
 function userIsAuthenticated(): Promise<boolean> {
@@ -54,8 +84,9 @@ function userIsAuthenticated(): Promise<boolean> {
     };
 
     authUser()
-      .then((user) => {
+      .then(async (user) => {
         if (user) {
+          await fetchUserSettings(user);
           BroadcastEvent.user.onUserAuthenticated(user);
           resolve(true);
         } else {
@@ -74,9 +105,22 @@ async function fetchUserSettings(user: User) {
   userStore._userState.settings = UserSettings.deserialize(_settings.value);
 }
 
+async function setUserRole(workspace: WorkspaceData) {
+  if (!_settings.value) {
+    console.log('Error setting user role');
+    return;
+  }
+  _role.value = await AppRepository.user.fetchUserRole(
+    workspace.id,
+    _settings.value.id
+  );
+}
+
 const UserViewModel = {
   isLoggedIn,
+  setUserRole,
   settings,
+  role,
 };
 
 export default UserViewModel;

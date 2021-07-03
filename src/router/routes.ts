@@ -12,6 +12,7 @@ const routes: RouteRecordRaw[] = [
     path: '/app/',
     component: () => import('src/layouts/AppLayout.vue'),
     beforeEnter: (to, from, next) => {
+      next();
       // TODO FIX THIS
       // if (
       //   !UserViewModel.settings.value ||

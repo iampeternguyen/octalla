@@ -28,6 +28,7 @@
 <script lang="ts">
 import Competency from 'src/models/Competency';
 import workspaceStore from 'src/stores/workspace/workspaceStore';
+import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
 import { defineComponent, watch, PropType, ref } from 'vue';
 
 export default defineComponent({
@@ -69,10 +70,10 @@ export default defineComponent({
         competency.description = description.value;
         await competency.save();
         formState.saving = false;
-      } else if (!props.competency && workspaceStore.activeWorkspace.value) {
+      } else if (!props.competency && WorkspaceViewModel.activeSpace.value) {
         const competency = new Competency(
           name.value,
-          workspaceStore.activeWorkspace.value.id
+          WorkspaceViewModel.activeSpace.value.id
         );
         competency.description = description.value;
         name.value = '';

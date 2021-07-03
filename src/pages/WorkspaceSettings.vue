@@ -24,14 +24,14 @@
 <script lang="ts">
 import { QInput } from 'quasar';
 import eventsStore from 'src/stores/events/eventsStore';
-import workspaceStore from 'src/stores/workspace/workspaceStore';
+import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
 import { defineComponent, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 export default defineComponent({
   name: 'WorkspaceSettings',
   setup() {
-    const name = ref(workspaceStore.activeWorkspace.value?.name || '');
+    const name = ref(WorkspaceViewModel.activeSpace.value?.name || '');
     const router = useRouter();
 
     const workspaceNameInput = ref<QInput | null>(null);
@@ -41,12 +41,16 @@ export default defineComponent({
     }
 
     async function onWorkspaceNameSave() {
-      if (name.value == workspaceStore.activeWorkspace.value?.name) return;
-      await workspaceStore.updateWorkspaceName(name.value);
+      if (name.value == WorkspaceViewModel.activeSpace.value?.name) return;
+      await WorkspaceViewModel.updateWorkspaceName(name.value);
     }
 
     const onDeleteWorkspace = async () => {
-      await eventsStore.workspace.onWorkspaceDelete();
+      if (WorkspaceViewModel.activeSpace.value)
+        await WorkspaceViewModel.deleteWorkspace(
+          WorkspaceViewModel.activeSpace.value
+        );
+      console.log('push to app');
       await router.push({ name: 'app' });
     };
 
