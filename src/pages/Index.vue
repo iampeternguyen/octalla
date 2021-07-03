@@ -17,20 +17,20 @@
 </template>
 
 <script lang="ts">
-import uiStore from 'src/stores/ui/uiStore';
-import userStore from 'src/stores/user/userStore';
+import UIViewModel from 'src/viewmodels/UIViewModel';
+import UserViewModel from 'src/viewmodels/UserViewModel';
 import { defineComponent } from 'vue';
 
 export default defineComponent({
   name: 'PageIndex',
   setup() {
     async function onLogOut() {
-      await userStore.onUserLoggedOut();
+      await UserViewModel.logOutuser();
     }
 
     function onShowLoading() {
-      uiStore.updateLoadingMessage('Deleting stuff. Do not leave page!');
-      uiStore.showLoading();
+      UIViewModel.updateLoadingMessage('Deleting stuff. Do not leave page!');
+      UIViewModel.showLoading();
     }
 
     return {

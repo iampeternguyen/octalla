@@ -1,11 +1,7 @@
 import { nanoid } from 'nanoid';
-import { db } from 'src/firebase';
-import userStore from 'src/stores/user/userStore';
+import UserViewModel from 'src/viewmodels/UserViewModel';
 import DatabaseModel from './DatabaseModel';
 import { FolderData } from './Folder';
-import { PROJECTS_STORENAME } from './Project';
-import { ROLES_MEMBERS_STORENAME, ROLES_STORENAME } from './Role';
-import { TASKS_STORENAME } from './Task';
 
 export const WORKSPACE_STORENAME = 'workspaces';
 
@@ -37,7 +33,8 @@ export default class Workspace extends DatabaseModel implements WorkspaceData {
     this.id = data?.id || nanoid(8);
     this.last_modified = data?.last_modified || Date.now();
     this.projects_structure = data?.projects_structure || [];
-    this.created_by = data?.created_by || userStore.settings.value?.id || '';
+    this.created_by =
+      data?.created_by || UserViewModel.settings.value?.id || '';
   }
 
   serialize(): WorkspaceData {
@@ -49,37 +46,6 @@ export default class Workspace extends DatabaseModel implements WorkspaceData {
       created_by: this.created_by,
       projects_structure: this.projects_structure,
     };
-  }
-
-  async delete() {
-    let query = db
-      .collection(TASKS_STORENAME)
-      .where('workspace_id', '==', this.id);
-
-    await this.deleteQueryBatch(db, query, () => {
-      console.log('successfully deleted all tasks');
-    });
-
-    query = db
-      .collection(PROJECTS_STORENAME)
-      .where('workspace_id', '==', this.id);
-
-    await this.deleteQueryBatch(db, query, () => {
-      console.log('successfully deleted all projects');
-    });
-
-    await super.delete();
-
-    query = db
-      .collection(ROLES_STORENAME)
-      .doc(this.id)
-      .collection(ROLES_MEMBERS_STORENAME);
-
-    await this.deleteQueryBatch(db, query, () => {
-      console.log('successfully deleted all roles in workspace');
-    });
-    await db.collection(ROLES_STORENAME).doc(this.id).delete();
-    console.log('successfully deleted roles document. now deleting workspace');
   }
 
   static deserialize(workspaceData: WorkspaceData): Workspace {

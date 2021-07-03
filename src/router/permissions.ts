@@ -1,6 +1,5 @@
-import Project from 'src/models/Project';
+import { ProjectData } from 'src/models/Project';
 import { WORKSPACE_ROLE } from 'src/models/Role';
-import userStore from 'src/stores/user/userStore';
 import UserViewModel from 'src/viewmodels/UserViewModel';
 
 // TODO think about what guest permissions allow
@@ -45,13 +44,13 @@ function userHasDeleteWorkspacePermission() {
   }
 }
 
-function userHasDeleteProjectPermission(project: Project) {
+function userHasDeleteProjectPermission(project: ProjectData) {
   if (
     UserViewModel.role.value &&
     ([WORKSPACE_ROLE.ADMIN, WORKSPACE_ROLE.MANAGER].includes(
       UserViewModel.role.value
     ) ||
-      project.created_by == userStore.state.value.settings?.id)
+      project.created_by == UserViewModel.settings.value?.id)
   ) {
     return true;
   } else {
@@ -59,7 +58,7 @@ function userHasDeleteProjectPermission(project: Project) {
   }
 }
 
-function userHasCRUProjectPermission(project: Project) {
+function userHasCRUProjectPermission(project: ProjectData) {
   if (
     UserViewModel.role.value &&
     [

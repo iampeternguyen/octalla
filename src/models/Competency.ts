@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid';
 import { db } from 'src/firebase';
-import userStore from 'src/stores/user/userStore';
+import UserViewModel from 'src/viewmodels/UserViewModel';
 import DatabaseModel from './DatabaseModel';
 
 export const COMPETENCIES_STORENAME = 'competencies';
@@ -39,7 +39,8 @@ export default class Competency
     this.description = data?.description || '';
     this.id = data?.id || nanoid();
     this.last_modified = data?.last_modified || Date.now();
-    this.created_by = data?.created_by || userStore.settings.value?.id || '';
+    this.created_by =
+      data?.created_by || UserViewModel.settings.value?.id || '';
   }
 
   serialize(): CompetencyData {

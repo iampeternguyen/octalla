@@ -33,9 +33,10 @@
 </template>
 <script lang="ts">
 import { QInput } from 'quasar';
-import Task from 'src/models/Task';
-import projectStore from 'src/stores/project/projectStore';
-import workspaceStore from 'src/stores/workspace/workspaceStore';
+import Task, { TaskData } from 'src/models/Task';
+import ProjectViewModel from 'src/viewmodels/ProjectViewModel';
+import TaskViewModel from 'src/viewmodels/TaskViewModel';
+import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
 import { defineComponent, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import draggable, { ChangeEvent } from 'vuedraggable';
@@ -61,18 +62,18 @@ export default defineComponent({
   setup(props) {
     const route = useRoute();
 
-    const taskList = ref<Task[]>(
-      filterTaskList(projectStore.tasks.value as Task[])
+    const taskList = ref<TaskData[]>(
+      filterTaskList(ProjectViewModel.tasks.value as TaskData[])
     );
 
-    function filterTaskList(tasks: Task[]) {
+    function filterTaskList(tasks: TaskData[]) {
       return tasks
         .filter((t) => {
           if (props.category == 'status') {
             return t[props.category] == props.field.toString();
           } else if (props.category == 'competency' && props.field != 'Empty') {
             const id =
-              workspaceStore.state.value.competencies.find(
+              WorkspaceViewModel.competencies.value.find(
                 (comp) => comp.name == props.field
               )?.id || '';
             return t[props.category] == id;
@@ -83,8 +84,8 @@ export default defineComponent({
         .sort((a, b) => a.order - b.order);
     }
 
-    watch(projectStore.tasks.value, (tasks) => {
-      taskList.value = filterTaskList(tasks as Task[]);
+    watch(ProjectViewModel.tasks.value, (tasks) => {
+      taskList.value = filterTaskList(tasks as TaskData[]);
     });
 
     const addTaskInputRef = ref<QInput | null>(null);
@@ -101,13 +102,13 @@ export default defineComponent({
         task[props.category] = props.field.toString();
       } else if (props.category == 'competency' && props.field != 'Empty') {
         task[props.category] =
-          workspaceStore.state.value.competencies.find(
+          WorkspaceViewModel.competencies.value.find(
             (comp) => comp.name == props.field
           )?.id || '';
       } else if (props.field == 'Empty' && props.category == 'competency') {
         task[props.category] = '';
       }
-      await task.save();
+      await TaskViewModel.saveTask(task.serialize());
       text.value = '';
       addTaskInputRef.value?.resetValidation();
       addTaskInputRef.value?.blur();
@@ -124,7 +125,7 @@ export default defineComponent({
           task[props.category] = props.field.toString();
         } else if (props.category == 'competency' && props.field != 'Empty') {
           task[props.category] =
-            workspaceStore.state.value.competencies.find(
+            WorkspaceViewModel.competencies.value.find(
               (comp) => comp.name == props.field
             )?.id || '';
         } else if (props.field == 'Empty' && props.category == 'competency') {
@@ -132,7 +133,7 @@ export default defineComponent({
         }
 
         if (taskList.value.length <= 1) {
-          await task.save();
+          await TaskViewModel.saveTask(task.serialize());
           return;
         }
       } else if (evt.moved) {
@@ -152,7 +153,7 @@ export default defineComponent({
             taskList.value[newIndex - 1].order) /
           2;
       }
-      await task.save();
+      await TaskViewModel.saveTask(task.serialize());
     }
 
     return {

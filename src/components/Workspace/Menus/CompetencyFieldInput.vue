@@ -27,7 +27,6 @@
 </template>
 <script lang="ts">
 import Competency from 'src/models/Competency';
-import workspaceStore from 'src/stores/workspace/workspaceStore';
 import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
 import { defineComponent, watch, PropType, ref } from 'vue';
 

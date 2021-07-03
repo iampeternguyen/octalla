@@ -53,7 +53,7 @@
 <script lang="ts">
 import draggable from 'vuedraggable';
 import { defineComponent } from 'vue';
-import projectStore from 'src/stores/project/projectStore';
+import ProjectViewModel from 'src/viewmodels/ProjectViewModel';
 
 export default defineComponent({
   props: {
@@ -68,7 +68,7 @@ export default defineComponent({
   },
   name: 'nested-draggable',
   setup() {
-    const activeProject = projectStore.activeProject;
+    const activeProject = ProjectViewModel.activeProject;
 
     function isActive(project_id: string) {
       return project_id == activeProject.value?.id;

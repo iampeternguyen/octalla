@@ -128,15 +128,13 @@
 import { defineComponent, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import { useRouter } from 'vue-router';
-import eventsStore from 'src/stores/events/eventsStore';
 import NewProjectModal from 'src/components/Projects/NewProjectModal.vue';
 import Project from 'src/models/Project';
-import projectStore from 'src/stores/project/projectStore';
-import uiStore from 'src/stores/ui/uiStore';
-import userStore from 'src/stores/user/userStore';
-import workspaceStore from 'src/stores/workspace/workspaceStore';
 import WorkspaceProjectsNestedList from 'src/components/Workspace/WorkspaceProjectsNestedList.vue';
 import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
+import UserViewModel from 'src/viewmodels/UserViewModel';
+import ProjectViewModel from 'src/viewmodels/ProjectViewModel';
+import UIViewModel from 'src/viewmodels/UIViewModel';
 export default defineComponent({
   name: 'ProjectManagerLayout',
   components: {
@@ -144,7 +142,7 @@ export default defineComponent({
   },
 
   setup() {
-    if (!userStore.settings.value) return;
+    if (!UserViewModel.settings.value) return;
 
     const router = useRouter();
 
@@ -154,19 +152,19 @@ export default defineComponent({
       const $q = useQuasar();
       // does not need store
 
-      watch(uiStore.state.value, (state) => {
-        if (state.showNewProjectModal) {
+      watch(UIViewModel.showNewProjectModal, (show) => {
+        if (show) {
           $q.dialog({
             component: NewProjectModal,
           }).onDismiss(() => {
-            uiStore.toggleShowNewProjectModal();
+            UIViewModel.toggleShowNewProjectModal();
           });
         }
       });
     }
 
     const projects = WorkspaceViewModel.projects;
-    const activeProject = projectStore.activeProject;
+    const activeProject = ProjectViewModel.activeProject;
     const activeWorkspace = WorkspaceViewModel.activeSpace;
 
     function isActive(project_id: string) {
@@ -175,23 +173,23 @@ export default defineComponent({
 
     function onNewProject() {
       console.log('new project');
-      uiStore.toggleShowNewProjectModal();
+      UIViewModel.toggleShowNewProjectModal();
     }
     // TODO move method
     async function onDeleteProject(project: Project) {
-      await eventsStore.project.onProjectDelete(project);
+      await ProjectViewModel.deleteProject(project);
       if (project.id == activeProject.value?.id)
         await router.push({ name: 'app' });
     }
 
     return {
-      leftDrawerOpen: uiStore.appLeftDrawer.open,
+      leftDrawerOpen: UIViewModel.appLeftDrawer.open,
       activeWorkspace,
       onDeleteProject,
-      onToggleLeftDrawer: uiStore.appLeftDrawer.onToggleProjectLeftDrawer,
-      miniState: uiStore.appLeftDrawer.mini,
-      onDrawerClick: uiStore.appLeftDrawer.onProjectLeftDrawerClicked,
-      toMiniDrawer: uiStore.appLeftDrawer.collapseProjectLeftDrawer,
+      onToggleLeftDrawer: UIViewModel.appLeftDrawer.onToggleProjectLeftDrawer,
+      miniState: UIViewModel.appLeftDrawer.mini,
+      onDrawerClick: UIViewModel.appLeftDrawer.onProjectLeftDrawerClicked,
+      toMiniDrawer: UIViewModel.appLeftDrawer.collapseProjectLeftDrawer,
       onNewProject,
       projects,
       isActive,

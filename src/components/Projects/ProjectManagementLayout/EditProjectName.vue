@@ -14,14 +14,15 @@
 
 <script lang="ts">
 import { QInput } from 'quasar';
-import Project from 'src/models/Project';
+import Project, { ProjectData } from 'src/models/Project';
+import ProjectViewModel from 'src/viewmodels/ProjectViewModel';
 import { defineComponent, ref, PropType } from 'vue';
 
 export default defineComponent({
   name: 'EditProjectname',
   props: {
     project: {
-      type: Object as PropType<Project>,
+      type: Object as PropType<ProjectData>,
       required: true,
     },
   },
@@ -39,7 +40,7 @@ export default defineComponent({
       console.log('saving');
       const project = props.project;
       project.name = name.value.trim();
-      await project.save();
+      await ProjectViewModel.saveProject(project);
     }
 
     return { name, nameInput, onNameSaved, onEnterPressed };

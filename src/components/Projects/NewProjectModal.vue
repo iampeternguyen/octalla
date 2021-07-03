@@ -146,8 +146,7 @@ import { useDialogPluginComponent } from 'quasar';
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 
-import Project from 'src/models/Project';
-import eventsStore from 'src/stores/events/eventsStore';
+import ProjectViewModel from 'src/viewmodels/ProjectViewModel';
 
 export default {
   components: {},
@@ -175,10 +174,13 @@ export default {
     const workspaceId = useRoute().params.workspace_id.toString();
     // TODO redirect on create
     async function onAddProject() {
-      const project = new Project(name.value, workspaceId);
-      project.primary_goal = goal.value;
-      project.success_looks_like = success.value;
-      // await eventsStore.project.onProjectAdded(project);
+      await ProjectViewModel.createProject(
+        name.value,
+        workspaceId,
+        goal.value,
+        success.value
+      );
+
       onDialogHide();
     }
 

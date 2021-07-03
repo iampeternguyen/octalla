@@ -4,16 +4,17 @@ import { User } from '@firebase/auth-types';
 import PubSub from 'pubsub-js';
 
 import BroadcastEvent, {
+  EVENT_ACTIVE_PROJECT_SET,
   EVENT_ACTIVE_WORKSPACE_SET,
-  EVENT_USER_AUTHENTICATED,
+  EVENT_PROJECT_DELETED,
   EVENT_WORKSPACE_CREATED,
   EVENT_WORKSPACE_DELETED,
 } from 'src/events/BroadcastEvents';
 import AppRepository from 'src/repository/AppRepository';
-import UserSettings, { UserSettingsData } from 'src/models/UserSettings';
-import userStore from 'src/stores/user/userStore';
+import { UserSettingsData } from 'src/models/UserSettings';
 import { WORKSPACE_ROLE } from 'src/models/Role';
 import { WorkspaceData } from 'src/models/Workspace';
+import { ProjectData } from 'src/models/Project';
 
 // Subscriptions
 PubSub.subscribe(
@@ -27,6 +28,27 @@ PubSub.subscribe(
   EVENT_WORKSPACE_DELETED,
   async (_msg: string, workspace: WorkspaceData) => {
     await removeWorkspaceFromSettings(workspace);
+  }
+);
+
+PubSub.subscribe(
+  EVENT_ACTIVE_WORKSPACE_SET,
+  async (_msg: string, workspace: WorkspaceData) => {
+    await updateMostRecent(workspace.id);
+  }
+);
+
+PubSub.subscribe(
+  EVENT_ACTIVE_PROJECT_SET,
+  async (_msg: string, project: ProjectData) => {
+    await updateMostRecent(project.workspace_id, project);
+  }
+);
+
+PubSub.subscribe(
+  EVENT_PROJECT_DELETED,
+  async (_msg: string, project: ProjectData) => {
+    await removeProjectIfMostRecent(project);
   }
 );
 
@@ -52,7 +74,7 @@ async function addWorkspaceToSettings(workspace: WorkspaceData) {
   if (!_settings.value) throw 'user settings missing';
 
   _settings.value.workspaces.push(workspace.id);
-  await AppRepository.user.updateUserSettings(_settings.value);
+  await AppRepository.user.saveUserSettings(_settings.value);
 }
 
 async function removeWorkspaceFromSettings(workspace: WorkspaceData) {
@@ -63,7 +85,31 @@ async function removeWorkspaceFromSettings(workspace: WorkspaceData) {
   _settings.value.workspaces.splice(index, 1);
   if (_settings.value.workspaces[0])
     _settings.value.most_recent_workspace = _settings.value.workspaces[0];
-  await AppRepository.user.updateUserSettings(_settings.value);
+  await AppRepository.user.saveUserSettings(_settings.value);
+}
+
+// project changes
+async function updateMostRecent(workspaceId: string, project?: ProjectData) {
+  if (!_settings.value) return;
+  console.log('updating recent project');
+  if (project) {
+    _settings.value.most_recent_project = project.id;
+    _settings.value.most_recent_workspace = project.workspace_id;
+  } else {
+    _settings.value.most_recent_project = '';
+    _settings.value.most_recent_workspace = workspaceId;
+  }
+
+  await AppRepository.user.saveUserSettings(_settings.value);
+}
+
+async function removeProjectIfMostRecent(project: ProjectData) {
+  if (!_settings.value) return;
+
+  if (_settings.value.most_recent_project == project.id) {
+    _settings.value.most_recent_project = '';
+    await AppRepository.user.saveUserSettings(_settings.value);
+  }
 }
 
 // Auth Methods
@@ -100,9 +146,6 @@ function userIsAuthenticated(): Promise<boolean> {
 async function fetchUserSettings(user: User) {
   _isLoggedIn.value = true;
   _settings.value = await AppRepository.user.fetchUserSettings(user);
-
-  //   TODO remove when finished refactor
-  userStore._userState.settings = UserSettings.deserialize(_settings.value);
 }
 
 async function setUserRole(workspace: WorkspaceData) {
@@ -116,8 +159,17 @@ async function setUserRole(workspace: WorkspaceData) {
   );
 }
 
+async function logOutuser() {
+  await auth.signOut();
+  _isLoggedIn.value = false;
+  _settings.value = null;
+  _role.value = null;
+  BroadcastEvent.user.onUserLoggedOut();
+}
+
 const UserViewModel = {
   isLoggedIn,
+  logOutuser,
   setUserRole,
   settings,
   role,

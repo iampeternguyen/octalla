@@ -7,6 +7,7 @@ import WorkspaceRole, {
   WorkspaceRoleData,
   WORKSPACE_ROLE,
 } from 'src/models/Role';
+import { TaskData } from 'src/models/Task';
 import UserSettings, { UserSettingsData } from 'src/models/UserSettings';
 import Workspace, { WorkspaceData } from 'src/models/Workspace';
 
@@ -28,7 +29,7 @@ const fetchUserSettings = async (user: User) => {
     userSettings = new UserSettings(user.uid);
     userSettings.email = user.email || '';
     userSettings.display_name = user.displayName || '';
-    await userSettings.save();
+    await saveUserSettings(userSettings);
   }
 
   return userSettings.serialize();
@@ -45,10 +46,23 @@ const fetchUserRole = async (workspaceId: string, userId: string) => {
 };
 
 // USERS - SETTERS
-const updateUserSettings = async (settings: UserSettingsData) => {
+const saveUserSettings = async (settings: UserSettingsData) => {
   settings.last_modified = Date.now();
   await db.collection(USER_SETTINGS_STORENAME).doc(settings.id).set(settings);
   return settings;
+};
+
+// TASK - SETTERS
+const saveTask = async (task: TaskData) => {
+  task.last_modified = Date.now();
+  await db.collection(TASKS_STORENAME).doc(task.id).set(task);
+  return task;
+};
+
+const deleteTask = async (task: TaskData) => {
+  task.last_modified = Date.now();
+  await db.collection(TASKS_STORENAME).doc(task.id).delete();
+  return task;
 };
 
 // WORKSPACES - CREATE
@@ -90,6 +104,11 @@ const saveRole = async (role: WorkspaceRole) => {
   } catch (error) {
     console.log('error saving: ', error);
   }
+};
+
+const fetchWorkspace = async (workspaceId: string) => {
+  const doc = await db.collection(WORKSPACE_STORENAME).doc(workspaceId).get();
+  return doc.data() as WorkspaceData;
 };
 
 const saveWorkspace = async (workspace: WorkspaceData) => {
@@ -138,11 +157,6 @@ const deleteWorkspace = async (workspace: WorkspaceData) => {
   console.log('successfully deleted roles document');
 };
 
-const fetchWorkspace = async (workspaceId: string) => {
-  const doc = await db.collection(WORKSPACE_STORENAME).doc(workspaceId).get();
-  return doc.data() as WorkspaceData;
-};
-
 const deleteQueryBatch = async (
   db: FirebaseFirestore,
   query: Query,
@@ -168,6 +182,28 @@ const deleteQueryBatch = async (
   // exploding the stack.
   // TODO move this to backend api
   deleteQueryBatch(db, query, resolve).catch((err) => console.log(err));
+};
+
+// PROJECT - SETTERS
+const saveProject = async (project: ProjectData) => {
+  project.last_modified = Date.now();
+  await db.collection(PROJECTS_STORENAME).doc(project.id).set(project);
+  return project;
+};
+
+// PROJECT - DELETE
+const deleteProject = async (project: ProjectData) => {
+  const query = db
+    .collection(TASKS_STORENAME)
+    .where('workspace_id', '==', project.workspace_id)
+    .where('project_id', '==', project.id);
+
+  await deleteQueryBatch(db, query, async () => {
+    console.log('successfully deleted all tasks. now deleting project');
+
+    await db.collection(PROJECTS_STORENAME).doc(project.id).delete();
+    return project;
+  });
 };
 
 // Observers
@@ -199,14 +235,6 @@ function watchWorkspaceProjects(
         console.log('projects change.type:', change.type);
         if (change.type === 'added') {
           onProjectAdded(projectData);
-          //   TODO refactor
-          //   if (project.id == projectStore.requestSetActiveProjectWithId.value) {
-          //     projectStore
-          //       .setActiveProject(
-          //         projectStore.requestSetActiveProjectWithId.value
-          //       )
-          //       .catch((err) => console.log(err));
-          //   }
         }
         if (change.type === 'modified') {
           onProjectChanged(projectData);
@@ -251,14 +279,6 @@ function watchWorkspaceCompetencies(
         console.log('projects change.type:', change.type);
         if (change.type === 'added') {
           onCompetencyAdded(competencyData);
-          //   TODO refactor
-          //   if (project.id == projectStore.requestSetActiveProjectWithId.value) {
-          //     projectStore
-          //       .setActiveProject(
-          //         projectStore.requestSetActiveProjectWithId.value
-          //       )
-          //       .catch((err) => console.log(err));
-          //   }
         }
         if (change.type === 'modified') {
           onCompetencyChanged(competencyData);
@@ -274,11 +294,51 @@ function watchWorkspaceCompetencies(
   );
 }
 
+let projectTasksObserver = () => {
+  return;
+};
+
+function watchProjectTasks(
+  project: ProjectData,
+  onTaskAdded: (taskData: TaskData) => void,
+  onTaskChanged: (taskData: TaskData) => void,
+  onTaskDeleted: (taskData: TaskData) => void
+) {
+  // unsubscribe
+  projectTasksObserver();
+
+  const query = db
+    .collection(TASKS_STORENAME)
+    .where('workspace_id', '==', project.workspace_id)
+    .where('project_id', '==', project.id);
+  console.log('watching tasks', project.id);
+  projectTasksObserver = query.onSnapshot(
+    (querySnapshot) => {
+      querySnapshot.docChanges().forEach((change) => {
+        const taskData = change.doc.data() as TaskData;
+        console.log('task change type:', change.type);
+        if (change.type === 'added') {
+          onTaskAdded(taskData);
+        }
+        if (change.type === 'modified') {
+          onTaskChanged(taskData);
+        }
+        if (change.type === 'removed') {
+          onTaskDeleted(taskData);
+        }
+      });
+    },
+    (err) => {
+      console.log(`Encountered error: ${err.message}`);
+    }
+  );
+}
+
 const AppRepository = {
   user: {
     fetchUserSettings,
     fetchUserRole,
-    updateUserSettings,
+    saveUserSettings,
   },
   workspace: {
     fetchWorkspace,
@@ -287,6 +347,15 @@ const AppRepository = {
     createWorkspace,
     updateWorkspaceName,
     deleteWorkspace,
+  },
+  project: {
+    watchProjectTasks,
+    saveProject,
+    deleteProject,
+  },
+  task: {
+    saveTask,
+    deleteTask,
   },
 };
 

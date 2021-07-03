@@ -81,6 +81,7 @@ import { useQuasar, date } from 'quasar';
 import Task from 'src/models/Task';
 import { defineComponent, ref, PropType, computed } from 'vue';
 import TaskEditModal from 'src/components/Tasks/TaskEditModal.vue';
+import TaskViewModel from 'src/viewmodels/TaskViewModel';
 
 export default defineComponent({
   props: {
@@ -101,7 +102,7 @@ export default defineComponent({
     }
 
     async function onDelete() {
-      await props.task.delete();
+      await TaskViewModel.saveTask(props.task.serialize());
     }
 
     function onTaskClicked() {
@@ -130,7 +131,7 @@ export default defineComponent({
         task.due_date = date
           .extractDate(dueDate.value, 'YYYY-MM-DD HH:mm')
           .getTime();
-        await task.save();
+        await TaskViewModel.saveTask(task.serialize());
       }
     }
 

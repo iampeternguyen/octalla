@@ -1,4 +1,3 @@
-import userStore from 'src/stores/user/userStore';
 import UserViewModel from 'src/viewmodels/UserViewModel';
 import { RouteRecordRaw } from 'vue-router';
 

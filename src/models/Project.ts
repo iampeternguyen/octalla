@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid';
 import { db } from 'src/firebase';
-import userStore from 'src/stores/user/userStore';
+import UserViewModel from 'src/viewmodels/UserViewModel';
 import DatabaseModel from './DatabaseModel';
 import { TASKS_STORENAME } from './Task';
 
@@ -47,7 +47,8 @@ export default class Project extends DatabaseModel implements ProjectData {
 
     this.isComplete = data?.isComplete || false;
     this.last_modified = data?.last_modified || Date.now();
-    this.created_by = data?.created_by || userStore.settings.value?.id || '';
+    this.created_by =
+      data?.created_by || UserViewModel.settings.value?.id || '';
     this.group_by = data?.group_by || 'status';
   }
 
@@ -66,16 +67,6 @@ export default class Project extends DatabaseModel implements ProjectData {
     };
   }
 
-  async delete() {
-    const query = db
-      .collection(TASKS_STORENAME)
-      .where('workspace_id', '==', this.workspace_id)
-      .where('project_id', '==', this.id);
-    await this.deleteQueryBatch(db, query, async () => {
-      console.log('successfully deleted all tasks. now deleting project');
-      await super.delete();
-    });
-  }
   static deserialize(projectData: ProjectData) {
     return new Project(projectData.name, projectData.workspace_id, projectData);
   }

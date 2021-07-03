@@ -19,7 +19,7 @@
   </q-form>
 </template>
 <script lang="ts">
-import workspaceStore from 'src/stores/workspace/workspaceStore';
+import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
 import { defineComponent, ref, reactive } from 'vue';
 import CompetencyFieldInput from './CompetencyFieldInput.vue';
 export default defineComponent({
@@ -35,7 +35,7 @@ export default defineComponent({
     });
     const count = ref(0);
 
-    const competencies = workspaceStore.state.value.competencies;
+    const competencies = WorkspaceViewModel.competencies.value;
 
     function onFormSubmit() {
       console.log('submitting form');

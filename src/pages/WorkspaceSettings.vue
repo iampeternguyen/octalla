@@ -23,7 +23,6 @@
 </template>
 <script lang="ts">
 import { QInput } from 'quasar';
-import eventsStore from 'src/stores/events/eventsStore';
 import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
 import { defineComponent, ref } from 'vue';
 import { useRouter } from 'vue-router';

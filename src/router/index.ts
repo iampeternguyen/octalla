@@ -1,7 +1,6 @@
 import { route } from 'quasar/wrappers';
-import projectStore from 'src/stores/project/projectStore';
-import uiStore from 'src/stores/ui/uiStore';
-import workspaceStore from 'src/stores/workspace/workspaceStore';
+import ProjectViewModel from 'src/viewmodels/ProjectViewModel';
+import UIViewModel from 'src/viewmodels/UIViewModel';
 import UserViewModel from 'src/viewmodels/UserViewModel';
 import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
 import {
@@ -55,8 +54,8 @@ export default route(function (/* { store, ssrContext } */) {
     ) {
       // TODO add custom loading screen for initial db query
       if (!WorkspaceViewModel.activeSpace.value) {
-        uiStore.updateLoadingMessage('processing');
-        uiStore.showLoading();
+        UIViewModel.updateLoadingMessage('processing');
+        UIViewModel.showLoading();
       }
 
       try {
@@ -69,38 +68,39 @@ export default route(function (/* { store, ssrContext } */) {
         next({ name: '404' });
         return;
       } finally {
-        uiStore.hideLoading();
+        UIViewModel.hideLoading();
       }
 
       if (!permissions.workspace.canRead()) {
         console.log("can't read");
-        uiStore.hideLoading();
+        UIViewModel.hideLoading();
         next({ name: '404' });
         return;
       }
     }
 
     // requires CRU workspace
-
+    // TODO fix this
     if (
       to.matched.some((record) => record.meta.requiresCRUProjectPermissions)
     ) {
-      // try {
-      //   if (to.params.project_id) {
-      //     await projectStore.setActiveProject(to.params.project_id.toString());
-      //   }
-      // } catch (error) {
-      //   next({ name: '404' });
-      //   return;
-      // }
-      // const project = workspaceStore.projects.value.find(
-      //   (p) => p.id == to.params.project_id.toString()
-      // );
-      // console.log('project permissions');
-      // if (!project || !permissions.project.canCRU(project)) {
-      //   next({ name: '404' });
-      //   return;
-      // }
+      try {
+        if (to.params.project_id) {
+          console.log('setting active project');
+          ProjectViewModel.setActiveProject(to.params.project_id.toString());
+        }
+      } catch (error) {
+        next({ name: '404' });
+        return;
+      }
+      const project = WorkspaceViewModel.projects.value.find(
+        (p) => p.id == to.params.project_id.toString()
+      );
+      console.log('project permissions');
+      if (!project || !permissions.project.canCRU(project)) {
+        next({ name: '404' });
+        return;
+      }
     }
 
     next();

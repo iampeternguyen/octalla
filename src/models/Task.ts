@@ -1,6 +1,5 @@
 import { nanoid } from 'nanoid';
-import projectStore from 'src/stores/project/projectStore';
-import userStore from 'src/stores/user/userStore';
+import UserViewModel from 'src/viewmodels/UserViewModel';
 import DatabaseModel from './DatabaseModel';
 
 export const TASKS_STORENAME = 'tasks';
@@ -62,14 +61,13 @@ export default class Task extends DatabaseModel implements TaskData {
     this.project_id = projectId;
     this.competency = data?.competency || '';
     this.workspace_id = workspaceId;
-    this.created_by = data?.created_by || userStore.settings.value?.id || '';
+    // TODO refactor this to pass user not grab it from settings
+    this.created_by =
+      data?.created_by || UserViewModel.settings.value?.id || '';
     this._status = data?.status || 'open';
     this.due_date = data?.due_date || 0;
-    this.order =
-      data?.order ||
-      projectStore.tasks.value[projectStore.tasks.value.length - 1]?.order +
-        1 ||
-      0;
+    // TODO get order from task
+    this.order = data?.order || 0;
   }
 
   get status() {
@@ -86,7 +84,8 @@ export default class Task extends DatabaseModel implements TaskData {
   async toggleComplete() {
     this.isComplete = !this.isComplete;
     if (this.isComplete) this.status = TASKS_STATUS_OPTIONS[3];
-    await this.save();
+    // TODO fix this
+    // await this.save();
   }
 
   async toggleStatus() {
@@ -109,7 +108,8 @@ export default class Task extends DatabaseModel implements TaskData {
     this.status == TASKS_STATUS_OPTIONS[3]
       ? (this.isComplete = true)
       : (this.isComplete = false);
-    await this.save();
+    // TODO FIX THIS
+    // await this.save();
   }
 
   serialize(): TaskData {

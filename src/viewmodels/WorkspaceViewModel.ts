@@ -6,8 +6,8 @@ import { ProjectData } from 'src/models/Project';
 import { WorkspaceData } from 'src/models/Workspace';
 import AppRepository from 'src/repository/AppRepository';
 import permissions from 'src/router/permissions';
-import uiStore from 'src/stores/ui/uiStore';
 import { ref, computed } from 'vue';
+import UIViewModel from './UIViewModel';
 import UserViewModel from './UserViewModel';
 
 // state
@@ -61,15 +61,15 @@ async function deleteWorkspace(workspace: WorkspaceData) {
 
   console.log('permission to delete workspace');
 
-  uiStore.updateLoadingMessage(
+  UIViewModel.updateLoadingMessage(
     `Deleting ${workspace.name}... DO NOT CLOSE THIS PAGE`
   );
-  uiStore.showLoading();
+  UIViewModel.showLoading();
 
   await AppRepository.workspace.deleteWorkspace(workspace);
 
   BroadcastEvent.workspace.onWorkspaceDeleted(workspace);
-  uiStore.hideLoading();
+  UIViewModel.hideLoading();
 
   // const id = _activeSpace.value.id;
   // workspaceState.activeSpace = null;

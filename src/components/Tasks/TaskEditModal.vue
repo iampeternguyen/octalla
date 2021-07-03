@@ -107,12 +107,12 @@ import { watch, PropType, reactive, ref } from 'vue';
 import { debounce } from 'ts-debounce';
 
 import Task, { TaskData } from 'src/models/Task';
-import projectStore from 'src/stores/project/projectStore';
-
+import ProjectViewModel from 'src/viewmodels/ProjectViewModel';
+import TaskViewModel from 'src/viewmodels/TaskViewModel';
 export default {
   props: {
     task: {
-      type: Object as PropType<Task>,
+      type: Object as PropType<TaskData>,
       required: true,
     },
   },
@@ -130,7 +130,7 @@ export default {
     const isSaving = ref(false);
     const showTaskModal = ref(true);
 
-    watch(projectStore.tasks.value, (tasks) => {
+    watch(ProjectViewModel.tasks.value, (tasks) => {
       const task = tasks.find((t) => t.id == props.task.id);
       Object.assign(taskEditModel, task);
     });
@@ -163,7 +163,7 @@ export default {
         })
       ) {
         isSaving.value = true;
-        await taskEditModel.save();
+        await TaskViewModel.saveTask(taskEditModel.serialize());
         isNotSaved.value = false;
         await debounceResetIsSaving();
       }

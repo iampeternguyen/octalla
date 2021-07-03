@@ -109,15 +109,14 @@ import { defineComponent, ref, watch, computed } from 'vue';
 
 import { TASKS_STATUS_OPTIONS } from 'src/models/Task';
 import TasksList from 'src/components/Tasks/TasksList.vue';
-import projectStore from 'src/stores/project/projectStore';
 import EditProjectName from 'src/components/Projects/ProjectManagementLayout/EditProjectName.vue';
 import EditProjectGoal from 'src/components/Projects/ProjectManagementLayout/EditProjectGoal.vue';
 import EditProjectSuccess from 'src/components/Projects/ProjectManagementLayout/EditProjectSuccess.vue';
 import CompetencyAddMenu from 'src/components/Workspace/Menus/CompetencyAddMenu.vue';
 
-import uiStore from 'src/stores/ui/uiStore';
-import eventsStore from 'src/stores/events/eventsStore';
-import workspaceStore from 'src/stores/workspace/workspaceStore';
+import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
+import ProjectViewModel from 'src/viewmodels/ProjectViewModel';
+import UIViewModel from 'src/viewmodels/UIViewModel';
 
 export default defineComponent({
   components: {
@@ -128,14 +127,14 @@ export default defineComponent({
     CompetencyAddMenu,
   },
   setup() {
-    const tasks = projectStore.tasks;
-    const activeProject = projectStore.activeProject;
+    const tasks = ProjectViewModel.tasks;
+    const activeProject = ProjectViewModel.activeProject;
 
     const text = ref('');
     const rightDrawerOpen = ref(false);
     const group = computed(() => {
       if (groupCategory.value == 'competency') {
-        const competencies = workspaceStore.state.value.competencies;
+        const competencies = WorkspaceViewModel.competencies.value;
         return competencies.map((comp) => comp.name);
       } else {
         return TASKS_STATUS_OPTIONS;
@@ -146,9 +145,9 @@ export default defineComponent({
     const isCompetencyHovered = ref(false);
 
     watch(
-      projectStore.activeProjectGroupBy,
-      (groupBy) => {
-        if (groupBy) groupTasks(groupBy);
+      ProjectViewModel.activeProject,
+      (project) => {
+        if (project?.group_by) groupTasks(project.group_by);
       },
       { immediate: true }
     );
@@ -173,7 +172,7 @@ export default defineComponent({
 
     async function groupBy(field: string) {
       if (field != activeProject.value?.group_by) {
-        await eventsStore.project.onProjectsGroupBy(field);
+        await ProjectViewModel.projectGroupBy(field);
       }
     }
 
@@ -183,7 +182,7 @@ export default defineComponent({
       tasks,
       TASKS_STATUS_OPTIONS,
       activeProject,
-      onToggleLeftDrawer: uiStore.appLeftDrawer.onToggleProjectLeftDrawer,
+      onToggleLeftDrawer: UIViewModel.appLeftDrawer.onToggleProjectLeftDrawer,
       onToggleRightDrawer,
       rightDrawerOpen,
       groupBy,

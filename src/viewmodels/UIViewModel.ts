@@ -1,4 +1,4 @@
-import { reactive, computed, ref } from 'vue';
+import { computed, ref } from 'vue';
 
 import {
   Loading,
@@ -8,15 +8,13 @@ import {
   QSpinnerGears,
 } from 'quasar';
 
-const uiState = reactive({
-  showNewProjectModal: false,
-  loadingMessage: '',
-});
+const _showNewProjectModal = ref(false);
+const _loadingMessage = ref('');
 
 const appLayoutLeftDrawerOpen = ref(true);
 const appLayoutLeftDrawerMini = ref(false);
 
-const state = computed(() => uiState);
+const showNewProjectModal = computed(() => _showNewProjectModal.value);
 
 // Workspace Left Drawer
 
@@ -43,14 +41,14 @@ function collapseProjectLeftDrawer() {
 
 // Loading Modal
 function toggleShowNewProjectModal() {
-  uiState.showNewProjectModal = !uiState.showNewProjectModal;
+  _showNewProjectModal.value = !_showNewProjectModal.value;
 }
 
 function showLoading() {
   // fully customizable
   Loading.show({
     spinner: QSpinnerGears,
-    message: uiState.loadingMessage,
+    message: _loadingMessage.value,
 
     customClass: 'bg-secondary',
     boxClass: 'bg-grey-2 text-secondary text-weight-bold',
@@ -61,15 +59,15 @@ function showLoading() {
 }
 
 function hideLoading() {
-  uiState.loadingMessage = '';
+  _loadingMessage.value = '';
   Loading.hide();
 }
 
 function updateLoadingMessage(message: string) {
-  uiState.loadingMessage = message;
+  _loadingMessage.value = message;
 }
-const uiStore = {
-  state,
+const UIViewModel = {
+  showNewProjectModal,
   toggleShowNewProjectModal,
   updateLoadingMessage,
   showLoading,
@@ -82,4 +80,4 @@ const uiStore = {
     collapseProjectLeftDrawer,
   },
 };
-export default uiStore;
+export default UIViewModel;

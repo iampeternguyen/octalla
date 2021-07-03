@@ -19,14 +19,15 @@
 
 <script lang="ts">
 import { QInput } from 'quasar';
-import Project from 'src/models/Project';
+import Project, { ProjectData } from 'src/models/Project';
+import ProjectViewModel from 'src/viewmodels/ProjectViewModel';
 import { defineComponent, ref, PropType } from 'vue';
 
 export default defineComponent({
   name: 'EditProjectSuccess',
   props: {
     project: {
-      type: Object as PropType<Project>,
+      type: Object as PropType<ProjectData>,
       required: true,
     },
   },
@@ -44,7 +45,7 @@ export default defineComponent({
       const project = props.project;
 
       project.success_looks_like = success.value.trim();
-      await project.save();
+      await ProjectViewModel.saveProject(project);
     }
 
     return { success, successInput, onGoalSaved, onEnterPressed };
