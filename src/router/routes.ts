@@ -11,43 +11,42 @@ const routes: RouteRecordRaw[] = [
     path: '/app/',
     component: () => import('src/layouts/AppLayout.vue'),
     beforeEnter: (to, from, next) => {
-      next();
-      // TODO FIX THIS
-      // if (
-      //   !UserViewModel.settings.value ||
-      //   (!UserViewModel.settings.value.most_recent_workspace &&
-      //     !UserViewModel.settings.value.workspaces)
-      // ) {
-      //   next({ name: 'onboarding' });
-      // } else if (
-      //   UserViewModel.settings.value.most_recent_project &&
-      //   UserViewModel.settings.value.most_recent_workspace
-      // ) {
-      //   next({
-      //     name: 'project',
-      //     params: {
-      //       workspace_id: UserViewModel.settings.value.most_recent_workspace,
-      //       project_id: UserViewModel.settings.value.most_recent_project,
-      //     },
-      //   });
-      // } else if (
-      //   !UserViewModel.settings.value.most_recent_project &&
-      //   UserViewModel.settings.value.most_recent_workspace
-      // ) {
-      //   next({
-      //     name: 'workspace',
-      //     params: {
-      //       workspace_id: UserViewModel.settings.value.most_recent_workspace,
-      //     },
-      //   });
-      // } else {
-      //   next({
-      //     name: 'workspace',
-      //     params: {
-      //       workspace_id: UserViewModel.settings.value.workspaces[0],
-      //     },
-      //   });
-      // }
+      // TODO workspace should also jump to mose recent project
+      if (
+        !UserViewModel.settings.value ||
+        (!UserViewModel.settings.value.most_recent_workspace &&
+          !UserViewModel.settings.value.workspaces)
+      ) {
+        next({ name: 'onboarding' });
+      } else if (
+        UserViewModel.settings.value.most_recent_project &&
+        UserViewModel.settings.value.most_recent_workspace
+      ) {
+        next({
+          name: 'project',
+          params: {
+            workspace_id: UserViewModel.settings.value.most_recent_workspace,
+            project_id: UserViewModel.settings.value.most_recent_project,
+          },
+        });
+      } else if (
+        !UserViewModel.settings.value.most_recent_project &&
+        UserViewModel.settings.value.most_recent_workspace
+      ) {
+        next({
+          name: 'workspace',
+          params: {
+            workspace_id: UserViewModel.settings.value.most_recent_workspace,
+          },
+        });
+      } else {
+        next({
+          name: 'workspace',
+          params: {
+            workspace_id: UserViewModel.settings.value.workspaces[0],
+          },
+        });
+      }
     },
     children: [
       {

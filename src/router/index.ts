@@ -52,7 +52,6 @@ export default route(function (/* { store, ssrContext } */) {
     if (
       to.matched.some((record) => record.meta.requiresReadWorkspacePermission)
     ) {
-      // TODO add custom loading screen for initial db query
       if (!WorkspaceViewModel.activeSpace.value) {
         UIViewModel.updateLoadingMessage('processing');
         UIViewModel.showLoading();
@@ -62,7 +61,7 @@ export default route(function (/* { store, ssrContext } */) {
         await WorkspaceViewModel.setActiveWorkspace(
           to.params.workspace_id.toString()
         );
-        // TODO set user role
+        console.log('has role?:', UserViewModel.role.value);
       } catch (error) {
         console.log(error);
         next({ name: '404' });
@@ -80,23 +79,23 @@ export default route(function (/* { store, ssrContext } */) {
     }
 
     // requires CRU workspace
-    // TODO fix this
     if (
       to.matched.some((record) => record.meta.requiresCRUProjectPermissions)
     ) {
       try {
         if (to.params.project_id) {
           console.log('setting active project');
-          ProjectViewModel.setActiveProject(to.params.project_id.toString());
+          await ProjectViewModel.setActiveProject(
+            to.params.project_id.toString()
+          );
         }
       } catch (error) {
+        console.log(error);
         next({ name: '404' });
         return;
       }
-      const project = WorkspaceViewModel.projects.value.find(
-        (p) => p.id == to.params.project_id.toString()
-      );
-      console.log('project permissions');
+
+      const project = ProjectViewModel.activeProject.value;
       if (!project || !permissions.project.canCRU(project)) {
         next({ name: '404' });
         return;

@@ -184,6 +184,12 @@ const deleteQueryBatch = async (
   deleteQueryBatch(db, query, resolve).catch((err) => console.log(err));
 };
 
+// PROJECT - GETTERS
+const fetchProject = async (projectId: string) => {
+  const doc = await db.collection(PROJECTS_STORENAME).doc(projectId).get();
+  return doc.data() as ProjectData;
+};
+
 // PROJECT - SETTERS
 const saveProject = async (project: ProjectData) => {
   project.last_modified = Date.now();
@@ -260,7 +266,7 @@ function watchWorkspaceCompetencies(
   onCompetencyChanged: (competencyData: CompetencyData) => void,
   onCompetencyDeleted: (competencyData: CompetencyData) => void
 ) {
-  console.log('watching projects');
+  console.log('watching projects competencies');
   // unsubscribe
   workspaceCompetenciesObserver();
   //   TODO move to ViewModel
@@ -276,7 +282,7 @@ function watchWorkspaceCompetencies(
       querySnapshot.docChanges().forEach((change) => {
         const competencyData = change.doc.data() as CompetencyData;
 
-        console.log('projects change.type:', change.type);
+        console.log('competencies change.type:', change.type);
         if (change.type === 'added') {
           onCompetencyAdded(competencyData);
         }
@@ -352,6 +358,7 @@ const AppRepository = {
     watchProjectTasks,
     saveProject,
     deleteProject,
+    fetchProject,
   },
   task: {
     saveTask,

@@ -141,26 +141,8 @@ export default defineComponent({
       }
     });
 
-    const groupCategory = ref('status');
+    const groupCategory = ProjectViewModel.groupTasksBy;
     const isCompetencyHovered = ref(false);
-
-    watch(
-      ProjectViewModel.activeProject,
-      (project) => {
-        if (project?.group_by) groupTasks(project.group_by);
-      },
-      { immediate: true }
-    );
-
-    // TODO watch competencies changes
-
-    function groupTasks(groupBy: string) {
-      if (groupBy == 'competency') {
-        groupCategory.value = groupBy;
-      } else if (groupBy == 'status') {
-        groupCategory.value = groupBy;
-      }
-    }
 
     function filteredTasks(status: string) {
       return tasks.value.filter((t) => t.status == status);

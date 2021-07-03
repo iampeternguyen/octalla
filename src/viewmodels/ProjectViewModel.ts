@@ -25,11 +25,15 @@ const _failedActiveProjectRequest = ref('');
 // getters
 const activeProject = computed(() => _activeProject.value);
 const tasks = computed(() => _tasks.value);
+const groupTasksBy = computed(() => _activeProject.value?.group_by);
+const hasActiveProjectRequest = computed(
+  () => _failedActiveProjectRequest.value
+);
 
 // setters
 
-const setActiveProject = (projectId: string) => {
-  const project = WorkspaceViewModel.projects.value.find(
+const setActiveProject = async (projectId: string) => {
+  let project = WorkspaceViewModel.projects.value.find(
     (p) => p.id == projectId
   );
   if (project) {
@@ -38,7 +42,12 @@ const setActiveProject = (projectId: string) => {
 
     BroadcastEvent.project.onActiveProjectSet(project);
   } else {
-    throw 'Project not found';
+    project = await AppRepository.project.fetchProject(projectId);
+    if (project) {
+      _activeProject.value = project;
+
+      BroadcastEvent.project.onActiveProjectSet(project);
+    }
   }
 };
 
@@ -118,7 +127,9 @@ async function saveProject(project: ProjectData) {
 
 const ProjectViewModel = {
   activeProject,
+  groupTasksBy,
   tasks,
+  hasActiveProjectRequest,
   setActiveProject,
   projectGroupBy,
   deleteProject,

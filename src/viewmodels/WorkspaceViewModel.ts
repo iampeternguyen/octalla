@@ -7,6 +7,7 @@ import { WorkspaceData } from 'src/models/Workspace';
 import AppRepository from 'src/repository/AppRepository';
 import permissions from 'src/router/permissions';
 import { ref, computed } from 'vue';
+import ProjectViewModel from './ProjectViewModel';
 import UIViewModel from './UIViewModel';
 import UserViewModel from './UserViewModel';
 
@@ -22,6 +23,7 @@ const workspaceFolderStructure = computed(
   () => _activeSpace.value?.projects_structure || []
 );
 const competencies = computed(() => _competencies.value);
+
 // Subscriptions
 PubSub.subscribe(
   EVENT_ACTIVE_WORKSPACE_SET,
@@ -124,6 +126,11 @@ function removeWorkspaceProject(project: ProjectData) {
 
 function addWorkspaceProject(project: ProjectData) {
   _projects.value.push(project);
+  if (
+    ProjectViewModel.hasActiveProjectRequest.value &&
+    ProjectViewModel.hasActiveProjectRequest.value == project.id
+  )
+    ProjectViewModel.setActiveProject(project.id);
 }
 
 // Projects change handlers
