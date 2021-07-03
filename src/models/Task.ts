@@ -1,14 +1,9 @@
 import { nanoid } from 'nanoid';
+import { TASK_STATUS } from 'src/viewmodels/TaskViewModel';
 import UserViewModel from 'src/viewmodels/UserViewModel';
 import DatabaseModel from './DatabaseModel';
 
 export const TASKS_STORENAME = 'tasks';
-export const TASKS_STATUS_OPTIONS = [
-  'open',
-  'in-progress',
-  'review',
-  'complete',
-];
 
 export interface TaskData {
   created_at: number;
@@ -40,8 +35,7 @@ export default class Task extends DatabaseModel implements TaskData {
   workspace_id: string;
   created_by: string;
   order: number;
-
-  private _status: string;
+  status: string;
 
   constructor(
     name: string,
@@ -64,52 +58,10 @@ export default class Task extends DatabaseModel implements TaskData {
     // TODO refactor this to pass user not grab it from settings
     this.created_by =
       data?.created_by || UserViewModel.settings.value?.id || '';
-    this._status = data?.status || 'open';
+    this.status = data?.status || TASK_STATUS.OPEN;
     this.due_date = data?.due_date || 0;
     // TODO get order from task
     this.order = data?.order || 0;
-  }
-
-  get status() {
-    return this._status;
-  }
-
-  set status(value: string) {
-    this._status = value;
-    value == TASKS_STATUS_OPTIONS[3]
-      ? (this.isComplete = true)
-      : (this.isComplete = false);
-  }
-
-  async toggleComplete() {
-    this.isComplete = !this.isComplete;
-    if (this.isComplete) this.status = TASKS_STATUS_OPTIONS[3];
-    // TODO fix this
-    // await this.save();
-  }
-
-  async toggleStatus() {
-    switch (this.status) {
-      case TASKS_STATUS_OPTIONS[0]:
-        this.status = TASKS_STATUS_OPTIONS[1];
-        break;
-      case TASKS_STATUS_OPTIONS[1]:
-        this.status = TASKS_STATUS_OPTIONS[2];
-        break;
-      case TASKS_STATUS_OPTIONS[2]:
-        this.status = TASKS_STATUS_OPTIONS[3];
-        break;
-      case TASKS_STATUS_OPTIONS[3]:
-        this.status = TASKS_STATUS_OPTIONS[0];
-        break;
-      default:
-        break;
-    }
-    this.status == TASKS_STATUS_OPTIONS[3]
-      ? (this.isComplete = true)
-      : (this.isComplete = false);
-    // TODO FIX THIS
-    // await this.save();
   }
 
   serialize(): TaskData {

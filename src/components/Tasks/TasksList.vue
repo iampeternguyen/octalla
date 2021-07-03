@@ -35,7 +35,7 @@
 import { QInput } from 'quasar';
 import Task, { TaskData } from 'src/models/Task';
 import ProjectViewModel from 'src/viewmodels/ProjectViewModel';
-import TaskViewModel from 'src/viewmodels/TaskViewModel';
+import TaskViewModel, { TASK_STATUS } from 'src/viewmodels/TaskViewModel';
 import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
 import { defineComponent, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';

@@ -57,6 +57,7 @@
             icon="eva-checkmark-outline"
             flat
             rounded
+            @click.stop="onToggleComplete"
           >
             <q-tooltip class="bg-secondary">Mark Complete</q-tooltip>
           </q-btn>
@@ -78,7 +79,7 @@
 
 <script lang="ts">
 import { useQuasar, date } from 'quasar';
-import Task from 'src/models/Task';
+import { TaskData } from 'src/models/Task';
 import { defineComponent, ref, PropType, computed } from 'vue';
 import TaskEditModal from 'src/components/Tasks/TaskEditModal.vue';
 import TaskViewModel from 'src/viewmodels/TaskViewModel';
@@ -86,7 +87,7 @@ import TaskViewModel from 'src/viewmodels/TaskViewModel';
 export default defineComponent({
   props: {
     task: {
-      type: Object as PropType<Task>,
+      type: Object as PropType<TaskData>,
       required: true,
     },
   },
@@ -97,12 +98,12 @@ export default defineComponent({
 
     const taskHovered = ref(false);
     async function onToggleComplete() {
-      await props.task.toggleComplete();
+      await TaskViewModel.toggleComplete(props.task);
       isComplete.value = !isComplete.value;
     }
 
     async function onDelete() {
-      await TaskViewModel.saveTask(props.task.serialize());
+      await TaskViewModel.deleteTask(props.task);
     }
 
     function onTaskClicked() {
@@ -131,7 +132,7 @@ export default defineComponent({
         task.due_date = date
           .extractDate(dueDate.value, 'YYYY-MM-DD HH:mm')
           .getTime();
-        await TaskViewModel.saveTask(task.serialize());
+        await TaskViewModel.saveTask(task);
       }
     }
 

@@ -105,9 +105,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch, computed } from 'vue';
+import { defineComponent, ref, computed } from 'vue';
 
-import { TASKS_STATUS_OPTIONS } from 'src/models/Task';
 import TasksList from 'src/components/Tasks/TasksList.vue';
 import EditProjectName from 'src/components/Projects/ProjectManagementLayout/EditProjectName.vue';
 import EditProjectGoal from 'src/components/Projects/ProjectManagementLayout/EditProjectGoal.vue';
@@ -117,6 +116,7 @@ import CompetencyAddMenu from 'src/components/Workspace/Menus/CompetencyAddMenu.
 import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
 import ProjectViewModel from 'src/viewmodels/ProjectViewModel';
 import UIViewModel from 'src/viewmodels/UIViewModel';
+import TaskViewModel from 'src/viewmodels/TaskViewModel';
 
 export default defineComponent({
   components: {
@@ -137,7 +137,7 @@ export default defineComponent({
         const competencies = WorkspaceViewModel.competencies.value;
         return competencies.map((comp) => comp.name);
       } else {
-        return TASKS_STATUS_OPTIONS;
+        return TaskViewModel.statuses;
       }
     });
 
@@ -162,7 +162,6 @@ export default defineComponent({
       text,
       filteredTasks,
       tasks,
-      TASKS_STATUS_OPTIONS,
       activeProject,
       onToggleLeftDrawer: UIViewModel.appLeftDrawer.onToggleProjectLeftDrawer,
       onToggleRightDrawer,

@@ -11,7 +11,7 @@ const routes: RouteRecordRaw[] = [
     path: '/app/',
     component: () => import('src/layouts/AppLayout.vue'),
     beforeEnter: (to, from, next) => {
-      // TODO workspace should also jump to mose recent project
+      // TODO workspace should also jump to mose recent
       if (
         !UserViewModel.settings.value ||
         (!UserViewModel.settings.value.most_recent_workspace &&

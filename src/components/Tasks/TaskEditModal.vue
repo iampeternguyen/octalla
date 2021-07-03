@@ -13,13 +13,17 @@
         <q-card-section class="col-6 task-edit-modal__body-left">
           <div class="row justify-between q-mb-md">
             <div class="row">
-              <q-btn color="primary" :label="task.status" />
+              <q-btn
+                color="primary"
+                :label="task.status"
+                @click="toggleStatus"
+              />
               <q-btn
                 dense
                 class="q-ml-xs"
                 color="primary"
                 icon="eva-arrow-ios-forward-outline"
-                @click="onDialogHide"
+                @click="toggleComplete"
               />
               <q-btn color="primary" icon="eva-person-add-outline" round flat />
             </div>
@@ -125,7 +129,7 @@ export default {
   ],
 
   setup(props: { task: Task }) {
-    const taskEditModel = reactive<Task>(Task.deserialize(props.task));
+    const taskEditModel = reactive<TaskData>(props.task);
     const isNotSaved = ref(false);
     const isSaving = ref(false);
     const showTaskModal = ref(true);
@@ -163,7 +167,7 @@ export default {
         })
       ) {
         isSaving.value = true;
-        await TaskViewModel.saveTask(taskEditModel.serialize());
+        await TaskViewModel.saveTask(taskEditModel);
         isNotSaved.value = false;
         await debounceResetIsSaving();
       }
@@ -176,6 +180,14 @@ export default {
         (document.activeElement as HTMLElement).blur();
         showTaskModal.value = val;
       }
+    }
+
+    async function toggleStatus() {
+      await TaskViewModel.toggleStatus(taskEditModel);
+    }
+
+    async function toggleComplete() {
+      await TaskViewModel.toggleComplete(taskEditModel);
     }
 
     // REQUIRED; must be called inside of setup()
@@ -191,7 +203,8 @@ export default {
 
     return {
       taskEditModel,
-
+      toggleStatus,
+      toggleComplete,
       isSaving,
       onUpdateDescription,
       saveTask,
