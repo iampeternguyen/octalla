@@ -1,12 +1,5 @@
 <template>
   <q-layout view="lHh lpR fFf">
-    <q-header class="bg-white text-primary constrain" height-hint="98">
-      <q-toolbar class="row justify-between q-py-lg">
-        <q-img src="/logo/Logo_Full.png" width="12rem" fit="scale-down" />
-        <div>Menu</div>
-      </q-toolbar>
-    </q-header>
-
     <q-page-container>
       <router-view />
     </q-page-container>

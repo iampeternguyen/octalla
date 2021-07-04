@@ -4,8 +4,10 @@ import { RouteRecordRaw } from 'vue-router';
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    component: () => import('src/layouts/MainLayout.vue'),
-    children: [{ path: '', component: () => import('pages/Index.vue') }],
+    component: () => import('src/layouts/LandingPageLayout.vue'),
+    children: [
+      { path: '', component: () => import('src/pages/LandingPage.vue') },
+    ],
   },
   {
     path: '/app/',
@@ -59,7 +61,7 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/app/onboarding',
-    component: () => import('src/layouts/MainLayout.vue'),
+    component: () => import('src/layouts/LandingPageLayout.vue'),
     children: [
       {
         name: 'onboarding',
@@ -119,7 +121,7 @@ const routes: RouteRecordRaw[] = [
 
   {
     path: '/app/login',
-    component: () => import('src/layouts/MainLayout.vue'),
+    component: () => import('src/layouts/LandingPageLayout.vue'),
     children: [
       {
         name: 'login',

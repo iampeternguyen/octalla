@@ -1,5 +1,12 @@
 <template>
-  <section id="firebaseui-auth-container"></section>
+  <q-page class="bg-secondary row justify-center items-center" padding>
+    <q-card class="login-card column justify-center items-center q-pa-xl">
+      <section id="firebaseui-auth-container"></section>
+      <div class="q-mt-md">
+        Get ready to make something awesome. Register/Sign-In to get started.
+      </div>
+    </q-card>
+  </q-page>
 </template>
 
 <script lang="ts">
@@ -25,4 +32,9 @@ export default defineComponent({
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+.login-card {
+  min-height: 40rem;
+  min-width: 40rem;
+}
+</style>

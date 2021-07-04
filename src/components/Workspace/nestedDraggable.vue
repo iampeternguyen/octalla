@@ -10,41 +10,30 @@
         <q-icon
           name="eva-browser-outline"
           class="handle"
-          :class="{
-            'text-primary': isActive(element.id),
-          }"
+          :class="{ active: element.id == activeProject?.id }"
         />
-        <router-link
-          class="left-drawer-project-link folder"
-          :to="{
-            name: 'project',
-            params: {
-              project_id: element.id,
-            },
-          }"
-          :class="{
-            'left-drawer-project-link__active': isActive(element.id),
-          }"
-        >
-          <q-expansion-item
-            dense
-            expand-icon-toggle
-            :expand-icon-class="{ 'text-primary': isActive(element.id) }"
-            default-opened
-          >
+        <div class="folder">
+          <q-expansion-item dense expand-icon-toggle default-opened>
             <template v-slot:header>
-              <q-item-section> {{ element.name }} </q-item-section>
-
-              <q-item-section side>
-                <div class="row items-center"></div>
+              <q-item-section>
+                <router-link
+                  class="left-drawer-project-link"
+                  :class="{ active: element.id == activeProject?.id }"
+                  :to="{
+                    name: 'project',
+                    params: {
+                      project_id: element.id,
+                    },
+                  }"
+                >
+                  {{ element.name }}
+                </router-link>
               </q-item-section>
             </template>
-            <nested-draggable
-              :folders="element.children"
-              class="q-pl-md"
-            ></nested-draggable>
+
+            <nested-draggable :folders="element.children"></nested-draggable>
           </q-expansion-item>
-        </router-link>
+        </div>
       </div>
     </template>
   </draggable>
@@ -70,11 +59,8 @@ export default defineComponent({
   setup() {
     const activeProject = ProjectViewModel.activeProject;
 
-    function isActive(project_id: string) {
-      return project_id == activeProject.value?.id;
-    }
     return {
-      isActive,
+      activeProject,
     };
   },
 });
@@ -101,12 +87,12 @@ export default defineComponent({
 .left-drawer-project-link {
   text-decoration: none;
   font-size: 1.4rem;
-  color: $grey-8;
+  color: white;
+}
 
-  &__active {
-    color: $primary;
-    font-weight: 500;
-  }
+.active {
+  color: $primary;
+  font-weight: 500;
 }
 
 ul {

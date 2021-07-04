@@ -13,6 +13,27 @@
   src: url(./fonts/noto-sans-v12-vietnamese_latin-700.woff);
 }
 
+@font-face {
+  font-family: 'Kanit';
+  font-style: normal;
+  font-weight: 400;
+  src: url(./fonts/kanit-v7-vietnamese_latin-regular.woff);
+}
+
+@font-face {
+  font-family: 'Kanit';
+  font-style: normal;
+  font-weight: 700;
+  src: url(./fonts/kanit-v7-vietnamese_latin-700.woff);
+}
+
+@font-face {
+  font-family: 'Kanit';
+  font-style: normal;
+  font-weight: 900;
+  src: url(./fonts/kanit-v7-vietnamese_latin-900.woff);
+}
+
 html {
   font-size: 62.5%;
   box-sizing: border-box;
@@ -26,6 +47,21 @@ body {
 
 .text-caption {
   font-size: 1.2rem;
+}
+
+.text-kanit {
+  font-family: 'Kanit';
+  font-weight: 400;
+}
+
+.text-kanit-bold {
+  font-family: 'Kanit';
+  font-weight: 700;
+}
+
+.text-kanit-extra-bold {
+  font-family: 'Kanit';
+  font-weight: 900;
 }
 
 .constrain {

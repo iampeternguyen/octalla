@@ -1,13 +1,13 @@
 <template>
   <q-input
     ref="nameInput"
-    class="edit-project-name"
+    class="edit-project-name q-ml-md"
     flat
     borderless
     v-model="name"
     @keydown.enter.prevent="onEnterPressed"
     @blur="onNameSaved"
-    input-class="text-primary edit-project-name__input"
+    input-class="text-grey-8 text-kanit-extra-bold edit-project-name__input"
   >
   </q-input>
 </template>

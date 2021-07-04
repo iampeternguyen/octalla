@@ -1,10 +1,11 @@
 <template>
   <div :key="activeProject?.id">
-    <q-header class="bg-white text-primary shadow-2" height-hint="98">
-      <q-toolbar class="row justify-between">
+    <q-header class="bg-white text-grey-8" height-hint="98">
+      <q-toolbar class="row justify-between shadow-1">
         <q-btn dense flat round icon="menu" @click="onToggleLeftDrawer" />
 
         <edit-project-name
+          class="col-2"
           v-if="activeProject"
           :project="activeProject"
         ></edit-project-name>
@@ -23,7 +24,7 @@
           @click="onToggleRightDrawer"
         />
       </q-toolbar>
-      <q-toolbar class="bg-purple text-white">
+      <q-toolbar class="shadow-2">
         <q-toolbar-title> Toolbar </q-toolbar-title>
         <q-btn
           flat
@@ -84,7 +85,7 @@
       ></edit-project-success>
     </q-drawer>
 
-    <q-page>
+    <q-page class="page">
       <q-scroll-area class="scroll-area q-pa-md" visible>
         <div class="row q-gutter-md no-wrap">
           <tasks-list
@@ -175,7 +176,18 @@ export default defineComponent({
 });
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
+.page {
+  background-color: #e5e5f7;
+  opacity: 0.8;
+  background-image: linear-gradient(#cbceff 2px, transparent 2px),
+    linear-gradient(90deg, #cbceff 2px, transparent 2px),
+    linear-gradient(#cbceff 1px, transparent 1px),
+    linear-gradient(90deg, #cbceff 1px, #e5e5f7 1px);
+  background-size: 50px 50px, 50px 50px, 10px 10px, 10px 10px;
+  background-position: -2px -2px, -2px -2px, -1px -1px, -1px -1px;
+}
+
 .scroll-area {
   height: 60vh;
 }

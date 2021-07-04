@@ -35,7 +35,7 @@
 import { QInput } from 'quasar';
 import Task, { TaskData } from 'src/models/Task';
 import ProjectViewModel from 'src/viewmodels/ProjectViewModel';
-import TaskViewModel, { TASK_STATUS } from 'src/viewmodels/TaskViewModel';
+import TaskViewModel from 'src/viewmodels/TaskViewModel';
 import UserViewModel from 'src/viewmodels/UserViewModel';
 import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
 import { defineComponent, ref, watch } from 'vue';
@@ -170,6 +170,10 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
+.project-list-category-card {
+  border-top: 0.3rem solid $secondary;
+}
+
 .tasks-list {
   max-width: 20rem;
 }
