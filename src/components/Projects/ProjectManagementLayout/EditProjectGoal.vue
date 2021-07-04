@@ -41,7 +41,7 @@ export default defineComponent({
       console.log('saving');
       const project = props.project;
       project.primary_goal = goal.value.trim();
-      await ProjectViewModel.saveProject(project);
+      await ProjectViewModel.updateProject(project);
     }
 
     return { goal, goalInput, onGoalSaved, onEnterPressed };

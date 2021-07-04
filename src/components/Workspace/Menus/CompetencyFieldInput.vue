@@ -27,6 +27,7 @@
 </template>
 <script lang="ts">
 import Competency from 'src/models/Competency';
+import UserViewModel from 'src/viewmodels/UserViewModel';
 import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
 import { defineComponent, watch, PropType, ref } from 'vue';
 
@@ -69,9 +70,14 @@ export default defineComponent({
         competency.description = description.value;
         await competency.save();
         formState.saving = false;
-      } else if (!props.competency && WorkspaceViewModel.activeSpace.value) {
+      } else if (
+        !props.competency &&
+        WorkspaceViewModel.activeSpace.value &&
+        UserViewModel.settings.value
+      ) {
         const competency = new Competency(
           name.value,
+          UserViewModel.settings.value.id,
           WorkspaceViewModel.activeSpace.value.id
         );
         competency.description = description.value;

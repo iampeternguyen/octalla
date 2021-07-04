@@ -167,7 +167,7 @@ export default {
         })
       ) {
         isSaving.value = true;
-        await TaskViewModel.saveTask(taskEditModel);
+        await TaskViewModel.updateTask(taskEditModel);
         isNotSaved.value = false;
         await debounceResetIsSaving();
       }

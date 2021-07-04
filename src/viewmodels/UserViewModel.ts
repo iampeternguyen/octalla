@@ -11,7 +11,7 @@ import BroadcastEvent, {
   EVENT_WORKSPACE_DELETED,
 } from 'src/events/BroadcastEvents';
 import AppRepository from 'src/repository/AppRepository';
-import { UserSettingsData } from 'src/models/UserSettings';
+import UserSettings from 'src/models/UserSettings';
 import { WORKSPACE_ROLE } from 'src/models/Role';
 import { WorkspaceData } from 'src/models/Workspace';
 import { ProjectData } from 'src/models/Project';
@@ -55,7 +55,7 @@ PubSub.subscribe(
 // state
 const _isLoggedIn = ref(false);
 const _attemptedLogIn = ref(false);
-const _settings = ref<UserSettingsData | null>(null);
+const _settings = ref<UserSettings | null>(null);
 const _role = ref<WORKSPACE_ROLE | null>(null);
 // getters
 const isLoggedIn = async () => {
@@ -66,7 +66,7 @@ const isLoggedIn = async () => {
   return isAuth;
 };
 
-const settings = computed(() => _settings.value);
+const settings = computed(() => _settings.value?.serialize());
 const role = computed(() => _role.value);
 
 // workspace changes
@@ -74,7 +74,7 @@ async function addWorkspaceToSettings(workspace: WorkspaceData) {
   if (!_settings.value) throw 'user settings missing';
 
   _settings.value.workspaces.push(workspace.id);
-  await AppRepository.user.saveUserSettings(_settings.value);
+  await AppRepository.user.saveUserSettings(_settings.value.serialize());
 }
 
 async function removeWorkspaceFromSettings(workspace: WorkspaceData) {
@@ -85,7 +85,7 @@ async function removeWorkspaceFromSettings(workspace: WorkspaceData) {
   _settings.value.workspaces.splice(index, 1);
   if (_settings.value.workspaces[0])
     _settings.value.most_recent_workspace = _settings.value.workspaces[0];
-  await AppRepository.user.saveUserSettings(_settings.value);
+  await AppRepository.user.saveUserSettings(_settings.value.serialize());
 }
 
 // project changes
@@ -100,7 +100,7 @@ async function updateMostRecent(workspaceId: string, project?: ProjectData) {
     _settings.value.most_recent_workspace = workspaceId;
   }
 
-  await AppRepository.user.saveUserSettings(_settings.value);
+  await AppRepository.user.saveUserSettings(_settings.value.serialize());
 }
 
 async function removeProjectIfMostRecent(project: ProjectData) {
@@ -108,7 +108,7 @@ async function removeProjectIfMostRecent(project: ProjectData) {
 
   if (_settings.value.most_recent_project == project.id) {
     _settings.value.most_recent_project = '';
-    await AppRepository.user.saveUserSettings(_settings.value);
+    await AppRepository.user.saveUserSettings(_settings.value.serialize());
   }
 }
 
@@ -145,7 +145,9 @@ function userIsAuthenticated(): Promise<boolean> {
 
 async function fetchUserSettings(user: User) {
   _isLoggedIn.value = true;
-  _settings.value = await AppRepository.user.fetchUserSettings(user);
+  _settings.value = UserSettings.deserialize(
+    await AppRepository.user.fetchUserSettings(user)
+  );
 }
 
 async function setUserRole(workspace: WorkspaceData) {

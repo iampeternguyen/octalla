@@ -1,13 +1,10 @@
-import DatabaseModel from './DatabaseModel';
+import DatabaseModel, { DatabaseModelData } from './DatabaseModel';
 
 export const USER_SETTINGS_STORENAME = 'user_settings';
 
 // TODO refactor this for multiple spaces
 
-export interface UserSettingsData {
-  created_at: number;
-  id: string;
-  last_modified: number;
+export interface UserSettingsData extends DatabaseModelData {
   display_name: string;
   email: string;
   most_recent_workspace: string;

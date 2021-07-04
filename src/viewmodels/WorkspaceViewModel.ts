@@ -1,28 +1,31 @@
 import BroadcastEvent, {
   EVENT_ACTIVE_WORKSPACE_SET,
 } from 'src/events/BroadcastEvents';
-import { CompetencyData } from 'src/models/Competency';
-import { ProjectData } from 'src/models/Project';
-import { WorkspaceData } from 'src/models/Workspace';
+import Competency, { CompetencyData } from 'src/models/Competency';
+import Project, { ProjectData } from 'src/models/Project';
+import Workspace, { WorkspaceData } from 'src/models/Workspace';
 import AppRepository from 'src/repository/AppRepository';
 import permissions from 'src/router/permissions';
 import { ref, computed } from 'vue';
-import ProjectViewModel from './ProjectViewModel';
 import UIViewModel from './UIViewModel';
 import UserViewModel from './UserViewModel';
 
 // state
-const _activeSpace = ref<WorkspaceData | null>(null);
-const _projects = ref<ProjectData[]>([]);
-const _competencies = ref<CompetencyData[]>([]);
+const _activeSpace = ref<Workspace | null>(null);
+const _projects = ref<Project[]>([]);
+const _competencies = ref<Competency[]>([]);
 
 // getters
-const activeSpace = computed(() => _activeSpace.value);
-const projects = computed(() => _projects.value);
+const activeSpace = computed(() => _activeSpace.value?.serialize());
+const projects = computed(() =>
+  _projects.value.map((proj) => proj.serialize())
+);
 const workspaceFolderStructure = computed(
   () => _activeSpace.value?.projects_structure || []
 );
-const competencies = computed(() => _competencies.value);
+const competencies = computed(() =>
+  _competencies.value.map((comp) => comp.serialize())
+);
 
 // Subscriptions
 PubSub.subscribe(
@@ -53,7 +56,10 @@ async function createWorkspace(workspaceName: string) {
 async function updateWorkspaceName(name: string) {
   if (!_activeSpace.value || !permissions.workspace.canUpdate()) return;
   console.log('permission to update workspace');
-  await AppRepository.workspace.updateWorkspaceName(_activeSpace.value, name);
+  await AppRepository.workspace.updateWorkspaceName(
+    _activeSpace.value.serialize(),
+    name
+  );
   _activeSpace.value.name = name;
 }
 
@@ -81,12 +87,12 @@ async function deleteWorkspace(workspace: WorkspaceData) {
 // setting active space
 async function setActiveWorkspace(workspaceId: string) {
   if (_activeSpace.value?.id == workspaceId) return;
-  _activeSpace.value = await AppRepository.workspace.fetchWorkspace(
-    workspaceId
+  _activeSpace.value = Workspace.deserialize(
+    await AppRepository.workspace.fetchWorkspace(workspaceId)
   );
 
   await UserViewModel.setUserRole(_activeSpace.value);
-  BroadcastEvent.workspace.onActiveWorkspaceSet(_activeSpace.value);
+  BroadcastEvent.workspace.onActiveWorkspaceSet(_activeSpace.value.serialize());
 }
 
 function watchWorkspaceProjects(workspace: WorkspaceData) {
@@ -114,23 +120,21 @@ function clearWorkspaceProjects() {
   _projects.value.splice(0, _projects.value.length);
 }
 
-function updateWorkspaceProject(project: ProjectData) {
+function updateWorkspaceProject(projectData: ProjectData) {
+  const project = Project.deserialize(projectData);
   const index = _projects.value.findIndex((t) => t.id == project.id);
   _projects.value.splice(index, 1, project);
 }
 
-function removeWorkspaceProject(project: ProjectData) {
+function removeWorkspaceProject(projectData: ProjectData) {
+  const project = Project.deserialize(projectData);
   const index = _projects.value.findIndex((t) => t.id == project.id);
   _projects.value.splice(index, 1);
 }
 
-function addWorkspaceProject(project: ProjectData) {
+function addWorkspaceProject(projectData: ProjectData) {
+  const project = Project.deserialize(projectData);
   _projects.value.push(project);
-  if (
-    ProjectViewModel.hasActiveProjectRequest.value &&
-    ProjectViewModel.hasActiveProjectRequest.value == project.id
-  )
-    ProjectViewModel.setActiveProject(project.id);
 }
 
 // Projects change handlers
@@ -138,17 +142,20 @@ function clearWorkspaceCompetencies() {
   _competencies.value.splice(0, _competencies.value.length);
 }
 
-function updateWorkspaceCompetency(competency: CompetencyData) {
+function updateWorkspaceCompetency(competencyData: CompetencyData) {
+  const competency = Competency.deserialize(competencyData);
   const index = _competencies.value.findIndex((t) => t.id == competency.id);
   _competencies.value.splice(index, 1, competency);
 }
 
-function removeWorkspaceCompetency(competency: CompetencyData) {
+function removeWorkspaceCompetency(competencyData: CompetencyData) {
+  const competency = Competency.deserialize(competencyData);
   const index = _competencies.value.findIndex((t) => t.id == competency.id);
   _competencies.value.splice(index, 1);
 }
 
-function addWorkspaceCompetency(competency: CompetencyData) {
+function addWorkspaceCompetency(competencyData: CompetencyData) {
+  const competency = Competency.deserialize(competencyData);
   _competencies.value.push(competency);
 }
 

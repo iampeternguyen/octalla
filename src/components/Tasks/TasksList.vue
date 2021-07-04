@@ -36,6 +36,7 @@ import { QInput } from 'quasar';
 import Task, { TaskData } from 'src/models/Task';
 import ProjectViewModel from 'src/viewmodels/ProjectViewModel';
 import TaskViewModel, { TASK_STATUS } from 'src/viewmodels/TaskViewModel';
+import UserViewModel from 'src/viewmodels/UserViewModel';
 import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
 import { defineComponent, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
@@ -92,9 +93,10 @@ export default defineComponent({
     const text = ref('');
 
     async function addTask() {
-      if (!text.value) return;
+      if (!text.value || !UserViewModel.settings.value) return;
       const task = new Task(
         text.value,
+        UserViewModel.settings.value.id,
         route.params.project_id.toString(),
         route.params.workspace_id.toString()
       );
@@ -108,7 +110,7 @@ export default defineComponent({
       } else if (props.field == 'Empty' && props.category == 'competency') {
         task[props.category] = '';
       }
-      await TaskViewModel.saveTask(task.serialize());
+      await TaskViewModel.updateTask(task.serialize());
       text.value = '';
       addTaskInputRef.value?.resetValidation();
       addTaskInputRef.value?.blur();
@@ -133,7 +135,7 @@ export default defineComponent({
         }
 
         if (taskList.value.length <= 1) {
-          await TaskViewModel.saveTask(task.serialize());
+          await TaskViewModel.updateTask(task.serialize());
           return;
         }
       } else if (evt.moved) {
@@ -153,7 +155,7 @@ export default defineComponent({
             taskList.value[newIndex - 1].order) /
           2;
       }
-      await TaskViewModel.saveTask(task.serialize());
+      await TaskViewModel.updateTask(task.serialize());
     }
 
     return {

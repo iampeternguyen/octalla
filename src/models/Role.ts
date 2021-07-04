@@ -1,5 +1,4 @@
-import { db } from 'src/firebase';
-import DatabaseModel from './DatabaseModel';
+import DatabaseModel, { DatabaseModelData } from './DatabaseModel';
 
 export enum WORKSPACE_ROLE {
   ADMIN = 'ADMIN',
@@ -10,13 +9,10 @@ export enum WORKSPACE_ROLE {
 export const ROLES_STORENAME = 'roles';
 export const ROLES_MEMBERS_STORENAME = 'members';
 
-export interface WorkspaceRoleData {
-  id: string;
+export interface WorkspaceRoleData extends DatabaseModelData {
   role: WORKSPACE_ROLE;
-  workspace_id: string;
   user_id: string;
-  created_at: number;
-  last_modified: number;
+  workspace_id: string;
 }
 
 export default class WorkspaceRole
@@ -48,30 +44,6 @@ export default class WorkspaceRole
     this.last_modified = data?.last_modified || Date.now();
     this.role = role;
     this.user_id = user_id;
-  }
-
-  async save() {
-    try {
-      this.last_modified = Date.now();
-
-      await db
-        .collection(ROLES_STORENAME)
-        .doc(this.workspace_id)
-        .collection(ROLES_MEMBERS_STORENAME)
-        .doc(this.user_id)
-        .set(this.serialize());
-    } catch (error) {
-      console.log('error saving: ', error);
-    }
-  }
-
-  async delete() {
-    await db
-      .collection(ROLES_STORENAME)
-      .doc(this.workspace_id)
-      .collection(ROLES_MEMBERS_STORENAME)
-      .doc(this.user_id)
-      .delete();
   }
 
   serialize(): WorkspaceRoleData {

@@ -45,7 +45,7 @@ export default defineComponent({
       const project = props.project;
 
       project.success_looks_like = success.value.trim();
-      await ProjectViewModel.saveProject(project);
+      await ProjectViewModel.updateProject(project);
     }
 
     return { success, successInput, onGoalSaved, onEnterPressed };

@@ -1,44 +1,41 @@
 import { nanoid } from 'nanoid';
 import { TASK_STATUS } from 'src/viewmodels/TaskViewModel';
-import UserViewModel from 'src/viewmodels/UserViewModel';
-import DatabaseModel from './DatabaseModel';
+import DatabaseModel, { DatabaseModelData } from './DatabaseModel';
 
 export const TASKS_STORENAME = 'tasks';
 
-export interface TaskData {
-  created_at: number;
-  description: string;
-  id: string;
-  isComplete: boolean;
-  last_modified: number;
-  due_date: number;
-  name: string;
-  status: string;
-  project_id: string;
+export interface TaskData extends DatabaseModelData {
   competency: string;
-  workspace_id: string;
   created_by: string;
+  description: string;
+  due_date: number;
+  isComplete: boolean;
+  name: string;
   order: number;
+  project_id: string;
+  status: string;
+  workspace_id: string;
 }
 
 export default class Task extends DatabaseModel implements TaskData {
   STORE_NAME: 'tasks';
-  name: string;
+  competency: string;
   created_at: number;
+  created_by: string;
   description: string;
+  due_date: number;
   id: string;
   isComplete: boolean;
   last_modified: number;
-  project_id: string;
-  competency: string;
-  due_date: number;
-  workspace_id: string;
-  created_by: string;
+  name: string;
   order: number;
+  project_id: string;
   status: string;
+  workspace_id: string;
 
   constructor(
     name: string,
+    userId: string,
     projectId: string,
     workspaceId: string,
     data?: TaskData
@@ -55,13 +52,50 @@ export default class Task extends DatabaseModel implements TaskData {
     this.project_id = projectId;
     this.competency = data?.competency || '';
     this.workspace_id = workspaceId;
-    // TODO refactor this to pass user not grab it from settings
-    this.created_by =
-      data?.created_by || UserViewModel.settings.value?.id || '';
+    this.created_by = userId;
     this.status = data?.status || TASK_STATUS.OPEN;
     this.due_date = data?.due_date || 0;
     // TODO get order from task
     this.order = data?.order || 0;
+  }
+
+  changeStatus(status: string) {
+    this.status = status;
+    status == TASK_STATUS.COMPLETE
+      ? (this.isComplete = true)
+      : (this.isComplete = false);
+  }
+
+  toggleComplete() {
+    this.isComplete = !this.isComplete;
+    if (this.isComplete) {
+      this.status = TASK_STATUS.COMPLETE;
+    } else if (this.status == TASK_STATUS.COMPLETE) {
+      this.status = TASK_STATUS.OPEN;
+    }
+  }
+
+  toggleStatus() {
+    switch (this.status) {
+      case TASK_STATUS.OPEN:
+        this.status = TASK_STATUS.IN_PROGRESS;
+        break;
+      case TASK_STATUS.IN_PROGRESS:
+        this.status = TASK_STATUS.REVIEW;
+        break;
+      case TASK_STATUS.REVIEW:
+        this.status = TASK_STATUS.COMPLETE;
+        break;
+      case TASK_STATUS.COMPLETE:
+        this.status = TASK_STATUS.OPEN;
+        break;
+      default:
+        break;
+    }
+
+    this.status == TASK_STATUS.COMPLETE
+      ? (this.isComplete = true)
+      : (this.isComplete = false);
   }
 
   serialize(): TaskData {
@@ -85,6 +119,7 @@ export default class Task extends DatabaseModel implements TaskData {
   static deserialize(taskData: TaskData): Task {
     return new Task(
       taskData.name,
+      taskData.created_by,
       taskData.project_id,
       taskData.workspace_id,
       taskData

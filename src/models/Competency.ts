@@ -1,18 +1,14 @@
 import { nanoid } from 'nanoid';
 import { db } from 'src/firebase';
-import UserViewModel from 'src/viewmodels/UserViewModel';
-import DatabaseModel from './DatabaseModel';
+import DatabaseModel, { DatabaseModelData } from './DatabaseModel';
 
 export const COMPETENCIES_STORENAME = 'competencies';
 
-export interface CompetencyData {
-  created_at: number;
+export interface CompetencyData extends DatabaseModelData {
   created_by: string;
-  workspace_id: string;
-  id: string;
-  last_modified: number;
   name: string;
   description: string;
+  workspace_id: string;
 }
 
 export default class Competency
@@ -28,7 +24,12 @@ export default class Competency
   description: string;
   workspace_id: string;
 
-  constructor(name: string, workspace_id: string, data?: CompetencyData) {
+  constructor(
+    name: string,
+    userId: string,
+    workspace_id: string,
+    data?: CompetencyData
+  ) {
     super();
     // for database model abstract class
     this.STORE_NAME = COMPETENCIES_STORENAME;
@@ -39,8 +40,7 @@ export default class Competency
     this.description = data?.description || '';
     this.id = data?.id || nanoid();
     this.last_modified = data?.last_modified || Date.now();
-    this.created_by =
-      data?.created_by || UserViewModel.settings.value?.id || '';
+    this.created_by = userId;
   }
 
   serialize(): CompetencyData {
@@ -87,6 +87,7 @@ export default class Competency
   static deserialize(competencyData: CompetencyData) {
     return new Competency(
       competencyData.name,
+      competencyData.created_by,
       competencyData.workspace_id,
       competencyData
     );

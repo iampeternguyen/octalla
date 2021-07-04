@@ -6,7 +6,17 @@ import { UserSettingsData } from './UserSettings';
 import { CompetencyData } from './Competency';
 import { WorkspaceRoleData } from './Role';
 
-export default abstract class DatabaseModel {
+export interface DatabaseModelData {
+  id: string;
+  last_modified: number;
+  created_at: number;
+}
+
+export default abstract class DatabaseModel implements DatabaseModelData {
+  abstract id: string;
+  abstract last_modified: number;
+  abstract created_at: number;
+
   abstract STORE_NAME:
     | 'tasks'
     | 'projects'
@@ -15,8 +25,6 @@ export default abstract class DatabaseModel {
     | 'roles'
     | 'competencies';
 
-  abstract id: string;
-  abstract last_modified: number;
   abstract serialize():
     | TaskData
     | ProjectData

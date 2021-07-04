@@ -1,14 +1,11 @@
 import { nanoid } from 'nanoid';
 import UserViewModel from 'src/viewmodels/UserViewModel';
-import DatabaseModel from './DatabaseModel';
+import DatabaseModel, { DatabaseModelData } from './DatabaseModel';
 import { FolderData } from './Folder';
 
 export const WORKSPACE_STORENAME = 'workspaces';
 
-export interface WorkspaceData {
-  created_at: number;
-  id: string;
-  last_modified: number;
+export interface WorkspaceData extends DatabaseModelData {
   name: string;
   created_by: string;
   projects_structure: FolderData[];
@@ -25,7 +22,6 @@ export default class Workspace extends DatabaseModel implements WorkspaceData {
 
   constructor(name: string, data?: WorkspaceData) {
     super();
-    // for database model abstract class
 
     this.STORE_NAME = WORKSPACE_STORENAME;
     this.name = name;
@@ -42,6 +38,7 @@ export default class Workspace extends DatabaseModel implements WorkspaceData {
       created_at: this.created_at,
       id: this.id,
       last_modified: this.last_modified,
+
       name: this.name,
       created_by: this.created_by,
       projects_structure: this.projects_structure,

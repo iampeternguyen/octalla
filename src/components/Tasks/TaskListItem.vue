@@ -132,7 +132,7 @@ export default defineComponent({
         task.due_date = date
           .extractDate(dueDate.value, 'YYYY-MM-DD HH:mm')
           .getTime();
-        await TaskViewModel.saveTask(task);
+        await TaskViewModel.updateTask(task);
       }
     }
 

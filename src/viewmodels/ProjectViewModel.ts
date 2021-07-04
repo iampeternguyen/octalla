@@ -7,6 +7,7 @@ import AppRepository from 'src/repository/AppRepository';
 import permissions from 'src/router/permissions';
 import { ref, computed } from 'vue';
 import UIViewModel from './UIViewModel';
+import UserViewModel from './UserViewModel';
 import WorkspaceViewModel from './WorkspaceViewModel';
 
 // subscriptions
@@ -18,12 +19,12 @@ PubSub.subscribe(
 );
 
 // state
-const _activeProject = ref<ProjectData | null>(null);
+const _activeProject = ref<Project | null>(null);
 const _tasks = ref<TaskData[]>([]);
 const _failedActiveProjectRequest = ref('');
 
 // getters
-const activeProject = computed(() => _activeProject.value);
+const activeProject = computed(() => _activeProject.value?.serialize());
 const tasks = computed(() => _tasks.value);
 const groupTasksBy = computed(() => _activeProject.value?.group_by);
 const hasActiveProjectRequest = computed(
@@ -38,13 +39,13 @@ const setActiveProject = async (projectId: string) => {
   );
   if (project) {
     _failedActiveProjectRequest.value = '';
-    _activeProject.value = project;
+    _activeProject.value = Project.deserialize(project);
 
     BroadcastEvent.project.onActiveProjectSet(project);
   } else {
     project = await AppRepository.project.fetchProject(projectId);
     if (project) {
-      _activeProject.value = project;
+      _activeProject.value = Project.deserialize(project);
 
       BroadcastEvent.project.onActiveProjectSet(project);
     }
@@ -54,7 +55,7 @@ const setActiveProject = async (projectId: string) => {
 async function projectGroupBy(field: string) {
   if (!_activeProject.value) return;
   _activeProject.value.group_by = field;
-  await AppRepository.project.saveProject(_activeProject.value);
+  await AppRepository.project.saveProject(_activeProject.value.serialize());
 }
 
 // PROJECT CREATE
@@ -65,11 +66,21 @@ async function createProject(
   goal?: string,
   success?: string
 ) {
-  if (!WorkspaceViewModel.activeSpace.value) return;
-  const project = new Project(name, workspaceId);
+  if (!WorkspaceViewModel.activeSpace.value || !UserViewModel.settings.value)
+    return;
+  const project = new Project(
+    name,
+    UserViewModel.settings.value.id,
+    workspaceId
+  );
   project.primary_goal = goal || '';
   project.success_looks_like = success || '';
   await AppRepository.project.saveProject(project.serialize());
+}
+
+async function updateProject(projectData: ProjectData) {
+  if (permissions.project.canCRU(projectData))
+    await AppRepository.project.saveProject(projectData);
 }
 
 // PROJECT DELETE
@@ -121,10 +132,6 @@ function addProjectTask(task: TaskData) {
   _tasks.value.push(task);
 }
 
-async function saveProject(project: ProjectData) {
-  await AppRepository.project.saveProject(project);
-}
-
 const ProjectViewModel = {
   activeProject,
   groupTasksBy,
@@ -134,7 +141,7 @@ const ProjectViewModel = {
   projectGroupBy,
   deleteProject,
   createProject,
-  saveProject,
+  updateProject,
 };
 
 export default ProjectViewModel;

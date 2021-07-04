@@ -1,22 +1,16 @@
 import { nanoid } from 'nanoid';
-import { db } from 'src/firebase';
-import UserViewModel from 'src/viewmodels/UserViewModel';
-import DatabaseModel from './DatabaseModel';
-import { TASKS_STORENAME } from './Task';
+import DatabaseModel, { DatabaseModelData } from './DatabaseModel';
 
 export const PROJECTS_STORENAME = 'projects';
 
-export interface ProjectData {
-  created_at: number;
+export interface ProjectData extends DatabaseModelData {
   created_by: string;
+  group_by: string;
+  isComplete: boolean;
+  name: string;
   primary_goal: string;
   success_looks_like: string;
   workspace_id: string;
-  id: string;
-  isComplete: boolean;
-  last_modified: number;
-  group_by: string;
-  name: string;
 }
 
 export default class Project extends DatabaseModel implements ProjectData {
@@ -24,16 +18,21 @@ export default class Project extends DatabaseModel implements ProjectData {
 
   created_at: number;
   created_by: string;
+  group_by: string;
   id: string;
   isComplete: boolean;
   last_modified: number;
   name: string;
-  primary_goal: string;
-  group_by: string;
-  success_looks_like: string;
   workspace_id: string;
+  primary_goal: string;
+  success_looks_like: string;
 
-  constructor(name: string, workspace_id: string, data?: ProjectData) {
+  constructor(
+    name: string,
+    userId: string,
+    workspace_id: string,
+    data?: ProjectData
+  ) {
     super();
     // for database model abstract class
     this.STORE_NAME = PROJECTS_STORENAME;
@@ -47,8 +46,7 @@ export default class Project extends DatabaseModel implements ProjectData {
 
     this.isComplete = data?.isComplete || false;
     this.last_modified = data?.last_modified || Date.now();
-    this.created_by =
-      data?.created_by || UserViewModel.settings.value?.id || '';
+    this.created_by = userId;
     this.group_by = data?.group_by || 'status';
   }
 
@@ -68,6 +66,11 @@ export default class Project extends DatabaseModel implements ProjectData {
   }
 
   static deserialize(projectData: ProjectData) {
-    return new Project(projectData.name, projectData.workspace_id, projectData);
+    return new Project(
+      projectData.name,
+      projectData.created_by,
+      projectData.workspace_id,
+      projectData
+    );
   }
 }
