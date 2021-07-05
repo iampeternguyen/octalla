@@ -3,6 +3,7 @@ import BroadcastEvent, {
 } from 'src/events/BroadcastEvents';
 import Competency, { CompetencyData } from 'src/models/Competency';
 import Project, { ProjectData } from 'src/models/Project';
+import WorkspaceRole, { WORKSPACE_ROLE } from 'src/models/Role';
 import Workspace, { WorkspaceData } from 'src/models/Workspace';
 import AppRepository from 'src/repository/AppRepository';
 import permissions from 'src/router/permissions';
@@ -26,6 +27,12 @@ const workspaceFolderStructure = computed(
 const competencies = computed(() =>
   _competencies.value.map((comp) => comp.serialize())
 );
+const roleOptions = [
+  WORKSPACE_ROLE.ADMIN,
+  WORKSPACE_ROLE.MANAGER,
+  WORKSPACE_ROLE.MEMBER,
+  WORKSPACE_ROLE.GUEST,
+];
 
 // Subscriptions
 PubSub.subscribe(
@@ -159,15 +166,31 @@ function addWorkspaceCompetency(competencyData: CompetencyData) {
   _competencies.value.push(competency);
 }
 
+async function createInvite(
+  token: string,
+  role: WORKSPACE_ROLE,
+  workspaceId: string
+) {
+  const invite = {
+    id: token,
+    role: role,
+    workspace_id: workspaceId,
+  };
+
+  await AppRepository.workspace.createWorkspaceInvitation(invite);
+}
+
 const WorkspaceViewModel = {
   setActiveWorkspace,
   activeSpace,
   projects,
   workspaceFolderStructure,
   competencies,
+  roleOptions,
   createWorkspace,
   updateWorkspaceName,
   deleteWorkspace,
+  createInvite,
 };
 
 export default WorkspaceViewModel;

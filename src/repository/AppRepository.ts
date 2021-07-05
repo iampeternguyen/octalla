@@ -18,6 +18,7 @@ const TASKS_STORENAME = 'tasks';
 const ROLES_STORENAME = 'roles';
 const ROLES_MEMBERS_STORENAME = 'members';
 const COMPETENCIES_STORENAME = 'competencies';
+const INVITES_STORENAME = 'invites';
 
 // USERS - GETTERS
 const fetchUserSettings = async (user: User) => {
@@ -29,7 +30,7 @@ const fetchUserSettings = async (user: User) => {
     userSettings = new UserSettings(user.uid);
     userSettings.email = user.email || '';
     userSettings.display_name = user.displayName || '';
-    await saveUserSettings(userSettings);
+    await saveUserSettings(userSettings.serialize());
   }
 
   return userSettings.serialize();
@@ -70,16 +71,44 @@ const deleteTask = async (task: TaskData) => {
 const createWorkspace = async (workspaceName: string, userId: string) => {
   const workspace = new Workspace(workspaceName);
   const workspaceData = await saveWorkspace(workspace.serialize());
-  const role = new WorkspaceRole(
-    workspaceData.id,
-    userId,
-    WORKSPACE_ROLE.ADMIN
-  );
-  await saveRole(role);
+  await setUserRoleInWorkspace(workspaceData.id, userId, WORKSPACE_ROLE.ADMIN);
+
   return workspaceData;
 };
 
+const setUserRoleInWorkspace = async (
+  workspaceId: string,
+  userId: string,
+  role: WORKSPACE_ROLE
+) => {
+  const newRole = new WorkspaceRole(workspaceId, userId, role);
+  await saveRole(newRole);
+};
+
 // WORKSPACES - SETTERS
+
+const createWorkspaceInvitation = async (invite: {
+  id: string;
+  role: WORKSPACE_ROLE;
+  workspace_id: string;
+}) => {
+  await db.collection(INVITES_STORENAME).doc(invite.id).set(invite);
+};
+
+// TODO validation
+const getWorkspaceInvite = async (token: string) => {
+  const doc = await db.collection(INVITES_STORENAME).doc(token).get();
+  const data = doc.data() as {
+    id: string;
+    role: WORKSPACE_ROLE;
+    workspace_id: string;
+  };
+  return data;
+};
+
+const deleteWorkspaceInvite = async (token: string) => {
+  await db.collection(INVITES_STORENAME).doc(token).delete();
+};
 
 const updateWorkspaceName = async (
   workspace: WorkspaceData,
@@ -353,6 +382,10 @@ const AppRepository = {
     createWorkspace,
     updateWorkspaceName,
     deleteWorkspace,
+    createWorkspaceInvitation,
+    getWorkspaceInvite,
+    setUserRoleInWorkspace,
+    deleteWorkspaceInvite,
   },
   project: {
     watchProjectTasks,

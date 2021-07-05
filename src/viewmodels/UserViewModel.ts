@@ -15,6 +15,7 @@ import UserSettings from 'src/models/UserSettings';
 import { WORKSPACE_ROLE } from 'src/models/Role';
 import { WorkspaceData } from 'src/models/Workspace';
 import { ProjectData } from 'src/models/Project';
+import WorkspaceViewModel from './WorkspaceViewModel';
 
 // Subscriptions
 PubSub.subscribe(
@@ -72,7 +73,7 @@ const role = computed(() => _role.value);
 // workspace changes
 async function addWorkspaceToSettings(workspace: WorkspaceData) {
   if (!_settings.value) throw 'user settings missing';
-
+  if (_settings.value.workspaces.find((w) => w == workspace.id)) return;
   _settings.value.workspaces.push(workspace.id);
   await AppRepository.user.saveUserSettings(_settings.value.serialize());
 }
@@ -143,6 +144,21 @@ function userIsAuthenticated(): Promise<boolean> {
   });
 }
 
+async function setUpUserRoleAndWorkspace(user: User, token: string) {
+  // TODO delete token after sign in
+  const invite = await AppRepository.workspace.getWorkspaceInvite(token);
+  await AppRepository.workspace.setUserRoleInWorkspace(
+    invite.workspace_id,
+    user.uid,
+    invite.role
+  );
+
+  await WorkspaceViewModel.setActiveWorkspace(invite.workspace_id);
+  if (WorkspaceViewModel.activeSpace.value)
+    await addWorkspaceToSettings(WorkspaceViewModel.activeSpace.value);
+  await AppRepository.workspace.deleteWorkspaceInvite(token);
+}
+
 async function fetchUserSettings(user: User) {
   _isLoggedIn.value = true;
   _settings.value = UserSettings.deserialize(
@@ -175,6 +191,7 @@ const UserViewModel = {
   setUserRole,
   settings,
   role,
+  setUpUserRoleAndWorkspace,
 };
 
 export default UserViewModel;

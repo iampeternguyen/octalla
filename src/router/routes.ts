@@ -118,6 +118,18 @@ const routes: RouteRecordRaw[] = [
       },
     ],
   },
+  {
+    path: '/invite',
+    component: () => import('src/layouts/LandingPageLayout.vue'),
+    children: [
+      {
+        name: 'invite',
+        path: '',
+        component: () =>
+          import('components/UserRegistration/UserLoginInvite.vue'),
+      },
+    ],
+  },
 
   {
     path: '/app/login',
@@ -130,14 +142,14 @@ const routes: RouteRecordRaw[] = [
       },
     ],
   },
-
-  // Always leave this as last one,
-  // but you can also remove it
-  {
-    path: '/:catchAll(.*)*',
-    name: '404',
-    component: () => import('pages/Error404.vue'),
-  },
+  // TODO fix this for everything except join
+  // // Always leave this as last one,
+  // // but you can also remove it
+  // {
+  //   path: '/:catchAll(.*)*',
+  //   name: '404',
+  //   component: () => import('pages/Error404.vue'),
+  // },
 ];
 
 export default routes;

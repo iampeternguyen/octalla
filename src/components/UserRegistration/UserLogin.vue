@@ -18,7 +18,7 @@ export default defineComponent({
   setup() {
     onMounted(() => {
       const uiConfig = {
-        signInSuccessUrl: '/app',
+        signInSuccessUrl: '/app/',
         signInOptions: [
           firebase.auth.GoogleAuthProvider.PROVIDER_ID,
           firebase.auth.EmailAuthProvider.PROVIDER_ID,
