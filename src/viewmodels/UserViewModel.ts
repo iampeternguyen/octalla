@@ -16,9 +16,7 @@ import { WORKSPACE_ROLE } from 'src/models/Role';
 import { WorkspaceData } from 'src/models/Workspace';
 import { ProjectData } from 'src/models/Project';
 import WorkspaceViewModel from './WorkspaceViewModel';
-import GlobalUserProfile, {
-  GlobalUserProfileData,
-} from 'src/models/GlobalUserProfile';
+import AppProfile, { AppProfileData } from 'src/models/AppProfile';
 
 // Subscriptions
 PubSub.subscribe(
@@ -38,14 +36,15 @@ PubSub.subscribe(
 PubSub.subscribe(
   EVENT_ACTIVE_WORKSPACE_SET,
   async (_msg: string, workspace: WorkspaceData) => {
-    await updateMostRecent(workspace.id);
+    await updateMostRecentWorkspace(workspace);
+    await setUserSettings(workspace);
   }
 );
 
 PubSub.subscribe(
   EVENT_ACTIVE_PROJECT_SET,
   async (_msg: string, project: ProjectData) => {
-    await updateMostRecent(project.workspace_id, project);
+    await updateMostRecentProject(project);
   }
 );
 
@@ -61,7 +60,7 @@ const _isLoggedIn = ref(false);
 const _attemptedLogIn = ref(false);
 const _settings = ref<UserSettings | null>(null);
 const _role = ref<WORKSPACE_ROLE | null>(null);
-const _appProfile = ref<GlobalUserProfileData | null>(null);
+const _appProfile = ref<AppProfile | null>(null);
 // getters
 const isLoggedIn = async () => {
   if (_isLoggedIn.value) return _isLoggedIn.value;
@@ -77,36 +76,43 @@ const appProfile = computed(() => _appProfile.value);
 
 // workspace changes
 async function addWorkspaceToSettings(workspace: WorkspaceData) {
-  if (!_settings.value) throw 'user settings missing';
-  if (_settings.value.workspaces.find((w) => w == workspace.id)) return;
-  _settings.value.workspaces.push(workspace.id);
-  await AppRepository.user.saveUserSettings(_settings.value.serialize());
+  if (!_appProfile.value) throw 'user settings missing';
+  if (_appProfile.value.workspaces.find((w) => w == workspace.id)) return;
+  _appProfile.value.workspaces.push(workspace.id);
+  await AppRepository.user.saveAppProfile(_appProfile.value.serialize());
 }
 
 async function removeWorkspaceFromSettings(workspace: WorkspaceData) {
-  if (!_settings.value) throw 'useer settings missing';
-  _settings.value.most_recent_workspace = '';
-  _settings.value.most_recent_project = '';
-  const index = _settings.value.workspaces.findIndex((w) => w == workspace.id);
-  _settings.value.workspaces.splice(index, 1);
-  if (_settings.value.workspaces[0])
-    _settings.value.most_recent_workspace = _settings.value.workspaces[0];
-  await AppRepository.user.saveUserSettings(_settings.value.serialize());
+  if (!_appProfile.value) throw 'useer settings missing';
+  _appProfile.value.most_recent_workspace = '';
+  // _appProfile.value.most_recent_project = '';
+  const index = _appProfile.value?.workspaces.findIndex(
+    (w) => w == workspace.id
+  );
+  _appProfile.value?.workspaces.splice(index, 1);
+  if (_appProfile.value.workspaces[0])
+    _appProfile.value.most_recent_workspace = _appProfile.value.workspaces[0];
+  await AppRepository.user.saveAppProfile(_appProfile.value.serialize());
 }
 
 // project changes
-async function updateMostRecent(workspaceId: string, project?: ProjectData) {
+async function updateMostRecentProject(project: ProjectData) {
   if (!_settings.value) return;
   console.log('updating recent project');
-  if (project) {
+  if (project.id != _settings.value.most_recent_project) {
     _settings.value.most_recent_project = project.id;
-    _settings.value.most_recent_workspace = project.workspace_id;
-  } else {
-    _settings.value.most_recent_project = '';
-    _settings.value.most_recent_workspace = workspaceId;
   }
 
   await AppRepository.user.saveUserSettings(_settings.value.serialize());
+}
+async function updateMostRecentWorkspace(workspace: WorkspaceData) {
+  if (!_appProfile.value) return;
+  console.log('updating recent workspace');
+  if (_appProfile.value.most_recent_workspace != workspace.id) {
+    _appProfile.value.most_recent_workspace = workspace.id;
+  }
+
+  await AppRepository.user.saveAppProfile(_appProfile.value.serialize());
 }
 
 async function removeProjectIfMostRecent(project: ProjectData) {
@@ -138,9 +144,10 @@ function userIsAuthenticated(): Promise<boolean> {
     authUser()
       .then(async (user) => {
         if (user) {
-          _appProfile.value =
-            GlobalUserProfile.convertFirebaseUserToGlobalUserProfileData(user);
-          await fetchUserSettings(user);
+          _isLoggedIn.value = true;
+          await fetchAppProfile(user);
+          // TODO move to after create
+          // await fetchUserSettings(user);
           BroadcastEvent.user.onUserAuthenticated(user);
           resolve(true);
         } else {
@@ -155,7 +162,7 @@ async function setUpUserRoleAndWorkspace(user: User, token: string) {
   // TODO delete token after sign in
   const invite = await AppRepository.workspace.getWorkspaceInvite(token);
   const appProfile =
-    GlobalUserProfile.convertFirebaseUserToGlobalUserProfileData(user);
+    AppProfile.convertFirebaseUserToGlobalUserProfileData(user);
   await AppRepository.workspace.addUserToWorkspace(appProfile, invite);
 
   await WorkspaceViewModel.setActiveWorkspace(invite.workspace_id);
@@ -164,24 +171,31 @@ async function setUpUserRoleAndWorkspace(user: User, token: string) {
   await AppRepository.workspace.deleteWorkspaceInvite(token);
 }
 
-async function fetchUserSettings(user: User) {
-  _isLoggedIn.value = true;
+async function fetchAppProfile(user: User) {
+  _appProfile.value = AppProfile.deserialize(
+    await AppRepository.user.fetchAppProfile(user)
+  );
+}
+
+async function setUserSettings(workspace: WorkspaceData) {
+  if (!_appProfile.value) return;
   _settings.value = UserSettings.deserialize(
-    await AppRepository.user.fetchUserSettings(user)
+    await AppRepository.user.fetchUserSettings(workspace, _appProfile.value)
   );
 }
 
 async function setUserWorkspaceData(workspace: WorkspaceData) {
-  if (!_settings.value) {
+  if (!_appProfile.value) {
     console.log('Error setting user role');
     return;
   }
   _role.value = await AppRepository.user.fetchUserRole(
     workspace.id,
-    _settings.value.id
+    _appProfile.value.id
   );
 
-  // TODO add workspace settings here
+  console.log('getting role', _role.value);
+  await setUserSettings(workspace);
 }
 
 async function logOutuser() {

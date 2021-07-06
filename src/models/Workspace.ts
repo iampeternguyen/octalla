@@ -20,7 +20,7 @@ export default class Workspace extends DatabaseModel implements WorkspaceData {
   projects_structure: FolderData[];
   created_by: string;
 
-  constructor(name: string, data?: WorkspaceData) {
+  constructor(name: string, userId: string, data?: WorkspaceData) {
     super();
 
     this.STORE_NAME = WORKSPACE_STORENAME;
@@ -29,8 +29,7 @@ export default class Workspace extends DatabaseModel implements WorkspaceData {
     this.id = data?.id || nanoid(8);
     this.last_modified = data?.last_modified || Date.now();
     this.projects_structure = data?.projects_structure || [];
-    this.created_by =
-      data?.created_by || UserViewModel.settings.value?.id || '';
+    this.created_by = userId;
   }
 
   serialize(): WorkspaceData {
@@ -46,6 +45,10 @@ export default class Workspace extends DatabaseModel implements WorkspaceData {
   }
 
   static deserialize(workspaceData: WorkspaceData): Workspace {
-    return new Workspace(workspaceData.name, workspaceData);
+    return new Workspace(
+      workspaceData.name,
+      workspaceData.created_by,
+      workspaceData
+    );
   }
 }

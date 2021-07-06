@@ -1,30 +1,35 @@
 import { User } from '@firebase/auth-types';
 import { FirebaseFirestore, Query } from '@firebase/firestore-types';
 import { db } from 'src/firebase';
-import { CompetencyData } from 'src/models/Competency';
-import { GlobalUserProfileData } from 'src/models/GlobalUserProfile';
-import MemberProfile, {
-  MemberProfileData,
+import { COMPETENCIES_STORENAME, CompetencyData } from 'src/models/Competency';
+import AppProfile, {
+  AppProfileData,
+  APP_PROFILE_STORENAME,
+} from 'src/models/AppProfile';
+import WorkspaceMember, {
+  WorkspaceMemberData,
   WorkspaceMembersContainer,
+  WORKSPACE_MEMBERS_STORENAME,
 } from 'src/models/MemberProfile';
-import { ProjectData } from 'src/models/Project';
+import { ProjectData, PROJECTS_STORENAME } from 'src/models/Project';
 import WorkspaceRole, {
+  ROLES_MEMBERS_STORENAME,
+  ROLES_STORENAME,
   WorkspaceRoleData,
   WORKSPACE_ROLE,
 } from 'src/models/Role';
-import { TaskData } from 'src/models/Task';
-import UserSettings, { UserSettingsData } from 'src/models/UserSettings';
-import Workspace, { WorkspaceData } from 'src/models/Workspace';
+import { TaskData, TASKS_STORENAME } from 'src/models/Task';
+import UserSettings, {
+  UserSettingsData,
+  USER_SETTINGS_STORENAME,
+} from 'src/models/UserSettings';
+import Workspace, {
+  WorkspaceData,
+  WORKSPACE_STORENAME,
+} from 'src/models/Workspace';
 
-const USER_SETTINGS_STORENAME = 'user_settings';
-const WORKSPACE_STORENAME = 'workspaces';
-const PROJECTS_STORENAME = 'projects';
-const TASKS_STORENAME = 'tasks';
-const ROLES_STORENAME = 'roles';
-const ROLES_MEMBERS_STORENAME = 'members';
-const COMPETENCIES_STORENAME = 'competencies';
+// TODO turn into model
 const INVITES_STORENAME = 'invites';
-const WORKSPACE_MEMBERS_STORENAME = 'members_profiles';
 
 interface WorkspaceInvitation {
   id: string;
@@ -33,19 +38,40 @@ interface WorkspaceInvitation {
 }
 
 // USERS - GETTERS
-const fetchUserSettings = async (user: User) => {
-  const doc = await db.collection(USER_SETTINGS_STORENAME).doc(user.uid).get();
+const fetchUserSettings = async (
+  workspace: WorkspaceData,
+  user: AppProfileData
+) => {
+  const doc = await db
+    .collection(USER_SETTINGS_STORENAME)
+    .doc(workspace.id)
+    .collection(USER_SETTINGS_STORENAME)
+    .doc(user.id)
+    .get();
   let userSettings: UserSettings;
   if (doc.exists) {
     userSettings = UserSettings.deserialize(doc.data() as UserSettingsData);
   } else {
-    userSettings = new UserSettings(user.uid);
-    userSettings.email = user.email || '';
-    userSettings.display_name = user.displayName || '';
+    userSettings = new UserSettings(user.id, workspace.id);
+
     await saveUserSettings(userSettings.serialize());
   }
 
   return userSettings.serialize();
+};
+
+const fetchAppProfile = async (user: User) => {
+  const doc = await db.collection(APP_PROFILE_STORENAME).doc(user.uid).get();
+  let appProfile: AppProfileData;
+  if (doc.exists) {
+    appProfile = doc.data() as AppProfileData;
+  } else {
+    appProfile = AppProfile.convertFirebaseUserToGlobalUserProfileData(user);
+
+    await saveAppProfile(appProfile);
+  }
+
+  return appProfile;
 };
 
 const fetchUserRole = async (workspaceId: string, userId: string) => {
@@ -61,8 +87,19 @@ const fetchUserRole = async (workspaceId: string, userId: string) => {
 // USERS - SETTERS
 const saveUserSettings = async (settings: UserSettingsData) => {
   settings.last_modified = Date.now();
-  await db.collection(USER_SETTINGS_STORENAME).doc(settings.id).set(settings);
+  await db
+    .collection(USER_SETTINGS_STORENAME)
+    .doc(settings.workspace_id)
+    .collection(USER_SETTINGS_STORENAME)
+    .doc(settings.id)
+    .set(settings);
   return settings;
+};
+
+const saveAppProfile = async (appProfile: AppProfileData) => {
+  appProfile.last_modified = Date.now();
+  await db.collection(APP_PROFILE_STORENAME).doc(appProfile.id).set(appProfile);
+  return appProfile;
 };
 
 // TASK - SETTERS
@@ -80,11 +117,8 @@ const deleteTask = async (task: TaskData) => {
 
 // WORKSPACES - CREATE
 
-const createWorkspace = async (
-  workspaceName: string,
-  user: GlobalUserProfileData
-) => {
-  const workspace = new Workspace(workspaceName);
+const createWorkspace = async (workspaceName: string, user: AppProfileData) => {
+  const workspace = new Workspace(workspaceName, user.id);
   const workspaceData = await saveWorkspace(workspace.serialize());
   await addMemberProfileToWorkspace(workspace.id, user, WORKSPACE_ROLE.ADMIN);
   // This affects firebase backend CRUD permissions
@@ -98,7 +132,7 @@ const createWorkspace = async (
 };
 
 const addUserToWorkspace = async (
-  user: GlobalUserProfileData,
+  user: AppProfileData,
   invite: WorkspaceInvitation
 ) => {
   await addMemberProfileToWorkspace(invite.workspace_id, user, invite.role);
@@ -111,11 +145,11 @@ const addUserToWorkspace = async (
 
 const addMemberProfileToWorkspace = async (
   workspaceId: string,
-  user: GlobalUserProfileData,
+  user: AppProfileData,
   role: WORKSPACE_ROLE
 ) => {
   const memberProfile =
-    MemberProfile.convertGlobalUserProfileToMemberProfileData(
+    WorkspaceMember.convertGlobalUserProfileToMemberProfileData(
       workspaceId,
       user,
       role
@@ -123,7 +157,7 @@ const addMemberProfileToWorkspace = async (
   await saveMemberProfile(memberProfile);
 };
 
-const saveMemberProfile = async (profile: MemberProfileData) => {
+const saveMemberProfile = async (profile: WorkspaceMemberData) => {
   const doc = await db
     .collection(WORKSPACE_MEMBERS_STORENAME)
     .doc(profile.workspace_id)
@@ -435,7 +469,9 @@ const AppRepository = {
   user: {
     fetchUserSettings,
     fetchUserRole,
+    fetchAppProfile,
     saveUserSettings,
+    saveAppProfile,
   },
   workspace: {
     fetchWorkspace,

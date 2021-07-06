@@ -1,5 +1,5 @@
 import DatabaseModel, { DatabaseModelData } from './DatabaseModel';
-import { GlobalUserProfileData } from './GlobalUserProfile';
+import { AppProfileData } from './AppProfile';
 
 export enum WORKSPACE_ROLE {
   ADMIN = 'ADMIN',
@@ -10,19 +10,19 @@ export enum WORKSPACE_ROLE {
 export const WORKSPACE_MEMBERS_STORENAME = 'members_profiles';
 
 export interface WorkspaceMembersContainer {
-  members: MemberProfileData[];
+  members: WorkspaceMemberData[];
 }
 
-export interface MemberProfileData extends DatabaseModelData {
+export interface WorkspaceMemberData extends DatabaseModelData {
   role: WORKSPACE_ROLE;
   user_id: string;
   workspace_id: string;
   display_name: string;
   email: string;
 }
-export default class MemberProfile
+export default class WorkspaceMember
   extends DatabaseModel
-  implements MemberProfileData
+  implements WorkspaceMemberData
 {
   id: string;
   last_modified: number;
@@ -37,7 +37,7 @@ export default class MemberProfile
     workspace_id: string,
     user_id: string,
     role: WORKSPACE_ROLE,
-    data?: MemberProfileData
+    data?: WorkspaceMemberData
   ) {
     super();
     this.created_at = data?.created_at || Date.now();
@@ -50,7 +50,7 @@ export default class MemberProfile
     this.email = data?.email || '';
   }
 
-  serialize(): MemberProfileData {
+  serialize(): WorkspaceMemberData {
     return {
       created_at: this.created_at,
       last_modified: this.last_modified,
@@ -64,10 +64,10 @@ export default class MemberProfile
   }
   static convertGlobalUserProfileToMemberProfileData(
     workspaceId: string,
-    user: GlobalUserProfileData,
+    user: AppProfileData,
     role: WORKSPACE_ROLE
   ) {
-    const profile = new MemberProfile(workspaceId, user.id, role);
+    const profile = new WorkspaceMember(workspaceId, user.id, role);
     profile.workspace_id = workspaceId;
     profile.role = role;
     profile.user_id = user.id;
@@ -75,8 +75,8 @@ export default class MemberProfile
     profile.email = user.email || '';
     return profile.serialize();
   }
-  static deserialize(rolesData: MemberProfileData): MemberProfile {
-    return new MemberProfile(
+  static deserialize(rolesData: WorkspaceMemberData): WorkspaceMember {
+    return new WorkspaceMember(
       rolesData.id,
       rolesData.user_id,
       rolesData.role,

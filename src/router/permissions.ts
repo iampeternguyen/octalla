@@ -5,6 +5,7 @@ import UserViewModel from 'src/viewmodels/UserViewModel';
 // TODO think about what guest permissions allow
 
 function userHasReadWorkspacePermission() {
+  console.log('role', UserViewModel.role.value);
   if (
     UserViewModel.role.value &&
     [

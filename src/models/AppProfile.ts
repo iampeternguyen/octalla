@@ -1,20 +1,20 @@
 import { User } from '@firebase/auth-types';
 import DatabaseModel, { DatabaseModelData } from './DatabaseModel';
 
-export const GLOBAL_USER_PROFILE_STORENAME = 'global_user_profiles';
+export const APP_PROFILE_STORENAME = 'app_profiles';
 
 // TODO refactor this for multiple spaces
 
-export interface GlobalUserProfileData extends DatabaseModelData {
+export interface AppProfileData extends DatabaseModelData {
   display_name: string;
   email: string;
   most_recent_workspace: string;
   workspaces: string[];
 }
 
-export default class GlobalUserProfile
+export default class AppProfile
   extends DatabaseModel
-  implements GlobalUserProfileData
+  implements AppProfileData
 {
   id: string;
   last_modified: number;
@@ -24,7 +24,7 @@ export default class GlobalUserProfile
   most_recent_workspace: string;
   workspaces: string[];
 
-  constructor(id: string, data?: GlobalUserProfileData) {
+  constructor(id: string, data?: AppProfileData) {
     super();
     this.display_name = data?.display_name || '';
     this.created_at = data?.created_at || Date.now();
@@ -36,13 +36,13 @@ export default class GlobalUserProfile
   }
 
   static convertFirebaseUserToGlobalUserProfileData(user: User) {
-    const profile = new GlobalUserProfile(user.uid);
+    const profile = new AppProfile(user.uid);
     profile.email = user.email || '';
     profile.display_name = user.displayName || '';
     return profile.serialize();
   }
 
-  serialize(): GlobalUserProfileData {
+  serialize(): AppProfileData {
     return {
       created_at: this.created_at,
       id: this.id,
@@ -54,9 +54,7 @@ export default class GlobalUserProfile
     };
   }
 
-  static deserialize(
-    userSettingsData: GlobalUserProfileData
-  ): GlobalUserProfile {
-    return new GlobalUserProfile(userSettingsData.id, userSettingsData);
+  static deserialize(userSettingsData: AppProfileData): AppProfile {
+    return new AppProfile(userSettingsData.id, userSettingsData);
   }
 }

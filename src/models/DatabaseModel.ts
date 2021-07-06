@@ -5,8 +5,8 @@ import { WorkspaceData } from './Workspace';
 import { UserSettingsData } from './UserSettings';
 import { CompetencyData } from './Competency';
 import { WorkspaceRoleData } from './Role';
-import { GlobalUserProfileData } from './GlobalUserProfile';
-import { MemberProfileData } from './MemberProfile';
+import { AppProfileData } from './AppProfile';
+import { WorkspaceMemberData } from './MemberProfile';
 
 export interface DatabaseModelData {
   id: string;
@@ -26,6 +26,6 @@ export default abstract class DatabaseModel implements DatabaseModelData {
     | UserSettingsData
     | WorkspaceRoleData
     | CompetencyData
-    | GlobalUserProfileData
-    | MemberProfileData;
+    | AppProfileData
+    | WorkspaceMemberData;
 }
