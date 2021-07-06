@@ -76,6 +76,7 @@ async function createProject(
   project.primary_goal = goal || '';
   project.success_looks_like = success || '';
   await AppRepository.project.saveProject(project.serialize());
+  await WorkspaceViewModel.addProjectToFolderStructure(project.serialize());
 }
 
 async function updateProject(projectData: ProjectData) {

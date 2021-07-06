@@ -16,6 +16,9 @@ import { WORKSPACE_ROLE } from 'src/models/Role';
 import { WorkspaceData } from 'src/models/Workspace';
 import { ProjectData } from 'src/models/Project';
 import WorkspaceViewModel from './WorkspaceViewModel';
+import GlobalUserProfile, {
+  GlobalUserProfileData,
+} from 'src/models/GlobalUserProfile';
 
 // Subscriptions
 PubSub.subscribe(
@@ -58,6 +61,7 @@ const _isLoggedIn = ref(false);
 const _attemptedLogIn = ref(false);
 const _settings = ref<UserSettings | null>(null);
 const _role = ref<WORKSPACE_ROLE | null>(null);
+const _appProfile = ref<GlobalUserProfileData | null>(null);
 // getters
 const isLoggedIn = async () => {
   if (_isLoggedIn.value) return _isLoggedIn.value;
@@ -69,6 +73,7 @@ const isLoggedIn = async () => {
 
 const settings = computed(() => _settings.value?.serialize());
 const role = computed(() => _role.value);
+const appProfile = computed(() => _appProfile.value);
 
 // workspace changes
 async function addWorkspaceToSettings(workspace: WorkspaceData) {
@@ -133,6 +138,8 @@ function userIsAuthenticated(): Promise<boolean> {
     authUser()
       .then(async (user) => {
         if (user) {
+          _appProfile.value =
+            GlobalUserProfile.convertFirebaseUserToGlobalUserProfileData(user);
           await fetchUserSettings(user);
           BroadcastEvent.user.onUserAuthenticated(user);
           resolve(true);
@@ -147,11 +154,9 @@ function userIsAuthenticated(): Promise<boolean> {
 async function setUpUserRoleAndWorkspace(user: User, token: string) {
   // TODO delete token after sign in
   const invite = await AppRepository.workspace.getWorkspaceInvite(token);
-  await AppRepository.workspace.setUserRoleInWorkspace(
-    invite.workspace_id,
-    user.uid,
-    invite.role
-  );
+  const appProfile =
+    GlobalUserProfile.convertFirebaseUserToGlobalUserProfileData(user);
+  await AppRepository.workspace.addUserToWorkspace(appProfile, invite);
 
   await WorkspaceViewModel.setActiveWorkspace(invite.workspace_id);
   if (WorkspaceViewModel.activeSpace.value)
@@ -166,7 +171,7 @@ async function fetchUserSettings(user: User) {
   );
 }
 
-async function setUserRole(workspace: WorkspaceData) {
+async function setUserWorkspaceData(workspace: WorkspaceData) {
   if (!_settings.value) {
     console.log('Error setting user role');
     return;
@@ -175,6 +180,8 @@ async function setUserRole(workspace: WorkspaceData) {
     workspace.id,
     _settings.value.id
   );
+
+  // TODO add workspace settings here
 }
 
 async function logOutuser() {
@@ -188,10 +195,11 @@ async function logOutuser() {
 const UserViewModel = {
   isLoggedIn,
   logOutuser,
-  setUserRole,
+  setUserWorkspaceData,
   settings,
   role,
   setUpUserRoleAndWorkspace,
+  appProfile,
 };
 
 export default UserViewModel;

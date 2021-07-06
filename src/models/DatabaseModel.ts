@@ -5,6 +5,8 @@ import { WorkspaceData } from './Workspace';
 import { UserSettingsData } from './UserSettings';
 import { CompetencyData } from './Competency';
 import { WorkspaceRoleData } from './Role';
+import { GlobalUserProfileData } from './GlobalUserProfile';
+import { MemberProfileData } from './MemberProfile';
 
 export interface DatabaseModelData {
   id: string;
@@ -17,19 +19,13 @@ export default abstract class DatabaseModel implements DatabaseModelData {
   abstract last_modified: number;
   abstract created_at: number;
 
-  abstract STORE_NAME:
-    | 'tasks'
-    | 'projects'
-    | 'workspaces'
-    | 'user_settings'
-    | 'roles'
-    | 'competencies';
-
   abstract serialize():
     | TaskData
     | ProjectData
     | WorkspaceData
     | UserSettingsData
     | WorkspaceRoleData
-    | CompetencyData;
+    | CompetencyData
+    | GlobalUserProfileData
+    | MemberProfileData;
 }

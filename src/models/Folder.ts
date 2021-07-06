@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid';
-import Project from './Project';
+import Project, { ProjectData } from './Project';
 
 export interface FolderData {
   id: string;
@@ -22,18 +22,18 @@ export default class Folder implements FolderData {
   name: string;
   children: Array<FolderData>;
 
-  constructor(name: string, data?: FolderData) {
+  constructor(name: string, type: 'folder' | 'project', data?: FolderData) {
     this.STORE_NAME = 'folders';
     this.id = data?.id || nanoid();
     this.created_at = data?.created_at || Date.now();
     this.last_modified = data?.last_modified || Date.now();
     this.name = data?.name || name;
-    this.type = data?.type || 'folder';
+    this.type = type;
     this.children = data?.children || [];
     this.is_root = data?.is_root || false;
   }
 
-  static ConvertProjectToFolderData(project: Project): FolderData {
+  static ConvertProjectToFolderData(project: ProjectData): FolderData {
     return {
       id: project.id,
       name: project.name,
@@ -43,6 +43,10 @@ export default class Folder implements FolderData {
       type: 'project',
       children: [],
     };
+  }
+
+  static deserialize(folder: FolderData) {
+    return new Folder(folder.name, folder.type, folder);
   }
   serialize(): FolderData {
     return {

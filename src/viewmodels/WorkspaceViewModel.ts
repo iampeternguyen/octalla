@@ -2,6 +2,7 @@ import BroadcastEvent, {
   EVENT_ACTIVE_WORKSPACE_SET,
 } from 'src/events/BroadcastEvents';
 import Competency, { CompetencyData } from 'src/models/Competency';
+import Folder from 'src/models/Folder';
 import Project, { ProjectData } from 'src/models/Project';
 import WorkspaceRole, { WORKSPACE_ROLE } from 'src/models/Role';
 import Workspace, { WorkspaceData } from 'src/models/Workspace';
@@ -21,12 +22,15 @@ const activeSpace = computed(() => _activeSpace.value?.serialize());
 const projects = computed(() =>
   _projects.value.map((proj) => proj.serialize())
 );
+// TODO no folder structure shows no projects ( this is not updating at all)
 const workspaceFolderStructure = computed(
   () => _activeSpace.value?.projects_structure || []
 );
+
 const competencies = computed(() =>
   _competencies.value.map((comp) => comp.serialize())
 );
+
 const roleOptions = [
   WORKSPACE_ROLE.ADMIN,
   WORKSPACE_ROLE.MANAGER,
@@ -45,11 +49,11 @@ PubSub.subscribe(
 
 // creating workspace
 async function createWorkspace(workspaceName: string) {
-  if (!UserViewModel.settings.value)
+  if (!UserViewModel.appProfile.value)
     throw 'onCreateWorkspace called when no user settings found';
   const workspace = await AppRepository.workspace.createWorkspace(
     workspaceName,
-    UserViewModel.settings.value.id
+    UserViewModel.appProfile.value
   );
 
   BroadcastEvent.workspace.onWorkspaceCreated(workspace);
@@ -63,11 +67,16 @@ async function createWorkspace(workspaceName: string) {
 async function updateWorkspaceName(name: string) {
   if (!_activeSpace.value || !permissions.workspace.canUpdate()) return;
   console.log('permission to update workspace');
-  await AppRepository.workspace.updateWorkspaceName(
-    _activeSpace.value.serialize(),
-    name
-  );
   _activeSpace.value.name = name;
+
+  await AppRepository.workspace.saveWorkspace(_activeSpace.value.serialize());
+}
+// TODO permissions here won't pass for everyone who can update a project
+async function addProjectToFolderStructure(project: ProjectData) {
+  if (!_activeSpace.value || !permissions.project.canCRU(project)) return;
+  const folder = Folder.ConvertProjectToFolderData(project);
+  _activeSpace.value.projects_structure.push(folder);
+  await AppRepository.workspace.saveWorkspace(_activeSpace.value.serialize());
 }
 
 // Deleting space
@@ -98,7 +107,7 @@ async function setActiveWorkspace(workspaceId: string) {
     await AppRepository.workspace.fetchWorkspace(workspaceId)
   );
 
-  await UserViewModel.setUserRole(_activeSpace.value);
+  await UserViewModel.setUserWorkspaceData(_activeSpace.value.serialize());
   BroadcastEvent.workspace.onActiveWorkspaceSet(_activeSpace.value.serialize());
 }
 
@@ -191,6 +200,7 @@ const WorkspaceViewModel = {
   updateWorkspaceName,
   deleteWorkspace,
   createInvite,
+  addProjectToFolderStructure,
 };
 
 export default WorkspaceViewModel;

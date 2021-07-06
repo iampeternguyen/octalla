@@ -14,10 +14,11 @@ const routes: RouteRecordRaw[] = [
     component: () => import('src/layouts/AppLayout.vue'),
     beforeEnter: (to, from, next) => {
       // TODO workspace should also jump to mose recent
+      console.log(UserViewModel.settings.value);
       if (
         !UserViewModel.settings.value ||
         (!UserViewModel.settings.value.most_recent_workspace &&
-          !UserViewModel.settings.value.workspaces)
+          UserViewModel.settings.value.workspaces.length == 0)
       ) {
         next({ name: 'onboarding' });
       } else if (
@@ -145,11 +146,11 @@ const routes: RouteRecordRaw[] = [
   // TODO fix this for everything except join
   // // Always leave this as last one,
   // // but you can also remove it
-  // {
-  //   path: '/:catchAll(.*)*',
-  //   name: '404',
-  //   component: () => import('pages/Error404.vue'),
-  // },
+  {
+    path: '/:catchAll(.*)*',
+    name: '404',
+    component: () => import('pages/Error404.vue'),
+  },
 ];
 
 export default routes;

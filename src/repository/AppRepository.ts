@@ -2,6 +2,11 @@ import { User } from '@firebase/auth-types';
 import { FirebaseFirestore, Query } from '@firebase/firestore-types';
 import { db } from 'src/firebase';
 import { CompetencyData } from 'src/models/Competency';
+import { GlobalUserProfileData } from 'src/models/GlobalUserProfile';
+import MemberProfile, {
+  MemberProfileData,
+  WorkspaceMembersContainer,
+} from 'src/models/MemberProfile';
 import { ProjectData } from 'src/models/Project';
 import WorkspaceRole, {
   WorkspaceRoleData,
@@ -19,6 +24,13 @@ const ROLES_STORENAME = 'roles';
 const ROLES_MEMBERS_STORENAME = 'members';
 const COMPETENCIES_STORENAME = 'competencies';
 const INVITES_STORENAME = 'invites';
+const WORKSPACE_MEMBERS_STORENAME = 'members_profiles';
+
+interface WorkspaceInvitation {
+  id: string;
+  role: WORKSPACE_ROLE;
+  workspace_id: string;
+}
 
 // USERS - GETTERS
 const fetchUserSettings = async (user: User) => {
@@ -68,15 +80,73 @@ const deleteTask = async (task: TaskData) => {
 
 // WORKSPACES - CREATE
 
-const createWorkspace = async (workspaceName: string, userId: string) => {
+const createWorkspace = async (
+  workspaceName: string,
+  user: GlobalUserProfileData
+) => {
   const workspace = new Workspace(workspaceName);
   const workspaceData = await saveWorkspace(workspace.serialize());
-  await setUserRoleInWorkspace(workspaceData.id, userId, WORKSPACE_ROLE.ADMIN);
+  await addMemberProfileToWorkspace(workspace.id, user, WORKSPACE_ROLE.ADMIN);
+  // This affects firebase backend CRUD permissions
+  await addUserRoleForWorkspacePermissions(
+    workspaceData.id,
+    user.id,
+    WORKSPACE_ROLE.ADMIN
+  );
 
   return workspaceData;
 };
 
-const setUserRoleInWorkspace = async (
+const addUserToWorkspace = async (
+  user: GlobalUserProfileData,
+  invite: WorkspaceInvitation
+) => {
+  await addMemberProfileToWorkspace(invite.workspace_id, user, invite.role);
+  await addUserRoleForWorkspacePermissions(
+    invite.workspace_id,
+    user.id,
+    invite.role
+  );
+};
+
+const addMemberProfileToWorkspace = async (
+  workspaceId: string,
+  user: GlobalUserProfileData,
+  role: WORKSPACE_ROLE
+) => {
+  const memberProfile =
+    MemberProfile.convertGlobalUserProfileToMemberProfileData(
+      workspaceId,
+      user,
+      role
+    );
+  await saveMemberProfile(memberProfile);
+};
+
+const saveMemberProfile = async (profile: MemberProfileData) => {
+  const doc = await db
+    .collection(WORKSPACE_MEMBERS_STORENAME)
+    .doc(profile.workspace_id)
+    .get();
+  if (!doc.exists) {
+    const data = { members: [profile] };
+    console.log(data);
+
+    await db
+      .collection(WORKSPACE_MEMBERS_STORENAME)
+      .doc(profile.workspace_id)
+      .set(data);
+  } else {
+    const data = doc.data() as WorkspaceMembersContainer;
+    data.members.push(profile);
+    await db
+      .collection(WORKSPACE_MEMBERS_STORENAME)
+      .doc(profile.workspace_id)
+      .set(data);
+  }
+};
+
+const addUserRoleForWorkspacePermissions = async (
   workspaceId: string,
   userId: string,
   role: WORKSPACE_ROLE
@@ -108,14 +178,6 @@ const getWorkspaceInvite = async (token: string) => {
 
 const deleteWorkspaceInvite = async (token: string) => {
   await db.collection(INVITES_STORENAME).doc(token).delete();
-};
-
-const updateWorkspaceName = async (
-  workspace: WorkspaceData,
-  newName: string
-) => {
-  workspace.name = newName;
-  return await saveWorkspace(workspace);
 };
 
 const saveRole = async (role: WorkspaceRole) => {
@@ -380,12 +442,12 @@ const AppRepository = {
     watchWorkspaceProjects,
     watchWorkspaceCompetencies,
     createWorkspace,
-    updateWorkspaceName,
+    saveWorkspace,
     deleteWorkspace,
     createWorkspaceInvitation,
     getWorkspaceInvite,
-    setUserRoleInWorkspace,
     deleteWorkspaceInvite,
+    addUserToWorkspace,
   },
   project: {
     watchProjectTasks,

@@ -47,6 +47,7 @@ export default route(function (/* { store, ssrContext } */) {
         return;
       }
     }
+    // TODO on new user create, doesn't get sent to onboarding. error reading
 
     // requiresReadWorkspace
     if (
