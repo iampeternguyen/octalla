@@ -104,7 +104,7 @@ async function deleteWorkspace(workspace: WorkspaceData) {
 async function setActiveWorkspace(workspaceId: string) {
   if (_activeSpace.value?.id == workspaceId) return;
   _activeSpace.value = Workspace.deserialize(
-    await AppRepository.workspace.fetchWorkspace(workspaceId)
+    await AppRepository.workspace.getWorkspace(workspaceId)
   );
 
   await UserViewModel.setUserWorkspaceData(_activeSpace.value.serialize());

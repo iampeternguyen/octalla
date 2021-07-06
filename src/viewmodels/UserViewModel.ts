@@ -145,9 +145,9 @@ function userIsAuthenticated(): Promise<boolean> {
       .then(async (user) => {
         if (user) {
           _isLoggedIn.value = true;
-          await fetchAppProfile(user);
+          await getAppProfile(user);
           // TODO move to after create
-          // await fetchUserSettings(user);
+          // await getUserSettings(user);
           BroadcastEvent.user.onUserAuthenticated(user);
           resolve(true);
         } else {
@@ -171,16 +171,16 @@ async function setUpUserRoleAndWorkspace(user: User, token: string) {
   await AppRepository.workspace.deleteWorkspaceInvite(token);
 }
 
-async function fetchAppProfile(user: User) {
+async function getAppProfile(user: User) {
   _appProfile.value = AppProfile.deserialize(
-    await AppRepository.user.fetchAppProfile(user)
+    await AppRepository.user.getAppProfile(user)
   );
 }
 
 async function setUserSettings(workspace: WorkspaceData) {
   if (!_appProfile.value) return;
   _settings.value = UserSettings.deserialize(
-    await AppRepository.user.fetchUserSettings(workspace, _appProfile.value)
+    await AppRepository.user.getUserSettings(workspace, _appProfile.value)
   );
 }
 
@@ -189,7 +189,7 @@ async function setUserWorkspaceData(workspace: WorkspaceData) {
     console.log('Error setting user role');
     return;
   }
-  _role.value = await AppRepository.user.fetchUserRole(
+  _role.value = await AppRepository.user.getUserRole(
     workspace.id,
     _appProfile.value.id
   );

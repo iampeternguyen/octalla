@@ -43,7 +43,7 @@ const setActiveProject = async (projectId: string) => {
 
     BroadcastEvent.project.onActiveProjectSet(project);
   } else {
-    project = await AppRepository.project.fetchProject(projectId);
+    project = await AppRepository.project.getProject(projectId);
     if (project) {
       _activeProject.value = Project.deserialize(project);
 
