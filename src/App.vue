@@ -12,33 +12,18 @@ import ProjectViewModel from './viewmodels/ProjectViewModel';
 export default defineComponent({
   name: 'App',
   setup() {
-    const activeProject = ProjectViewModel.activeProject;
-    const tasks = ProjectViewModel.tasks;
-    const showNewProjectModal = UIViewModel.showNewProjectModal;
-
-    const settings = UserViewModel.settings;
-    const isLoggedIn = UserViewModel.isLoggedIn();
-    const role = UserViewModel.role;
-
-    const competencies = WorkspaceViewModel.competencies;
-    const projects = WorkspaceViewModel.projects;
-
     return {
       projectState: {
-        activeProject,
-        tasks,
+        state: ProjectViewModel.properties,
       },
       userState: {
-        isLoggedIn,
-        settings,
-        role,
+        state: UserViewModel.properties,
       },
       uiState: {
-        showNewProjectModal,
+        showNewProjectModal: UIViewModel.showNewProjectModal,
       },
       workspace: {
-        competencies,
-        projects,
+        state: WorkspaceViewModel.properties,
       },
     };
   },

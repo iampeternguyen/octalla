@@ -107,13 +107,13 @@
 
 <script lang="ts">
 import { useDialogPluginComponent } from 'quasar';
-import { watch, PropType, reactive, ref } from 'vue';
+import { watch, PropType, reactive, ref, defineComponent } from 'vue';
 import { debounce } from 'ts-debounce';
 
 import Task, { TaskData } from 'src/models/Task';
 import ProjectViewModel from 'src/viewmodels/ProjectViewModel';
 import TaskViewModel from 'src/viewmodels/TaskViewModel';
-export default {
+export default defineComponent({
   props: {
     task: {
       type: Object as PropType<TaskData>,
@@ -128,13 +128,15 @@ export default {
     ...useDialogPluginComponent.emits,
   ],
 
-  setup(props: { task: Task }) {
-    const taskEditModel = reactive<TaskData>(props.task);
+  setup(props: { task: TaskData }) {
+    const taskEditModel = reactive<TaskData>(
+      Task.deserialize(props.task).serialize()
+    );
     const isNotSaved = ref(false);
     const isSaving = ref(false);
     const showTaskModal = ref(true);
 
-    watch(ProjectViewModel.tasks.value, (tasks) => {
+    watch(ProjectViewModel.properties.tasks, (tasks) => {
       const task = tasks.find((t) => t.id == props.task.id);
       Object.assign(taskEditModel, task);
     });
@@ -170,6 +172,8 @@ export default {
         await TaskViewModel.updateTask(taskEditModel);
         isNotSaved.value = false;
         await debounceResetIsSaving();
+      } else {
+        console.log('no changes');
       }
     }
 
@@ -233,7 +237,7 @@ export default {
       onSubmitSuccess: onDialogHide,
     };
   },
-};
+});
 </script>
 
 <style lang="scss">

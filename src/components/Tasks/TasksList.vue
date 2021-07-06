@@ -64,7 +64,7 @@ export default defineComponent({
     const route = useRoute();
 
     const taskList = ref<TaskData[]>(
-      filterTaskList(ProjectViewModel.tasks.value as TaskData[])
+      filterTaskList(ProjectViewModel.properties.tasks as TaskData[])
     );
 
     function filterTaskList(tasks: TaskData[]) {
@@ -74,7 +74,7 @@ export default defineComponent({
             return t[props.category] == props.field.toString();
           } else if (props.category == 'competency' && props.field != 'Empty') {
             const id =
-              WorkspaceViewModel.competencies.value.find(
+              WorkspaceViewModel.properties.competencies.find(
                 (comp) => comp.name == props.field
               )?.id || '';
             return t[props.category] == id;
@@ -85,7 +85,7 @@ export default defineComponent({
         .sort((a, b) => a.order - b.order);
     }
 
-    watch(ProjectViewModel.tasks.value, (tasks) => {
+    watch(ProjectViewModel.properties.tasks, (tasks) => {
       taskList.value = filterTaskList(tasks as TaskData[]);
     });
 
@@ -93,10 +93,10 @@ export default defineComponent({
     const text = ref('');
 
     async function addTask() {
-      if (!text.value || !UserViewModel.settings.value) return;
+      if (!text.value || !UserViewModel.properties.settings) return;
       const task = new Task(
         text.value,
-        UserViewModel.settings.value.id,
+        UserViewModel.properties.settings.id,
         route.params.project_id.toString(),
         route.params.workspace_id.toString()
       );
@@ -104,7 +104,7 @@ export default defineComponent({
         task[props.category] = props.field.toString();
       } else if (props.category == 'competency' && props.field != 'Empty') {
         task[props.category] =
-          WorkspaceViewModel.competencies.value.find(
+          WorkspaceViewModel.properties.competencies.find(
             (comp) => comp.name == props.field
           )?.id || '';
       } else if (props.field == 'Empty' && props.category == 'competency') {
@@ -127,7 +127,7 @@ export default defineComponent({
           task[props.category] = props.field.toString();
         } else if (props.category == 'competency' && props.field != 'Empty') {
           task[props.category] =
-            WorkspaceViewModel.competencies.value.find(
+            WorkspaceViewModel.properties.competencies.find(
               (comp) => comp.name == props.field
             )?.id || '';
         } else if (props.field == 'Empty' && props.category == 'competency') {

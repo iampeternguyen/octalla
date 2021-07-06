@@ -43,7 +43,7 @@ export default defineComponent({
       if (user && success) {
         UIViewModel.updateLoadingMessage('Joining your team... please wait.');
         UIViewModel.showLoading();
-        await UserViewModel.setUpUserRoleAndWorkspace(user, success);
+        await UserViewModel.methods.setUpUserRoleAndWorkspace(user, success);
         await router.push({ name: 'app' });
         UIViewModel.hideLoading();
       }

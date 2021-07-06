@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue';
+import { ref, computed, reactive } from 'vue';
 import { auth } from 'src/firebase';
 import { User } from '@firebase/auth-types';
 import PubSub from 'pubsub-js';
@@ -16,7 +16,7 @@ import { WORKSPACE_ROLE } from 'src/models/Role';
 import { WorkspaceData } from 'src/models/Workspace';
 import { ProjectData } from 'src/models/Project';
 import WorkspaceViewModel from './WorkspaceViewModel';
-import AppProfile, { AppProfileData } from 'src/models/AppProfile';
+import AppProfile from 'src/models/AppProfile';
 
 // Subscriptions
 PubSub.subscribe(
@@ -62,7 +62,7 @@ const _settings = ref<UserSettings | null>(null);
 const _role = ref<WORKSPACE_ROLE | null>(null);
 const _appProfile = ref<AppProfile | null>(null);
 // getters
-const isLoggedIn = async () => {
+const isLoggedInAndRecheck = async () => {
   if (_isLoggedIn.value) return _isLoggedIn.value;
   if (_attemptedLogIn.value) return false;
 
@@ -73,6 +73,13 @@ const isLoggedIn = async () => {
 const settings = computed(() => _settings.value?.serialize());
 const role = computed(() => _role.value);
 const appProfile = computed(() => _appProfile.value);
+const isLoggedIn = computed(() => _isLoggedIn.value);
+const properties = reactive({
+  settings,
+  role,
+  appProfile,
+  isLoggedIn,
+});
 
 // workspace changes
 async function addWorkspaceToSettings(workspace: WorkspaceData) {
@@ -165,9 +172,9 @@ async function setUpUserRoleAndWorkspace(user: User, token: string) {
     AppProfile.convertFirebaseUserToGlobalUserProfileData(user);
   await AppRepository.workspace.addUserToWorkspace(appProfile, invite);
 
-  await WorkspaceViewModel.setActiveWorkspace(invite.workspace_id);
-  if (WorkspaceViewModel.activeSpace.value)
-    await addWorkspaceToSettings(WorkspaceViewModel.activeSpace.value);
+  await WorkspaceViewModel.methods.setActiveWorkspace(invite.workspace_id);
+  if (WorkspaceViewModel.properties.activeSpace)
+    await addWorkspaceToSettings(WorkspaceViewModel.properties.activeSpace);
   await AppRepository.workspace.deleteWorkspaceInvite(token);
 }
 
@@ -207,13 +214,13 @@ async function logOutuser() {
 }
 
 const UserViewModel = {
-  isLoggedIn,
-  logOutuser,
-  setUserWorkspaceData,
-  settings,
-  role,
-  setUpUserRoleAndWorkspace,
-  appProfile,
+  properties,
+  methods: {
+    setUpUserRoleAndWorkspace,
+    isLoggedInAndRecheck,
+    logOutuser,
+    setUserWorkspaceData,
+  },
 };
 
 export default UserViewModel;

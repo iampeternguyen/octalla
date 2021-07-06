@@ -57,7 +57,7 @@ import { useRouter } from 'vue-router';
 export default defineComponent({
   name: 'WorkspaceSettings',
   setup() {
-    const name = ref(WorkspaceViewModel.activeSpace.value?.name || '');
+    const name = ref(WorkspaceViewModel.properties.activeSpace?.name || '');
     const router = useRouter();
 
     const workspaceNameInput = ref<QInput | null>(null);
@@ -67,14 +67,14 @@ export default defineComponent({
     }
 
     async function onWorkspaceNameSave() {
-      if (name.value == WorkspaceViewModel.activeSpace.value?.name) return;
-      await WorkspaceViewModel.updateWorkspaceName(name.value);
+      if (name.value == WorkspaceViewModel.properties.activeSpace?.name) return;
+      await WorkspaceViewModel.methods.updateWorkspaceName(name.value);
     }
 
     const onDeleteWorkspace = async () => {
-      if (WorkspaceViewModel.activeSpace.value)
-        await WorkspaceViewModel.deleteWorkspace(
-          WorkspaceViewModel.activeSpace.value
+      if (WorkspaceViewModel.properties.activeSpace)
+        await WorkspaceViewModel.methods.deleteWorkspace(
+          WorkspaceViewModel.properties.activeSpace
         );
       console.log('push to app');
       await router.push({ name: 'app' });
@@ -82,16 +82,18 @@ export default defineComponent({
 
     const invitedName = ref('');
     const invitedRole = ref('');
-    const roleOptions = computed(() => WorkspaceViewModel.roleOptions);
+    const roleOptions = computed(
+      () => WorkspaceViewModel.properties.roleOptions
+    );
     const inviteLink = ref('');
     async function generateInvite() {
-      if (!WorkspaceViewModel.activeSpace.value) return;
+      if (!WorkspaceViewModel.properties.activeSpace) return;
       const token = nanoid(64);
       inviteLink.value = `${window.location.origin}/invite?token=${token}`;
-      await WorkspaceViewModel.createInvite(
+      await WorkspaceViewModel.methods.createInvite(
         token,
         invitedRole.value as WORKSPACE_ROLE,
-        WorkspaceViewModel.activeSpace.value?.id
+        WorkspaceViewModel.properties.activeSpace?.id
       );
     }
     return {

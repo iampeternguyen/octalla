@@ -40,7 +40,7 @@ export default defineComponent({
       console.log('saving');
       const project = props.project;
       project.name = name.value.trim();
-      await ProjectViewModel.updateProject(project);
+      await ProjectViewModel.methods.updateProject(project);
     }
 
     return { name, nameInput, onNameSaved, onEnterPressed };

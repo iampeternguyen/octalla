@@ -5,7 +5,7 @@ import Project, { ProjectData } from 'src/models/Project';
 import { TaskData } from 'src/models/Task';
 import AppRepository from 'src/repository/AppRepository';
 import permissions from 'src/router/permissions';
-import { ref, computed } from 'vue';
+import { ref, computed, reactive } from 'vue';
 import UIViewModel from './UIViewModel';
 import UserViewModel from './UserViewModel';
 import WorkspaceViewModel from './WorkspaceViewModel';
@@ -26,15 +26,16 @@ const _failedActiveProjectRequest = ref('');
 // getters
 const activeProject = computed(() => _activeProject.value?.serialize());
 const tasks = computed(() => _tasks.value);
-const groupTasksBy = computed(() => _activeProject.value?.group_by);
-const hasActiveProjectRequest = computed(
-  () => _failedActiveProjectRequest.value
-);
+
+const properties = reactive({
+  activeProject,
+  tasks,
+});
 
 // setters
 
 const setActiveProject = async (projectId: string) => {
-  let project = WorkspaceViewModel.projects.value.find(
+  let project = WorkspaceViewModel.properties.projects.find(
     (p) => p.id == projectId
   );
   if (project) {
@@ -66,17 +67,22 @@ async function createProject(
   goal?: string,
   success?: string
 ) {
-  if (!WorkspaceViewModel.activeSpace.value || !UserViewModel.settings.value)
+  if (
+    !WorkspaceViewModel.properties.activeSpace ||
+    !UserViewModel.properties.settings
+  )
     return;
   const project = new Project(
     name,
-    UserViewModel.settings.value.id,
+    UserViewModel.properties.settings.id,
     workspaceId
   );
   project.primary_goal = goal || '';
   project.success_looks_like = success || '';
   await AppRepository.project.saveProject(project.serialize());
-  await WorkspaceViewModel.addProjectToFolderStructure(project.serialize());
+  await WorkspaceViewModel.methods.addProjectToFolderStructure(
+    project.serialize()
+  );
 }
 
 async function updateProject(projectData: ProjectData) {
@@ -134,15 +140,14 @@ function addProjectTask(task: TaskData) {
 }
 
 const ProjectViewModel = {
-  activeProject,
-  groupTasksBy,
-  tasks,
-  hasActiveProjectRequest,
-  setActiveProject,
-  projectGroupBy,
-  deleteProject,
-  createProject,
-  updateProject,
+  properties,
+  methods: {
+    setActiveProject,
+    projectGroupBy,
+    deleteProject,
+    createProject,
+    updateProject,
+  },
 };
 
 export default ProjectViewModel;

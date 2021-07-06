@@ -42,7 +42,7 @@ export default route(function (/* { store, ssrContext } */) {
   Router.beforeEach(async (to, from, next) => {
     // requiresAuth
     if (to.matched.some((record) => record.meta.requiresAuth)) {
-      if (!(await UserViewModel.isLoggedIn())) {
+      if (!(await UserViewModel.methods.isLoggedInAndRecheck())) {
         next({ name: 'login' });
         return;
       }
@@ -53,16 +53,16 @@ export default route(function (/* { store, ssrContext } */) {
     if (
       to.matched.some((record) => record.meta.requiresReadWorkspacePermission)
     ) {
-      if (!WorkspaceViewModel.activeSpace.value) {
+      if (!WorkspaceViewModel.properties.activeSpace) {
         UIViewModel.updateLoadingMessage('processing');
         UIViewModel.showLoading();
       }
 
       try {
-        await WorkspaceViewModel.setActiveWorkspace(
+        await WorkspaceViewModel.methods.setActiveWorkspace(
           to.params.workspace_id.toString()
         );
-        console.log('has role?:', UserViewModel.role.value);
+        console.log('has role?:', UserViewModel.properties.role);
       } catch (error) {
         console.log(error);
         next({ name: '404' });
@@ -86,7 +86,7 @@ export default route(function (/* { store, ssrContext } */) {
       try {
         if (to.params.project_id) {
           console.log('setting active project');
-          await ProjectViewModel.setActiveProject(
+          await ProjectViewModel.methods.setActiveProject(
             to.params.project_id.toString()
           );
         }
@@ -96,7 +96,7 @@ export default route(function (/* { store, ssrContext } */) {
         return;
       }
 
-      const project = ProjectViewModel.activeProject.value;
+      const project = ProjectViewModel.properties.activeProject;
       if (!project || !permissions.project.canCRU(project)) {
         next({ name: '404' });
         return;

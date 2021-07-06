@@ -174,7 +174,7 @@ export default {
     const workspaceId = useRoute().params.workspace_id.toString();
     // TODO redirect on create
     async function onAddProject() {
-      await ProjectViewModel.createProject(
+      await ProjectViewModel.methods.createProject(
         name.value,
         workspaceId,
         goal.value,

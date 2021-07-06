@@ -147,7 +147,9 @@ export default defineComponent({
     const router = useRouter();
 
     async function onAddWorkspace() {
-      const workspace = await WorkspaceViewModel.createWorkspace(name.value);
+      const workspace = await WorkspaceViewModel.methods.createWorkspace(
+        name.value
+      );
       if (workspace)
         await router.push({
           name: 'workspace',

@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid';
-import Project, { ProjectData } from './Project';
+import { ProjectData } from './Project';
 
 export interface FolderData {
   id: string;

@@ -219,7 +219,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, watch } from 'vue';
+import { defineComponent, watch, computed } from 'vue';
 import { useQuasar } from 'quasar';
 import { useRouter } from 'vue-router';
 import NewProjectModal from 'src/components/Projects/NewProjectModal.vue';
@@ -236,7 +236,7 @@ export default defineComponent({
   },
 
   setup() {
-    if (!UserViewModel.settings.value) return;
+    if (!UserViewModel.properties.settings) return;
 
     const router = useRouter();
 
@@ -257,13 +257,13 @@ export default defineComponent({
       });
     }
 
-    const projects = WorkspaceViewModel.projects;
-    const activeProject = ProjectViewModel.activeProject;
-    const activeWorkspace = WorkspaceViewModel.activeSpace;
-
-    function isActive(project_id: string) {
-      return project_id == activeProject.value?.id;
-    }
+    const projects = computed(() => WorkspaceViewModel.properties.projects);
+    const activeProject = computed(
+      () => ProjectViewModel.properties.activeProject
+    );
+    const activeWorkspace = computed(
+      () => WorkspaceViewModel.properties.activeSpace
+    );
 
     function onNewProject() {
       console.log('new project');
@@ -271,7 +271,7 @@ export default defineComponent({
     }
     // TODO move method
     async function onDeleteProject(project: Project) {
-      await ProjectViewModel.deleteProject(project);
+      await ProjectViewModel.methods.deleteProject(project);
       if (project.id == activeProject.value?.id)
         await router.push({ name: 'app' });
     }
@@ -286,7 +286,6 @@ export default defineComponent({
       toMiniDrawer: UIViewModel.appLeftDrawer.collapseProjectLeftDrawer,
       onNewProject,
       projects,
-      isActive,
       activeProject,
     };
   },

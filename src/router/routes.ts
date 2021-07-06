@@ -14,39 +14,41 @@ const routes: RouteRecordRaw[] = [
     component: () => import('src/layouts/AppLayout.vue'),
     beforeEnter: (to, from, next) => {
       // TODO workspace should also jump to mose recent
-      console.log(UserViewModel.settings.value);
+      console.log(UserViewModel.properties.settings);
       if (
-        !UserViewModel.appProfile.value ||
-        (!UserViewModel.appProfile.value.most_recent_workspace &&
-          UserViewModel.appProfile.value.workspaces.length == 0)
+        !UserViewModel.properties.appProfile ||
+        (!UserViewModel.properties.appProfile.most_recent_workspace &&
+          UserViewModel.properties.appProfile.workspaces.length == 0)
       ) {
         next({ name: 'onboarding' });
       } else if (
-        UserViewModel.settings.value?.most_recent_project &&
-        UserViewModel.appProfile.value.most_recent_workspace
+        UserViewModel.properties.settings?.most_recent_project &&
+        UserViewModel.properties.appProfile.most_recent_workspace
       ) {
         next({
           name: 'project',
           params: {
-            workspace_id: UserViewModel.appProfile.value.most_recent_workspace,
-            project_id: UserViewModel.settings.value?.most_recent_project,
+            workspace_id:
+              UserViewModel.properties.appProfile.most_recent_workspace,
+            project_id: UserViewModel.properties.settings?.most_recent_project,
           },
         });
       } else if (
-        !UserViewModel.settings.value?.most_recent_project &&
-        UserViewModel.appProfile.value.most_recent_workspace
+        !UserViewModel.properties.settings?.most_recent_project &&
+        UserViewModel.properties.appProfile.most_recent_workspace
       ) {
         next({
           name: 'workspace',
           params: {
-            workspace_id: UserViewModel.appProfile.value.most_recent_workspace,
+            workspace_id:
+              UserViewModel.properties.appProfile.most_recent_workspace,
           },
         });
       } else {
         next({
           name: 'workspace',
           params: {
-            workspace_id: UserViewModel.appProfile.value.workspaces[0],
+            workspace_id: UserViewModel.properties.appProfile.workspaces[0],
           },
         });
       }

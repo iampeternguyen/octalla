@@ -128,25 +128,27 @@ export default defineComponent({
     CompetencyAddMenu,
   },
   setup() {
-    const tasks = ProjectViewModel.tasks;
-    const activeProject = ProjectViewModel.activeProject;
+    const tasks = ProjectViewModel.properties.tasks;
+    const activeProject = computed(
+      () => ProjectViewModel.properties.activeProject
+    );
 
     const text = ref('');
     const rightDrawerOpen = ref(false);
     const group = computed(() => {
       if (groupCategory.value == 'competency') {
-        const competencies = WorkspaceViewModel.competencies.value;
+        const competencies = WorkspaceViewModel.properties.competencies;
         return competencies.map((comp) => comp.name);
       } else {
         return TaskViewModel.statuses;
       }
     });
 
-    const groupCategory = ProjectViewModel.groupTasksBy;
+    const groupCategory = computed(() => activeProject.value?.group_by);
     const isCompetencyHovered = ref(false);
 
     function filteredTasks(status: string) {
-      return tasks.value.filter((t) => t.status == status);
+      return tasks.filter((t) => t.status == status);
     }
 
     function onToggleRightDrawer() {
@@ -155,7 +157,7 @@ export default defineComponent({
 
     async function groupBy(field: string) {
       if (field != activeProject.value?.group_by) {
-        await ProjectViewModel.projectGroupBy(field);
+        await ProjectViewModel.methods.projectGroupBy(field);
       }
     }
 

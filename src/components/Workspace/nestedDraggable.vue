@@ -41,7 +41,7 @@
 
 <script lang="ts">
 import draggable from 'vuedraggable';
-import { defineComponent } from 'vue';
+import { defineComponent, computed } from 'vue';
 import ProjectViewModel from 'src/viewmodels/ProjectViewModel';
 
 export default defineComponent({
@@ -57,7 +57,9 @@ export default defineComponent({
   },
   name: 'nested-draggable',
   setup() {
-    const activeProject = ProjectViewModel.activeProject;
+    const activeProject = computed(
+      () => ProjectViewModel.properties.activeProject
+    );
 
     return {
       activeProject,

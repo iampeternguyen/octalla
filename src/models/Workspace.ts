@@ -1,5 +1,4 @@
 import { nanoid } from 'nanoid';
-import UserViewModel from 'src/viewmodels/UserViewModel';
 import DatabaseModel, { DatabaseModelData } from './DatabaseModel';
 import { FolderData } from './Folder';
 

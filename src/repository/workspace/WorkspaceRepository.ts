@@ -6,7 +6,7 @@ import WorkspaceMember, {
   WorkspaceMembersContainer,
   WORKSPACE_MEMBERS_STORENAME,
   WORKSPACE_ROLE,
-} from 'src/models/MemberProfile';
+} from 'src/models/WorkspaceMember';
 import { ProjectData, PROJECTS_STORENAME } from 'src/models/Project';
 import WorkspaceRole, {
   ROLES_STORENAME,
@@ -188,6 +188,8 @@ const deleteWorkspace = async (workspace: WorkspaceData) => {
   console.log('successfully deleted roles document');
 };
 
+// OBSERVERS
+
 let workspaceCompetenciesObserver = () => {
   return;
 };
@@ -232,7 +234,6 @@ function watchWorkspaceCompetencies(
   );
 }
 
-// Observers
 let workspaceProjectsObserver = () => {
   return;
 };
@@ -276,10 +277,37 @@ function watchWorkspaceProjects(
   );
 }
 
+let workspaceMembersObserver = () => {
+  return;
+};
+
+function watchWorkspaceMembers(
+  workspaceId: string,
+  onMemberChanged: (members: WorkspaceMemberData[]) => void
+) {
+  console.log('watching members');
+  // unsubscribe
+  workspaceMembersObserver();
+
+  const query = db.collection(WORKSPACE_MEMBERS_STORENAME).doc(workspaceId);
+
+  workspaceMembersObserver = query.onSnapshot(
+    (docSnapshot) => {
+      const members = (docSnapshot.data() as WorkspaceMembersContainer).members;
+      onMemberChanged(members);
+    },
+    (err) => {
+      console.log(`Encountered error: ${err.message}`);
+    }
+  );
+}
+
 const WorkspaceRepository = {
   getWorkspace,
   watchWorkspaceProjects,
   watchWorkspaceCompetencies,
+  watchWorkspaceMembers,
+
   createWorkspace,
   saveWorkspace,
   deleteWorkspace,

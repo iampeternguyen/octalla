@@ -6,7 +6,7 @@ import { UserSettingsData } from './UserSettings';
 import { CompetencyData } from './Competency';
 import { WorkspaceRoleData } from './Role';
 import { AppProfileData } from './AppProfile';
-import { WorkspaceMemberData } from './MemberProfile';
+import { WorkspaceMemberData } from './WorkspaceMember';
 
 export interface DatabaseModelData {
   id: string;
