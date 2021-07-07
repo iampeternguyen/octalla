@@ -7,7 +7,7 @@
   >
     <q-card-section>
       <div class="row q-py-sm justify-between">
-        <div>{{ task.name }}</div>
+        <div>{{ task.fields.name }}</div>
         <q-btn
           size="sm"
           color="grey-5 q-pa-none"

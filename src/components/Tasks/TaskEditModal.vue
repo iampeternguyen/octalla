@@ -61,7 +61,7 @@
             <q-input
               outlined
               type="text"
-              v-model="taskEditModel.name"
+              v-model="taskEditModel.fields.name"
               class="full-width"
               @keydown.enter.exact.prevent="onEnterPressed"
               @blur="saveTask"

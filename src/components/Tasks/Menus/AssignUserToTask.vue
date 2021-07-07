@@ -3,17 +3,18 @@
     ref="assigneeMenu"
     transition-show="jump-down"
     transition-hide="jump-up"
-    class="q-pa-md column items-center"
+    class="q-pa-md column items-center bg-blue-grey-1"
   >
     <q-item-section>
+      <!-- TODO what happens when this list is really long? -->
       <q-select
         @update:model-value="updateAssignee"
-        outlined
         v-model="user"
+        outlined
         use-input
         hide-selected
         fill-input
-        label="Search"
+        placeholder="Search"
         input-debounce="0"
         :options="options"
         @filter="filterFn"

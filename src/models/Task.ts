@@ -9,9 +9,9 @@ export interface TaskData extends DatabaseModelData {
   workspace_id: string;
   project_id: string;
   created_by: string;
-  name: string;
 
   fields: {
+    name: string;
     competency: string;
     description: string;
     due_date: number;
@@ -31,9 +31,10 @@ export default class Task extends DatabaseModel implements TaskData {
   workspace_id: string;
   project_id: string;
   created_by: string;
-  name: string;
 
   fields: {
+    name: string;
+
     competency: string;
     description: string;
     due_date: number;
@@ -59,8 +60,9 @@ export default class Task extends DatabaseModel implements TaskData {
     this.created_by = userId;
     this.created_at = data?.created_at || Date.now();
     this.last_modified = data?.last_modified || Date.now();
-    this.name = name;
     this.fields = {
+      name: name,
+
       description: data?.fields.description || '',
       isComplete: data?.fields.isComplete || false,
       competency: data?.fields.competency || '',
@@ -120,9 +122,10 @@ export default class Task extends DatabaseModel implements TaskData {
       workspace_id: this.workspace_id,
       project_id: this.project_id,
       created_by: this.created_by,
-      name: this.name,
 
       fields: {
+        name: this.fields.name,
+
         description: this.fields.description,
         isComplete: this.fields.isComplete,
         competency: this.fields.competency,
@@ -136,7 +139,7 @@ export default class Task extends DatabaseModel implements TaskData {
 
   static deserialize(taskData: TaskData): Task {
     return new Task(
-      taskData.name,
+      taskData.fields.name,
       taskData.created_by,
       taskData.project_id,
       taskData.workspace_id,

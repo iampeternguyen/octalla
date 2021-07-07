@@ -211,7 +211,7 @@
         />
       </div>
     </q-drawer>
-
+    <chat-footer></chat-footer>
     <q-page-container class="page-container">
       <router-view />
     </q-page-container>
@@ -229,10 +229,13 @@ import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
 import UserViewModel from 'src/viewmodels/UserViewModel';
 import ProjectViewModel from 'src/viewmodels/ProjectViewModel';
 import UIViewModel from 'src/viewmodels/UIViewModel';
+import ChatFooter from 'src/components/Chat/ChatFooter.vue';
+
 export default defineComponent({
   name: 'ProjectManagerLayout',
   components: {
     WorkspaceProjectsNestedList,
+    ChatFooter,
   },
 
   setup() {
