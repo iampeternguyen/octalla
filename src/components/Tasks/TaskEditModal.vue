@@ -15,7 +15,7 @@
             <div class="row">
               <q-btn
                 color="primary"
-                :label="task.status"
+                :label="task.fields.status"
                 @click="toggleStatus"
               />
               <q-btn
@@ -51,7 +51,7 @@
           <div class="column q-mb-md">
             <!-- TODO limit row height (flex-grow?) -->
             <q-editor
-              :model-value="taskEditModel.description"
+              :model-value="taskEditModel.fields.description"
               @update:model-value="onUpdateDescription"
               class="full-width"
               :class="{ notSaved: isNotSaved }"
@@ -151,7 +151,7 @@ export default defineComponent({
       isNotSaved.value = true;
       isSaving.value = false;
 
-      taskEditModel.description = value;
+      taskEditModel.fields.description = value;
       await debouncedSaveTask();
     }
 

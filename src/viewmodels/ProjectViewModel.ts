@@ -81,6 +81,8 @@ async function createProject(
   await WorkspaceViewModel.methods.addProjectToFolderStructure(
     project.serialize()
   );
+
+  return project.serialize();
 }
 
 async function updateProject(projectData: ProjectData) {

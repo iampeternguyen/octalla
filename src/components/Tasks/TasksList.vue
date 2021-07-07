@@ -72,18 +72,18 @@ export default defineComponent({
       return tasks
         .filter((t) => {
           if (props.category == 'status') {
-            return t[props.category] == props.field.toString();
+            return t.fields[props.category] == props.field.toString();
           } else if (props.category == 'competency' && props.field != 'Empty') {
             const id =
               WorkspaceViewModel.properties.competencies.value.find(
                 (comp) => comp.name == props.field
               )?.id || '';
-            return t[props.category] == id;
+            return t.fields[props.category] == id;
           } else if (props.category == 'competency' && props.field == 'Empty') {
-            return t[props.category] == '';
+            return t.fields[props.category] == '';
           }
         })
-        .sort((a, b) => a.order - b.order);
+        .sort((a, b) => a.fields.order - b.fields.order);
     }
 
     const addTaskInputRef = ref<QInput | null>(null);
@@ -101,14 +101,14 @@ export default defineComponent({
         route.params.workspace_id.toString()
       );
       if (props.category == 'status' && props.field != 'Empty') {
-        task[props.category] = props.field.toString();
+        task.fields[props.category] = props.field.toString();
       } else if (props.category == 'competency' && props.field != 'Empty') {
-        task[props.category] =
+        task.fields[props.category] =
           WorkspaceViewModel.properties.competencies.value.find(
             (comp) => comp.name == props.field
           )?.id || '';
       } else if (props.field == 'Empty' && props.category == 'competency') {
-        task[props.category] = '';
+        task.fields[props.category] = '';
       }
       await TaskViewModel.updateTask(task.serialize());
       text.value = '';
@@ -129,14 +129,14 @@ export default defineComponent({
         task = evt.added.element;
 
         if (props.category == 'status' && props.field != 'Empty') {
-          task[props.category] = props.field.toString();
+          task.fields[props.category] = props.field.toString();
         } else if (props.category == 'competency' && props.field != 'Empty') {
-          task[props.category] =
+          task.fields[props.category] =
             WorkspaceViewModel.properties.competencies.value.find(
               (comp) => comp.name == props.field
             )?.id || '';
         } else if (props.field == 'Empty' && props.category == 'competency') {
-          task[props.category] = '';
+          task.fields[props.category] = '';
         }
 
         if (taskList.value.length <= 1) {
@@ -151,13 +151,13 @@ export default defineComponent({
       }
 
       if (newIndex == 0) {
-        task.order = taskList.value[newIndex + 1].order / 2;
+        task.fields.order = taskList.value[newIndex + 1].fields.order / 2;
       } else if (newIndex == taskList.value.length - 1) {
-        task.order = taskList.value[newIndex - 1].order + 1;
+        task.fields.order = taskList.value[newIndex - 1].fields.order + 1;
       } else {
-        task.order =
-          (taskList.value[newIndex + 1].order +
-            taskList.value[newIndex - 1].order) /
+        task.fields.order =
+          (taskList.value[newIndex + 1].fields.order +
+            taskList.value[newIndex - 1].fields.order) /
           2;
       }
       await TaskViewModel.updateTask(task);

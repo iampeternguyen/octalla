@@ -16,7 +16,7 @@
           dense
           rounded
           @click.stop
-          :label="task.due_date ? dueDateFriendly : ''"
+          :label="task.fields.due_date ? dueDateFriendly : ''"
         >
           <q-menu
             transition-show="jump-down"
@@ -94,7 +94,7 @@ export default defineComponent({
   setup(props) {
     const $q = useQuasar();
 
-    const isComplete = ref(props.task.isComplete);
+    const isComplete = ref(props.task.fields.isComplete);
 
     const taskHovered = ref(false);
     async function onToggleComplete() {
@@ -117,7 +117,7 @@ export default defineComponent({
     }
 
     const dueDateFriendly = computed(() =>
-      date.formatDate(props.task.due_date, 'MMM D')
+      date.formatDate(props.task.fields.due_date, 'MMM D')
     );
 
     const format = date.formatDate(Date.now(), 'YYYY-MM-DD HH:mm');
@@ -125,11 +125,11 @@ export default defineComponent({
 
     async function checkDueDate() {
       if (
-        props.task.due_date !=
+        props.task.fields.due_date !=
         date.extractDate(dueDate.value, 'YYYY-MM-DD HH:mm').getTime()
       ) {
         const task = props.task;
-        task.due_date = date
+        task.fields.due_date = date
           .extractDate(dueDate.value, 'YYYY-MM-DD HH:mm')
           .getTime();
         await TaskViewModel.updateTask(task);

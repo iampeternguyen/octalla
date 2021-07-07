@@ -5,7 +5,7 @@ export enum TASK_STATUS {
   OPEN = 'Open',
   IN_PROGRESS = 'In-Progress',
   REVIEW = 'Review',
-  COMPLETE = 'Compelte',
+  COMPLETE = 'Complete',
 }
 
 const statuses = [

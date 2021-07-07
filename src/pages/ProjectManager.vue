@@ -146,7 +146,7 @@ export default defineComponent({
     const isCompetencyHovered = ref(false);
 
     function filteredTasks(status: string) {
-      return tasks.value.filter((t) => t.status == status);
+      return tasks.value.filter((t) => t.fields.status == status);
     }
 
     function onToggleRightDrawer() {

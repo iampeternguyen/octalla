@@ -144,7 +144,7 @@
 <script lang="ts">
 import { useDialogPluginComponent } from 'quasar';
 import { ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 import ProjectViewModel from 'src/viewmodels/ProjectViewModel';
 
@@ -172,14 +172,24 @@ export default {
     const goal = ref('');
     const success = ref('');
     const workspaceId = useRoute().params.workspace_id.toString();
-    // TODO redirect on create
+    const router = useRouter();
     async function onAddProject() {
-      await ProjectViewModel.methods.createProject(
+      const project = await ProjectViewModel.methods.createProject(
         name.value,
         workspaceId,
         goal.value,
         success.value
       );
+
+      if (project) {
+        await router.push({
+          name: 'project',
+          params: {
+            workspace_id: project.workspace_id,
+            project_id: project.id,
+          },
+        });
+      }
 
       onDialogHide();
     }
