@@ -5,7 +5,7 @@ import Project, { ProjectData } from 'src/models/Project';
 import { TaskData } from 'src/models/Task';
 import AppRepository from 'src/repository/AppRepository';
 import permissions from 'src/router/permissions';
-import { ref, computed, reactive } from 'vue';
+import { ref, computed } from 'vue';
 import UIViewModel from './UIViewModel';
 import UserViewModel from './UserViewModel';
 import WorkspaceViewModel from './WorkspaceViewModel';
@@ -23,19 +23,17 @@ const _activeProject = ref<Project | null>(null);
 const _tasks = ref<TaskData[]>([]);
 const _failedActiveProjectRequest = ref('');
 
-// getters
-const activeProject = computed(() => _activeProject.value?.serialize());
-const tasks = computed(() => _tasks.value);
+const properties = {
+  activeProject: computed(() => _activeProject.value?.serialize()),
+  tasks: computed(() => _tasks.value),
+};
 
-const properties = reactive({
-  activeProject,
-  tasks,
-});
+// watch
 
 // setters
 
 const setActiveProject = async (projectId: string) => {
-  let project = WorkspaceViewModel.properties.projects.find(
+  let project = WorkspaceViewModel.properties.projects.value.find(
     (p) => p.id == projectId
   );
   if (project) {
@@ -68,13 +66,13 @@ async function createProject(
   success?: string
 ) {
   if (
-    !WorkspaceViewModel.properties.activeSpace ||
-    !UserViewModel.properties.settings
+    !WorkspaceViewModel.properties.activeSpace.value ||
+    !UserViewModel.properties.settings.value
   )
     return;
   const project = new Project(
     name,
-    UserViewModel.properties.settings.id,
+    UserViewModel.properties.settings.value.id,
     workspaceId
   );
   project.primary_goal = goal || '';

@@ -129,15 +129,13 @@ export default defineComponent({
   },
   setup() {
     const tasks = ProjectViewModel.properties.tasks;
-    const activeProject = computed(
-      () => ProjectViewModel.properties.activeProject
-    );
+    const activeProject = ProjectViewModel.properties.activeProject;
 
     const text = ref('');
     const rightDrawerOpen = ref(false);
     const group = computed(() => {
       if (groupCategory.value == 'competency') {
-        const competencies = WorkspaceViewModel.properties.competencies;
+        const competencies = WorkspaceViewModel.properties.competencies.value;
         return competencies.map((comp) => comp.name);
       } else {
         return TaskViewModel.statuses;
@@ -148,7 +146,7 @@ export default defineComponent({
     const isCompetencyHovered = ref(false);
 
     function filteredTasks(status: string) {
-      return tasks.filter((t) => t.status == status);
+      return tasks.value.filter((t) => t.status == status);
     }
 
     function onToggleRightDrawer() {

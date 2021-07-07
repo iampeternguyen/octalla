@@ -72,13 +72,13 @@ export default defineComponent({
         formState.saving = false;
       } else if (
         !props.competency &&
-        WorkspaceViewModel.properties.activeSpace &&
-        UserViewModel.properties.settings
+        WorkspaceViewModel.properties.activeSpace.value &&
+        UserViewModel.properties.settings.value
       ) {
         const competency = new Competency(
           name.value,
-          UserViewModel.properties.settings.id,
-          WorkspaceViewModel.properties.activeSpace.id
+          UserViewModel.properties.settings.value.id,
+          WorkspaceViewModel.properties.activeSpace.value.id
         );
         competency.description = description.value;
         name.value = '';

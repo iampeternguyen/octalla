@@ -9,7 +9,7 @@ import { WORKSPACE_ROLE } from 'src/models/Role';
 import Workspace, { WorkspaceData } from 'src/models/Workspace';
 import AppRepository from 'src/repository/AppRepository';
 import permissions from 'src/router/permissions';
-import { ref, computed, reactive } from 'vue';
+import { ref, computed } from 'vue';
 import UIViewModel from './UIViewModel';
 import UserViewModel from './UserViewModel';
 
@@ -44,14 +44,14 @@ const roleOptions = [
   WORKSPACE_ROLE.GUEST,
 ];
 
-const properties = reactive({
+const properties = {
   activeSpace,
   projects,
   members,
   competencies,
   roleOptions,
   workspaceFolderStructure,
-});
+};
 
 // Subscriptions
 PubSub.subscribe(
@@ -65,11 +65,11 @@ PubSub.subscribe(
 
 // creating workspace
 async function createWorkspace(workspaceName: string) {
-  if (!UserViewModel.properties.appProfile)
+  if (!UserViewModel.properties.appProfile.value)
     throw 'onCreateWorkspace called when no user settings found';
   const workspace = await AppRepository.workspace.createWorkspace(
     workspaceName,
-    UserViewModel.properties.appProfile
+    UserViewModel.properties.appProfile.value
   );
 
   BroadcastEvent.workspace.onWorkspaceCreated(workspace);

@@ -5,15 +5,15 @@ import UserViewModel from 'src/viewmodels/UserViewModel';
 // TODO think about what guest permissions allow
 
 function userHasReadWorkspacePermission() {
-  console.log('role', UserViewModel.properties.role);
+  console.log('role', UserViewModel.properties.role.value);
   if (
-    UserViewModel.properties.role &&
+    UserViewModel.properties.role.value &&
     [
       WORKSPACE_ROLE.ADMIN,
       WORKSPACE_ROLE.MANAGER,
       WORKSPACE_ROLE.MEMBER,
       WORKSPACE_ROLE.GUEST,
-    ].includes(UserViewModel.properties.role)
+    ].includes(UserViewModel.properties.role.value)
   ) {
     return true;
   } else {
@@ -23,9 +23,9 @@ function userHasReadWorkspacePermission() {
 
 function userHasUpdateWorkspacePermission() {
   if (
-    UserViewModel.properties.role &&
+    UserViewModel.properties.role.value &&
     [WORKSPACE_ROLE.ADMIN, WORKSPACE_ROLE.MANAGER].includes(
-      UserViewModel.properties.role
+      UserViewModel.properties.role.value
     )
   ) {
     return true;
@@ -36,8 +36,8 @@ function userHasUpdateWorkspacePermission() {
 
 function userHasDeleteWorkspacePermission() {
   if (
-    UserViewModel.properties.role &&
-    [WORKSPACE_ROLE.ADMIN].includes(UserViewModel.properties.role)
+    UserViewModel.properties.role.value &&
+    [WORKSPACE_ROLE.ADMIN].includes(UserViewModel.properties.role.value)
   ) {
     return true;
   } else {
@@ -47,11 +47,11 @@ function userHasDeleteWorkspacePermission() {
 
 function userHasDeleteProjectPermission(project: ProjectData) {
   if (
-    UserViewModel.properties.role &&
+    UserViewModel.properties.role.value &&
     ([WORKSPACE_ROLE.ADMIN, WORKSPACE_ROLE.MANAGER].includes(
-      UserViewModel.properties.role
+      UserViewModel.properties.role.value
     ) ||
-      project.created_by == UserViewModel.properties.settings?.id)
+      project.created_by == UserViewModel.properties.settings.value?.id)
   ) {
     return true;
   } else {
@@ -61,12 +61,12 @@ function userHasDeleteProjectPermission(project: ProjectData) {
 
 function userHasCRUProjectPermission(project: ProjectData) {
   if (
-    UserViewModel.properties.role &&
+    UserViewModel.properties.role.value &&
     [
       WORKSPACE_ROLE.ADMIN,
       WORKSPACE_ROLE.MANAGER,
       WORKSPACE_ROLE.MEMBER,
-    ].includes(UserViewModel.properties.role) &&
+    ].includes(UserViewModel.properties.role.value) &&
     // just adding for now.
     // TODO project should have its own exceptions or inclusions based on user or teams
     project

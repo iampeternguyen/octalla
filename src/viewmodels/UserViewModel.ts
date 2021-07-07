@@ -1,4 +1,4 @@
-import { ref, computed, reactive } from 'vue';
+import { ref, computed } from 'vue';
 import { auth } from 'src/firebase';
 import { User } from '@firebase/auth-types';
 import PubSub from 'pubsub-js';
@@ -74,12 +74,12 @@ const settings = computed(() => _settings.value?.serialize());
 const role = computed(() => _role.value);
 const appProfile = computed(() => _appProfile.value);
 const isLoggedIn = computed(() => _isLoggedIn.value);
-const properties = reactive({
+const properties = {
   settings,
   role,
   appProfile,
   isLoggedIn,
-});
+};
 
 // workspace changes
 async function addWorkspaceToSettings(workspace: WorkspaceData) {
@@ -173,8 +173,10 @@ async function setUpUserRoleAndWorkspace(user: User, token: string) {
   await AppRepository.workspace.addUserToWorkspace(appProfile, invite);
 
   await WorkspaceViewModel.methods.setActiveWorkspace(invite.workspace_id);
-  if (WorkspaceViewModel.properties.activeSpace)
-    await addWorkspaceToSettings(WorkspaceViewModel.properties.activeSpace);
+  if (WorkspaceViewModel.properties.activeSpace.value)
+    await addWorkspaceToSettings(
+      WorkspaceViewModel.properties.activeSpace.value
+    );
   await AppRepository.workspace.deleteWorkspaceInvite(token);
 }
 

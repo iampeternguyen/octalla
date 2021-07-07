@@ -236,7 +236,7 @@ export default defineComponent({
   },
 
   setup() {
-    if (!UserViewModel.properties.settings) return;
+    if (!UserViewModel.properties.settings.value) return;
 
     const router = useRouter();
 
@@ -257,13 +257,10 @@ export default defineComponent({
       });
     }
 
-    const projects = computed(() => WorkspaceViewModel.properties.projects);
-    const activeProject = computed(
-      () => ProjectViewModel.properties.activeProject
-    );
-    const activeWorkspace = computed(
-      () => WorkspaceViewModel.properties.activeSpace
-    );
+    const projects = WorkspaceViewModel.properties.projects.value;
+
+    const activeProject = ProjectViewModel.properties.activeProject;
+    const activeWorkspace = WorkspaceViewModel.properties.activeSpace;
 
     function onNewProject() {
       console.log('new project');

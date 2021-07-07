@@ -57,7 +57,9 @@ import { useRouter } from 'vue-router';
 export default defineComponent({
   name: 'WorkspaceSettings',
   setup() {
-    const name = ref(WorkspaceViewModel.properties.activeSpace?.name || '');
+    const name = ref(
+      WorkspaceViewModel.properties.activeSpace.value?.name || ''
+    );
     const router = useRouter();
 
     const workspaceNameInput = ref<QInput | null>(null);
@@ -67,14 +69,15 @@ export default defineComponent({
     }
 
     async function onWorkspaceNameSave() {
-      if (name.value == WorkspaceViewModel.properties.activeSpace?.name) return;
+      if (name.value == WorkspaceViewModel.properties.activeSpace.value?.name)
+        return;
       await WorkspaceViewModel.methods.updateWorkspaceName(name.value);
     }
 
     const onDeleteWorkspace = async () => {
-      if (WorkspaceViewModel.properties.activeSpace)
+      if (WorkspaceViewModel.properties.activeSpace.value)
         await WorkspaceViewModel.methods.deleteWorkspace(
-          WorkspaceViewModel.properties.activeSpace
+          WorkspaceViewModel.properties.activeSpace.value
         );
       console.log('push to app');
       await router.push({ name: 'app' });
@@ -87,13 +90,13 @@ export default defineComponent({
     );
     const inviteLink = ref('');
     async function generateInvite() {
-      if (!WorkspaceViewModel.properties.activeSpace) return;
+      if (!WorkspaceViewModel.properties.activeSpace.value) return;
       const token = nanoid(64);
       inviteLink.value = `${window.location.origin}/invite?token=${token}`;
       await WorkspaceViewModel.methods.createInvite(
         token,
         invitedRole.value as WORKSPACE_ROLE,
-        WorkspaceViewModel.properties.activeSpace?.id
+        WorkspaceViewModel.properties.activeSpace.value.id
       );
     }
     return {

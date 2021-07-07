@@ -57,9 +57,7 @@ export default defineComponent({
   },
   name: 'nested-draggable',
   setup() {
-    const activeProject = computed(
-      () => ProjectViewModel.properties.activeProject
-    );
+    const activeProject = ProjectViewModel.properties.activeProject;
 
     return {
       activeProject,

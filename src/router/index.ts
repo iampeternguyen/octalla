@@ -53,7 +53,7 @@ export default route(function (/* { store, ssrContext } */) {
     if (
       to.matched.some((record) => record.meta.requiresReadWorkspacePermission)
     ) {
-      if (!WorkspaceViewModel.properties.activeSpace) {
+      if (!WorkspaceViewModel.properties.activeSpace.value) {
         UIViewModel.updateLoadingMessage('processing');
         UIViewModel.showLoading();
       }
@@ -62,7 +62,7 @@ export default route(function (/* { store, ssrContext } */) {
         await WorkspaceViewModel.methods.setActiveWorkspace(
           to.params.workspace_id.toString()
         );
-        console.log('has role?:', UserViewModel.properties.role);
+        console.log('has role?:', UserViewModel.properties.role.value);
       } catch (error) {
         console.log(error);
         next({ name: '404' });
@@ -97,7 +97,7 @@ export default route(function (/* { store, ssrContext } */) {
       }
 
       const project = ProjectViewModel.properties.activeProject;
-      if (!project || !permissions.project.canCRU(project)) {
+      if (!project.value || !permissions.project.canCRU(project.value)) {
         next({ name: '404' });
         return;
       }

@@ -23,7 +23,7 @@ export default defineComponent({
     // Idea, when adding a new project, workspaceVM sets a flag to false, so the watcher here doesn't update. when the watcher finishes reset the flag to true
     // other changes made in the nested list will trigger a save
     const folders = ref<FolderData[]>(
-      WorkspaceViewModel.properties.workspaceFolderStructure
+      WorkspaceViewModel.properties.workspaceFolderStructure.value
     );
 
     watch(folders.value, (newValue) => {

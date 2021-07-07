@@ -27,6 +27,7 @@
       lazy-rules
       @keydown.enter.prevent="addTask"
       :rules="[(val) => !!val || 'Task can\'t be empty']"
+      @blur="onAddTaskBlur"
     >
     </q-input>
   </div>
@@ -38,7 +39,7 @@ import ProjectViewModel from 'src/viewmodels/ProjectViewModel';
 import TaskViewModel from 'src/viewmodels/TaskViewModel';
 import UserViewModel from 'src/viewmodels/UserViewModel';
 import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
-import { defineComponent, ref, watch } from 'vue';
+import { defineComponent, ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import draggable, { ChangeEvent } from 'vuedraggable';
 import TaskListItem from './TaskListItem.vue';
@@ -63,9 +64,9 @@ export default defineComponent({
   setup(props) {
     const route = useRoute();
 
-    const taskList = ref<TaskData[]>(
-      filterTaskList(ProjectViewModel.properties.tasks as TaskData[])
-    );
+    const taskList = computed(() => {
+      return filterTaskList(ProjectViewModel.properties.tasks.value || []);
+    });
 
     function filterTaskList(tasks: TaskData[]) {
       return tasks
@@ -74,7 +75,7 @@ export default defineComponent({
             return t[props.category] == props.field.toString();
           } else if (props.category == 'competency' && props.field != 'Empty') {
             const id =
-              WorkspaceViewModel.properties.competencies.find(
+              WorkspaceViewModel.properties.competencies.value.find(
                 (comp) => comp.name == props.field
               )?.id || '';
             return t[props.category] == id;
@@ -85,18 +86,17 @@ export default defineComponent({
         .sort((a, b) => a.order - b.order);
     }
 
-    watch(ProjectViewModel.properties.tasks, (tasks) => {
-      taskList.value = filterTaskList(tasks as TaskData[]);
-    });
-
     const addTaskInputRef = ref<QInput | null>(null);
     const text = ref('');
 
     async function addTask() {
-      if (!text.value || !UserViewModel.properties.settings) return;
+      if (!text.value || !UserViewModel.properties.settings.value) {
+        addTaskInputRef.value?.validate();
+        return;
+      }
       const task = new Task(
         text.value,
-        UserViewModel.properties.settings.id,
+        UserViewModel.properties.settings.value.id,
         route.params.project_id.toString(),
         route.params.workspace_id.toString()
       );
@@ -104,7 +104,7 @@ export default defineComponent({
         task[props.category] = props.field.toString();
       } else if (props.category == 'competency' && props.field != 'Empty') {
         task[props.category] =
-          WorkspaceViewModel.properties.competencies.find(
+          WorkspaceViewModel.properties.competencies.value.find(
             (comp) => comp.name == props.field
           )?.id || '';
       } else if (props.field == 'Empty' && props.category == 'competency') {
@@ -116,8 +116,13 @@ export default defineComponent({
       addTaskInputRef.value?.blur();
     }
 
-    async function onChange(evt: ChangeEvent<Task>) {
-      var task: Task;
+    function onAddTaskBlur() {
+      console.log('blur');
+      addTaskInputRef.value?.resetValidation();
+    }
+
+    async function onChange(evt: ChangeEvent<TaskData>) {
+      var task: TaskData;
       var newIndex = 0;
       if (evt.added) {
         newIndex = evt.added.newIndex;
@@ -127,7 +132,7 @@ export default defineComponent({
           task[props.category] = props.field.toString();
         } else if (props.category == 'competency' && props.field != 'Empty') {
           task[props.category] =
-            WorkspaceViewModel.properties.competencies.find(
+            WorkspaceViewModel.properties.competencies.value.find(
               (comp) => comp.name == props.field
             )?.id || '';
         } else if (props.field == 'Empty' && props.category == 'competency') {
@@ -135,7 +140,7 @@ export default defineComponent({
         }
 
         if (taskList.value.length <= 1) {
-          await TaskViewModel.updateTask(task.serialize());
+          await TaskViewModel.updateTask(task);
           return;
         }
       } else if (evt.moved) {
@@ -155,7 +160,7 @@ export default defineComponent({
             taskList.value[newIndex - 1].order) /
           2;
       }
-      await TaskViewModel.updateTask(task.serialize());
+      await TaskViewModel.updateTask(task);
     }
 
     return {
@@ -164,6 +169,7 @@ export default defineComponent({
       addTaskInputRef,
       text,
       onChange,
+      onAddTaskBlur,
     };
   },
 });

@@ -16,39 +16,41 @@ const routes: RouteRecordRaw[] = [
       // TODO workspace should also jump to mose recent
       console.log(UserViewModel.properties.settings);
       if (
-        !UserViewModel.properties.appProfile ||
-        (!UserViewModel.properties.appProfile.most_recent_workspace &&
-          UserViewModel.properties.appProfile.workspaces.length == 0)
+        !UserViewModel.properties.appProfile.value ||
+        (!UserViewModel.properties.appProfile.value.most_recent_workspace &&
+          UserViewModel.properties.appProfile.value.workspaces.length == 0)
       ) {
         next({ name: 'onboarding' });
       } else if (
-        UserViewModel.properties.settings?.most_recent_project &&
-        UserViewModel.properties.appProfile.most_recent_workspace
+        UserViewModel.properties.settings.value?.most_recent_project &&
+        UserViewModel.properties.appProfile.value.most_recent_workspace
       ) {
         next({
           name: 'project',
           params: {
             workspace_id:
-              UserViewModel.properties.appProfile.most_recent_workspace,
-            project_id: UserViewModel.properties.settings?.most_recent_project,
+              UserViewModel.properties.appProfile.value.most_recent_workspace,
+            project_id:
+              UserViewModel.properties.settings.value?.most_recent_project,
           },
         });
       } else if (
-        !UserViewModel.properties.settings?.most_recent_project &&
-        UserViewModel.properties.appProfile.most_recent_workspace
+        !UserViewModel.properties.settings.value?.most_recent_project &&
+        UserViewModel.properties.appProfile.value.most_recent_workspace
       ) {
         next({
           name: 'workspace',
           params: {
             workspace_id:
-              UserViewModel.properties.appProfile.most_recent_workspace,
+              UserViewModel.properties.appProfile.value.most_recent_workspace,
           },
         });
       } else {
         next({
           name: 'workspace',
           params: {
-            workspace_id: UserViewModel.properties.appProfile.workspaces[0],
+            workspace_id:
+              UserViewModel.properties.appProfile.value.workspaces[0],
           },
         });
       }

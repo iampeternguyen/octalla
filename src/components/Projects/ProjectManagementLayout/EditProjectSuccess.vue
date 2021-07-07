@@ -19,7 +19,7 @@
 
 <script lang="ts">
 import { QInput } from 'quasar';
-import Project, { ProjectData } from 'src/models/Project';
+import { ProjectData } from 'src/models/Project';
 import ProjectViewModel from 'src/viewmodels/ProjectViewModel';
 import { defineComponent, ref, PropType } from 'vue';
 
