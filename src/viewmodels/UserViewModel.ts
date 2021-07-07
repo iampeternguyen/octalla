@@ -168,9 +168,12 @@ function userIsAuthenticated(): Promise<boolean> {
 async function setUpUserRoleAndWorkspace(user: User, token: string) {
   // TODO delete token after sign in
   const invite = await AppRepository.workspace.getWorkspaceInvite(token);
-  const appProfile =
-    AppProfile.convertFirebaseUserToGlobalUserProfileData(user);
-  await AppRepository.workspace.addUserToWorkspace(appProfile, invite);
+  await getAppProfile(user);
+  if (!_appProfile.value) {
+    console.log('no app profile');
+    return;
+  }
+  await AppRepository.workspace.addUserToWorkspace(_appProfile.value, invite);
 
   await WorkspaceViewModel.methods.setActiveWorkspace(invite.workspace_id);
   if (WorkspaceViewModel.properties.activeSpace.value)

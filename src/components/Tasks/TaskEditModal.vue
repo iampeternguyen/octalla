@@ -25,7 +25,26 @@
                 icon="eva-arrow-ios-forward-outline"
                 @click="toggleComplete"
               />
-              <q-btn color="primary" icon="eva-person-add-outline" round flat />
+              <q-btn
+                color="primary"
+                class="q-ml-md"
+                icon="eva-person-add-outline"
+                round
+                flat
+                v-if="!task.fields.assigned_to"
+              >
+                <assign-user-to-task :task="task"></assign-user-to-task>
+              </q-btn>
+              <q-btn
+                class="q-ml-md"
+                color="primary"
+                outline
+                v-else
+                round
+                :label="task.fields.assigned_to.display_name[0]"
+              >
+                <assign-user-to-task :task="task"></assign-user-to-task>
+              </q-btn>
             </div>
             <div class="row">
               <div class="column q-ml-sm">
@@ -113,6 +132,8 @@ import { debounce } from 'ts-debounce';
 import Task, { TaskData } from 'src/models/Task';
 import ProjectViewModel from 'src/viewmodels/ProjectViewModel';
 import TaskViewModel from 'src/viewmodels/TaskViewModel';
+import AssignUserToTask from './Menus/AssignUserToTask.vue';
+
 export default defineComponent({
   props: {
     task: {
@@ -120,7 +141,9 @@ export default defineComponent({
       required: true,
     },
   },
-  components: {},
+  components: {
+    AssignUserToTask,
+  },
 
   emits: [
     // REQUIRED; need to specify some events that your
@@ -136,7 +159,7 @@ export default defineComponent({
     const isSaving = ref(false);
     const showTaskModal = ref(true);
 
-    watch(ProjectViewModel.properties.tasks, (tasks) => {
+    watch(ProjectViewModel.properties.tasks.value, (tasks) => {
       const task = tasks.find((t) => t.id == props.task.id);
       Object.assign(taskEditModel, task);
     });

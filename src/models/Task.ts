@@ -1,6 +1,7 @@
 import { nanoid } from 'nanoid';
 import { TASK_STATUS } from 'src/viewmodels/TaskViewModel';
 import DatabaseModel, { DatabaseModelData } from './DatabaseModel';
+import { WorkspaceMemberData } from './WorkspaceMember';
 
 export const TASKS_STORENAME = 'tasks';
 
@@ -17,6 +18,7 @@ export interface TaskData extends DatabaseModelData {
     isComplete: boolean;
     order: number;
     status: string;
+    assigned_to: WorkspaceMemberData | null;
   };
 }
 
@@ -38,6 +40,7 @@ export default class Task extends DatabaseModel implements TaskData {
     isComplete: boolean;
     order: number;
     status: string;
+    assigned_to: WorkspaceMemberData | null;
   };
 
   constructor(
@@ -64,6 +67,7 @@ export default class Task extends DatabaseModel implements TaskData {
       status: data?.fields.status || TASK_STATUS.OPEN,
       due_date: data?.fields.due_date || 0,
       order: data?.fields.order || 0,
+      assigned_to: data?.fields.assigned_to || null,
     };
 
     // TODO get order from task
@@ -125,6 +129,7 @@ export default class Task extends DatabaseModel implements TaskData {
         status: this.fields.status,
         order: this.fields.order,
         due_date: this.fields.due_date,
+        assigned_to: this.fields.assigned_to,
       },
     };
   }

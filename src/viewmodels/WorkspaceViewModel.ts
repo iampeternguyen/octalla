@@ -145,6 +145,7 @@ function watchWorkspaceMembers(workspace: WorkspaceData) {
       WorkspaceMember.deserialize(member)
     );
     _members.value.splice(0, _members.value.length, ...updatedMembers);
+    console.log('members changed', _members.value);
   });
 }
 

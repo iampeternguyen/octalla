@@ -1,5 +1,7 @@
 import Task, { TaskData } from 'src/models/Task';
+import { WorkspaceMemberData } from 'src/models/WorkspaceMember';
 import AppRepository from 'src/repository/AppRepository';
+import WorkspaceViewModel from './WorkspaceViewModel';
 
 export enum TASK_STATUS {
   OPEN = 'Open',
@@ -14,6 +16,14 @@ const statuses = [
   TASK_STATUS.REVIEW,
   TASK_STATUS.COMPLETE,
 ];
+
+async function assignUserToTask(
+  member: WorkspaceMemberData | null,
+  task: TaskData
+) {
+  task.fields.assigned_to = member;
+  await AppRepository.task.saveTask(task);
+}
 
 async function updateTask(task: TaskData) {
   await AppRepository.task.saveTask(task);
@@ -48,6 +58,7 @@ const TaskViewModel = {
   toggleStatus,
   changeStatus,
   statuses,
+  assignUserToTask,
 };
 
 export default TaskViewModel;
