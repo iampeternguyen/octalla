@@ -7,6 +7,7 @@ import { CompetencyData } from './Competency';
 import { WorkspaceRoleData } from './Role';
 import { AppProfileData } from './AppProfile';
 import { WorkspaceMemberData } from './WorkspaceMember';
+import { ChatData, ChatMessageData } from './ChatMessage';
 
 export interface DatabaseModelData {
   id: string;
@@ -27,5 +28,7 @@ export default abstract class DatabaseModel implements DatabaseModelData {
     | WorkspaceRoleData
     | CompetencyData
     | AppProfileData
-    | WorkspaceMemberData;
+    | WorkspaceMemberData
+    | ChatMessageData
+    | ChatData;
 }
