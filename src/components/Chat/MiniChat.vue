@@ -1,7 +1,9 @@
 <template>
   <q-item class="col-2 bg-white row items-center" v-if="!chat">
-    <div class="q-mr-md">To:</div>
+    <div class="q-mr-md col-1">To:</div>
     <q-select
+      ref="chatMemberSelector"
+      class="col-8"
       borderless
       v-model="members"
       multiple
@@ -10,27 +12,15 @@
       stack-label
       use-input
       @filter="filterFn"
+      @keydown.stop.enter="makeSelection"
     />
-    <!-- <template v-slot:prepend>
-        <q-icon name="eva-search-outline" />
-      </template>
-
-      <template v-slot:option="scope">
-        <q-item v-bind="scope.itemProps">
-          <q-item-section avatar>
-            <q-avatar color="teal" text-color="white">{{
-              scope.opt.label[0]
-            }}</q-avatar>
-          </q-item-section>
-          <q-item-section> {{ scope.opt.label }} </q-item-section>
-        </q-item>
-      </template>
-      <template v-slot:no-option>
-        <q-item>
-          <q-item-section class="text-grey"> No results </q-item-section>
-        </q-item>
-      </template>
-    </q-select> -->
+    <q-btn
+      color="primary"
+      flat
+      icon="eva-plus-outline"
+      class="col-1"
+      @click="createChat"
+    />
   </q-item>
   <q-item
     clickable
@@ -132,21 +122,28 @@
   </q-item>
 </template>
 <script lang="ts">
+import { QSelect } from 'quasar';
 import ChatMessage, { ChatData } from 'src/models/ChatMessage';
+import UserViewModel from 'src/viewmodels/UserViewModel';
 import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
 import { defineComponent, ref } from 'vue';
-
+import ChatViewModel from 'src/viewmodels/ChatViewModel';
 export default defineComponent({
   name: 'MiniChat',
   setup() {
+    const chatMemberSelector = ref<QSelect | null>(null);
     const chat = ref<ChatData | null>(null);
     const messages = ref<ChatMessage[]>([]);
-    const members = ref<string[]>([]);
-    const memberOptions = WorkspaceViewModel.properties.members.value.map(
-      (member) => {
+    const members = ref<{ label: string; value: string }[]>([]);
+    const memberOptions = WorkspaceViewModel.properties.members.value
+      .filter(
+        (member) =>
+          UserViewModel.properties.appProfile.value &&
+          UserViewModel.properties.appProfile.value.id != member.id
+      )
+      .map((member) => {
         return { label: member.display_name, value: member.id };
-      }
-    );
+      });
 
     const options = ref(memberOptions);
 
@@ -157,13 +154,41 @@ export default defineComponent({
     ) {
       update(() => {
         const needle = val.toLowerCase();
-        options.value = memberOptions.filter(
-          (v) => v.label.toLowerCase().indexOf(needle) > -1
-        );
+        options.value = memberOptions.filter((v) => {
+          const m = members.value.find((m) => m.value == v.value);
+
+          return !m && v.label.toLowerCase().indexOf(needle) > -1;
+        });
       });
     }
 
-    return { chat, messages, options, filterFn, members };
+    function makeSelection() {
+      if (!chatMemberSelector.value) return;
+      if (
+        chatMemberSelector.value.options &&
+        chatMemberSelector.value.options.length > 0
+      ) {
+        chatMemberSelector.value.moveOptionSelection(1, true);
+        chatMemberSelector.value.updateInputValue('');
+        setTimeout(() => chatMemberSelector.value?.hidePopup(), 100);
+      }
+    }
+
+    async function createChat() {
+      if (members.value.length > 0)
+        await ChatViewModel.methods.createNewChat(members.value);
+    }
+
+    return {
+      chat,
+      messages,
+      options,
+      filterFn,
+      members,
+      makeSelection,
+      chatMemberSelector,
+      createChat,
+    };
   },
 });
 </script>

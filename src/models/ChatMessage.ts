@@ -1,6 +1,9 @@
 import { nanoid } from 'nanoid';
 import DatabaseModel, { DatabaseModelData } from './DatabaseModel';
 
+export const CHATS_STORENAME = 'chats';
+export const CHATS_MESSAGES_STORENAME = 'messages';
+
 export interface ChatMessageData extends DatabaseModelData {
   created_by: string;
   message: string;
@@ -23,12 +26,16 @@ export class Chat extends DatabaseModel implements ChatData {
   created_by: string;
   title: string;
 
-  constructor(workspaceId: string, members: string[], userId: string) {
+  constructor(
+    workspaceId: string,
+    members: { label: string; value: string }[],
+    userId: string
+  ) {
     super();
     this.id = nanoid();
     this.workspace_id = workspaceId;
-    this.members = members;
-    this.title = members.toString();
+    this.members = members.map((m) => m.value);
+    this.title = members.map((m) => m.label).join(', ');
     this.last_modified = Date.now();
     this.created_at = Date.now();
     this.created_by = userId;
