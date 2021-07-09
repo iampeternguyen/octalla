@@ -28,17 +28,23 @@ export class Chat extends DatabaseModel implements ChatData {
 
   constructor(
     workspaceId: string,
-    members: { label: string; value: string }[],
-    userId: string
+    members: { label: string; value: string }[] | null,
+    userId: string,
+    data?: ChatData
   ) {
     super();
     this.id = nanoid();
     this.workspace_id = workspaceId;
-    this.members = members.map((m) => m.value);
-    this.title = members.map((m) => m.label).join(', ');
-    this.last_modified = Date.now();
-    this.created_at = Date.now();
+    this.members = data?.members || members?.map((m) => m.value) || [];
+    this.title = data?.title || members?.map((m) => m.label).join(', ') || '';
+    this.last_modified = data?.last_modified || Date.now();
+    this.created_at = data?.created_at || Date.now();
     this.created_by = userId;
+    if (!this.members) throw 'error no chat members found';
+  }
+
+  static deserialize(chat: ChatData): Chat {
+    return new Chat(chat.workspace_id, null, chat.created_by, chat);
   }
 
   serialize(): ChatData {

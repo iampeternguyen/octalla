@@ -39,102 +39,53 @@
         style="height: 35rem"
         class="q-pl-md q-pt-md q-pb-xs q-pr-lg bg-grey-2"
       >
-        <q-chat-message label="Sunday, 19th" />
+        <!-- <q-chat-message label="Sunday, 19th" /> -->
 
         <q-chat-message
+          v-for="message in messages"
+          :key="message.id"
           name="me"
           avatar="https://cdn.quasar.dev/img/avatar4.jpg"
           size="8"
-          :text="['hey, how are you?']"
-          sent
-          stamp="7 minutes ago"
-        />
-        <q-chat-message
-          name="Jane"
-          size="8"
-          avatar="https://cdn.quasar.dev/img/avatar3.jpg"
-          :text="['doing fine, how r you?']"
-          stamp="4 minutes ago"
-        />
-        <q-chat-message
-          name="me"
-          avatar="https://cdn.quasar.dev/img/avatar4.jpg"
-          size="8"
-          :text="['hey, how are you?']"
-          sent
-          stamp="7 minutes ago"
-        />
-        <q-chat-message
-          name="Jane"
-          size="8"
-          avatar="https://cdn.quasar.dev/img/avatar3.jpg"
-          :text="['doing fine, how r you?']"
-          stamp="4 minutes ago"
-        />
-        <q-chat-message
-          name="me"
-          avatar="https://cdn.quasar.dev/img/avatar4.jpg"
-          size="8"
-          :text="['hey, how are you?']"
-          sent
-          stamp="7 minutes ago"
-        />
-        <q-chat-message
-          name="Jane"
-          size="8"
-          avatar="https://cdn.quasar.dev/img/avatar3.jpg"
-          :text="['doing fine, how r you?']"
-          stamp="4 minutes ago"
-        />
-        <q-chat-message
-          name="me"
-          avatar="https://cdn.quasar.dev/img/avatar4.jpg"
-          size="8"
-          :text="['hey, how are you?']"
-          sent
-          stamp="7 minutes ago"
-        />
-        <q-chat-message
-          name="Jane"
-          size="8"
-          avatar="https://cdn.quasar.dev/img/avatar3.jpg"
-          :text="['doing fine, how r you?']"
-          stamp="4 minutes ago"
-        />
-        <q-chat-message
-          name="me"
-          avatar="https://cdn.quasar.dev/img/avatar4.jpg"
-          size="8"
-          :text="['hey, how are you?']"
-          sent
-          stamp="7 minutes ago"
-        />
-        <q-chat-message
-          name="Jane"
-          size="8"
-          avatar="https://cdn.quasar.dev/img/avatar3.jpg"
-          :text="['doing fine, how r you?']"
-          stamp="4 minutes ago"
+          :text="[message.message]"
+          :sent="message.created_by == userId"
+          :stamp="message.created_at"
         />
       </q-scroll-area>
-      <q-input class="q-pa-sm" type="text" placeholder="Message" borderless />
+      <q-input
+        class="q-pa-sm"
+        type="text"
+        placeholder="Message"
+        v-model="messageInput"
+        borderless
+        @keydown.enter.stop="sendMessage"
+      />
     </q-menu>
   </q-item>
 </template>
 <script lang="ts">
 import { QSelect } from 'quasar';
-import ChatMessage, { ChatData } from 'src/models/ChatMessage';
+import ChatMessage, { ChatData, ChatMessageData } from 'src/models/ChatMessage';
 import UserViewModel from 'src/viewmodels/UserViewModel';
 import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
-import { defineComponent, ref } from 'vue';
+import { defineComponent, ref, PropType } from 'vue';
 import ChatViewModel from 'src/viewmodels/ChatViewModel';
+import AppRepository from 'src/repository/AppRepository';
 export default defineComponent({
   name: 'MiniChat',
-  setup() {
+  props: {
+    chat: {
+      type: Object as PropType<ChatData>,
+    },
+  },
+  setup(props) {
     const chatMemberSelector = ref<QSelect | null>(null);
-    const chat = ref<ChatData | null>(null);
-    const messages = ref<ChatMessage[]>([]);
+    const userId = UserViewModel.properties.appProfile.value?.id || '';
+    const messageInput = ref('');
+    const messages = ref<ChatMessageData[]>([]);
+
     const members = ref<{ label: string; value: string }[]>([]);
+
     const memberOptions = WorkspaceViewModel.properties.members.value
       .filter(
         (member) =>
@@ -179,8 +130,52 @@ export default defineComponent({
         await ChatViewModel.methods.createNewChat(members.value);
     }
 
+    async function sendMessage() {
+      if (props.chat && messageInput.value) {
+        console.log('sending message to', props.chat.title, messageInput.value);
+        await ChatViewModel.methods.sendMessage(
+          props.chat.id,
+          messageInput.value
+        );
+      }
+    }
+
+    watchChatMessages();
+
+    function watchChatMessages() {
+      if (!UserViewModel.properties.appProfile.value || !props.chat) return;
+      clearChatMessages();
+      AppRepository.chat.watchChatMessages(
+        props.chat.id,
+        addChatMessage,
+        updateChatMessage,
+        removeChatMessage
+      );
+    }
+
+    // Projects change handlers
+    function clearChatMessages() {
+      messages.value.splice(0, messages.value.length);
+    }
+
+    function updateChatMessage(messageData: ChatMessageData) {
+      const index = messages.value.findIndex((t) => t.id == messageData.id);
+      messages.value.splice(index, 1, messageData);
+    }
+
+    function removeChatMessage(messageData: ChatMessageData) {
+      const index = messages.value.findIndex((t) => t.id == messageData.id);
+      messages.value.splice(index, 1);
+    }
+
+    function addChatMessage(messageData: ChatMessageData) {
+      console.log('chat added', messageData);
+      messages.value.push(messageData);
+    }
+
     return {
-      chat,
+      sendMessage,
+      messageInput,
       messages,
       options,
       filterFn,
@@ -188,6 +183,7 @@ export default defineComponent({
       makeSelection,
       chatMemberSelector,
       createChat,
+      userId,
     };
   },
 });
