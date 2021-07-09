@@ -126,8 +126,22 @@ export default defineComponent({
     }
 
     async function createChat() {
-      if (members.value.length > 0)
-        await ChatViewModel.methods.createNewChat(members.value);
+      if (members.value.length > 0) {
+        checkIfChatExists();
+        // await ChatViewModel.methods.createNewChat(members.value);
+      }
+    }
+
+    function checkIfChatExists() {
+      const chatExists = ChatViewModel.properties.allChats.value.some(
+        (chat) => {
+          return (
+            chat.members.length == members.value.length + 1 &&
+            members.value.every((member) => chat.members.includes(member.value))
+          );
+        }
+      );
+      console.log('exists?:', chatExists);
     }
 
     async function sendMessage() {
