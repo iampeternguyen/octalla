@@ -65,12 +65,9 @@ function watchWorkspaceChats(
   );
 }
 
-let chatMessageObserver = () => {
-  return;
-};
-
 function watchChatMessages(
   chatId: string,
+  chatMessageObserver: () => void,
 
   onMessageAdded: (messageData: ChatMessageData) => void,
   onMessageChanged: (messageData: ChatMessageData) => void,

@@ -34,10 +34,18 @@
     <q-item-section
       ><q-btn color="primary" icon="check" round flat
     /></q-item-section>
-    <q-menu fit anchor="top start" self="bottom left">
+    <q-menu
+      fit
+      anchor="top start"
+      self="bottom left"
+      @show="onShowChat"
+      @before-show="isLoading = true"
+    >
       <q-scroll-area
+        ref="chatMessageScrollArea"
         style="height: 35rem"
-        class="q-pl-md q-pt-md q-pb-xs q-pr-lg bg-grey-2"
+        class="q-pl-md q-pt-md q-pr-lg bg-grey-2"
+        :class="{ invisible: isLoading }"
       >
         <!-- <q-chat-message label="Sunday, 19th" /> -->
 
@@ -53,6 +61,7 @@
         />
       </q-scroll-area>
       <q-input
+        :class="{ invisible: isLoading }"
         class="q-pa-sm"
         type="text"
         placeholder="Message"
@@ -60,11 +69,14 @@
         borderless
         @keydown.enter.stop="sendMessage"
       />
+      <q-inner-loading :showing="isLoading">
+        <q-spinner-gears size="50px" color="primary" />
+      </q-inner-loading>
     </q-menu>
   </q-item>
 </template>
 <script lang="ts">
-import { QSelect } from 'quasar';
+import { QScrollArea, QSelect } from 'quasar';
 import ChatMessage, { ChatData, ChatMessageData } from 'src/models/ChatMessage';
 import UserViewModel from 'src/viewmodels/UserViewModel';
 import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
@@ -74,7 +86,7 @@ import AppRepository from 'src/repository/AppRepository';
 export default defineComponent({
   name: 'MiniChat',
   props: {
-    chat: {
+    chatData: {
       type: Object as PropType<ChatData>,
     },
   },
@@ -83,6 +95,16 @@ export default defineComponent({
     const userId = UserViewModel.properties.appProfile.value?.id || '';
     const messageInput = ref('');
     const messages = ref<ChatMessageData[]>([]);
+    const chat = ref<ChatData | null>(props.chatData || null);
+    const chatMessageScrollArea = ref<QScrollArea | null>(null);
+    const isLoading = ref(true);
+    let chatMesssageObsever = () => {
+      return;
+    };
+
+    if (chat.value) {
+      watchChatMessages();
+    }
 
     const members = ref<{ label: string; value: string }[]>([]);
 
@@ -127,40 +149,61 @@ export default defineComponent({
 
     async function createChat() {
       if (members.value.length > 0) {
-        checkIfChatExists();
-        // await ChatViewModel.methods.createNewChat(members.value);
+        const hasChat = getChatIfExists();
+        if (hasChat) {
+          chat.value = hasChat;
+          watchChatMessages();
+        } else {
+          await ChatViewModel.methods.createNewChat(members.value);
+        }
       }
     }
 
-    function checkIfChatExists() {
-      const chatExists = ChatViewModel.properties.allChats.value.some(
-        (chat) => {
-          return (
-            chat.members.length == members.value.length + 1 &&
-            members.value.every((member) => chat.members.includes(member.value))
-          );
+    function getChatIfExists(): ChatData | null {
+      let foundChat: ChatData | null = null;
+      ChatViewModel.properties.allChats.value.forEach((chat) => {
+        if (
+          chat.members.length == members.value.length + 1 &&
+          members.value.every((member) => chat.members.includes(member.value))
+        ) {
+          foundChat = chat;
         }
-      );
-      console.log('exists?:', chatExists);
+      });
+      return foundChat;
     }
 
     async function sendMessage() {
-      if (props.chat && messageInput.value) {
-        console.log('sending message to', props.chat.title, messageInput.value);
+      if (chat.value && messageInput.value) {
+        console.log('sending message to', chat.value.title, messageInput.value);
         await ChatViewModel.methods.sendMessage(
-          props.chat.id,
+          chat.value.id,
           messageInput.value
         );
+        messageInput.value = '';
       }
     }
 
-    watchChatMessages();
+    function scrollToBottom() {
+      if (chatMessageScrollArea.value) {
+        chatMessageScrollArea.value.setScrollPercentage('vertical', 1);
+      }
+    }
+
+    // function checkPosition() {
+    //   if (chatMessageScrollArea.value) {
+    //     console.log(
+    //       'position',
+    //       chatMessageScrollArea.value.getScrollPosition().top
+    //     );
+    //   }
+    // }
 
     function watchChatMessages() {
-      if (!UserViewModel.properties.appProfile.value || !props.chat) return;
+      if (!UserViewModel.properties.appProfile.value || !chat.value) return;
       clearChatMessages();
       AppRepository.chat.watchChatMessages(
-        props.chat.id,
+        chat.value.id,
+        chatMesssageObsever,
         addChatMessage,
         updateChatMessage,
         removeChatMessage
@@ -185,6 +228,12 @@ export default defineComponent({
     function addChatMessage(messageData: ChatMessageData) {
       console.log('chat added', messageData);
       messages.value.push(messageData);
+      scrollToBottom();
+    }
+
+    function onShowChat() {
+      scrollToBottom();
+      isLoading.value = false;
     }
 
     return {
@@ -198,6 +247,10 @@ export default defineComponent({
       chatMemberSelector,
       createChat,
       userId,
+      chat,
+      chatMessageScrollArea,
+      isLoading,
+      onShowChat,
     };
   },
 });

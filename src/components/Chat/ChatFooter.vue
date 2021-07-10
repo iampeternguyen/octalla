@@ -3,7 +3,11 @@
     <q-page-sticky position="bottom-right" :offset="[18, 18]">
       <q-btn fab icon="add" color="accent" @click="count++" />
     </q-page-sticky>
-    <mini-chat v-for="chat in chats" :chat="chat" :key="chat.id"></mini-chat>
+    <mini-chat
+      v-for="chat in chats"
+      :chatData="chat"
+      :key="chat.id"
+    ></mini-chat>
     <mini-chat v-for="index in count" :key="index"></mini-chat>
   </div>
 </template>
