@@ -194,7 +194,6 @@ export default defineComponent({
         await TaskViewModel.updateTask(taskEditModel);
         isNotSaved.value = false;
         debounceResetIsSaving();
-        console.log('after debounce save');
       } else {
         console.log('no changes');
       }

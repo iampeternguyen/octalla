@@ -34,7 +34,7 @@
     <q-item-section
       ><q-btn color="primary" icon="check" round flat
     /></q-item-section>
-    <q-menu fit anchor="top start" self="bottom left">
+    <q-menu fit anchor="top start" self="bottom left" @show="onFirstOpen">
       <div
         ref="chatMessageScrollArea"
         style="height: 35rem"
@@ -81,6 +81,7 @@ import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
 import { defineComponent, ref, PropType } from 'vue';
 import ChatViewModel from 'src/viewmodels/ChatViewModel';
 import AppRepository from 'src/repository/AppRepository';
+import { QuerySnapshot } from '@firebase/firestore-types';
 export default defineComponent({
   name: 'MiniChat',
   props: {
@@ -101,7 +102,37 @@ export default defineComponent({
     };
 
     if (chat.value) {
-      watchChatMessages();
+      // watchChatMessages();
+      setUpChat();
+    }
+
+    function setUpChat() {
+      getFirstMessage()
+        .then((message) => {
+          watchChatMessages(message);
+        })
+        .catch((err) => {
+          console.log('no first message', err);
+          noMoreMessages.value = true;
+          watchChatMessages();
+        });
+    }
+
+    const firstOpen = ref(true);
+    async function onFirstOpen() {
+      if (!firstOpen.value) return;
+      await fetchMoreMessages();
+      firstOpen.value = false;
+    }
+
+    async function getFirstMessage() {
+      if (!chat.value) return;
+      const message = await AppRepository.chat.getMostRecentMessage(
+        chat.value.id
+      );
+
+      messages.value.push(message);
+      return message;
     }
 
     const members = ref<{ label: string; value: string }[]>([]);
@@ -150,7 +181,7 @@ export default defineComponent({
         const hasChat = getChatIfExists();
         if (hasChat) {
           chat.value = hasChat;
-          watchChatMessages();
+          setUpChat();
         } else {
           await ChatViewModel.methods.createNewChat(members.value);
         }
@@ -188,14 +219,24 @@ export default defineComponent({
     }
 
     const debounceFetchMoreMessages = debounce(fetchMoreMessages, 100, true);
-
-    function fetchMoreMessages() {
+    const noMoreMessages = ref(false);
+    async function fetchMoreMessages() {
       loadingMessages.value = true;
-      console.log('fetch more messages');
+      if (messages.value[0]) {
+        const olderMessages = await AppRepository.chat.getOlderMessages(
+          messages.value[0]
+        );
+        if (olderMessages.length < 10) noMoreMessages.value = true;
+        messages.value.unshift(...olderMessages);
+      } else {
+        noMoreMessages.value = true;
+      }
+
+      loadingMessages.value = false;
     }
 
-    function checkPosition(scrollPosition: number) {
-      if (!chatMessageScrollArea.value) return;
+    async function checkPosition(scrollPosition: number) {
+      if (!chatMessageScrollArea.value || noMoreMessages.value) return;
       if (
         -scrollPosition >=
         chatMessageScrollArea.value.scrollHeight -
@@ -203,19 +244,20 @@ export default defineComponent({
           10
       ) {
         console.log('at the top');
-        debounceFetchMoreMessages();
+        await debounceFetchMoreMessages();
       }
     }
 
-    function watchChatMessages() {
+    function watchChatMessages(message?: ChatMessageData) {
       if (!UserViewModel.properties.appProfile.value || !chat.value) return;
-      clearChatMessages();
-      AppRepository.chat.watchChatMessages(
+
+      AppRepository.chat.watchChatMessagesAfter(
         chat.value.id,
         chatMesssageObsever,
         addChatMessage,
         updateChatMessage,
-        removeChatMessage
+        removeChatMessage,
+        message
       );
     }
 
@@ -235,7 +277,6 @@ export default defineComponent({
     }
 
     function addChatMessage(messageData: ChatMessageData) {
-      console.log('chat added', messageData);
       messages.value.push(messageData);
       scrollToBottom();
     }
@@ -255,6 +296,7 @@ export default defineComponent({
       chatMessageScrollArea,
       checkPosition,
       loadingMessages,
+      onFirstOpen,
     };
   },
 });

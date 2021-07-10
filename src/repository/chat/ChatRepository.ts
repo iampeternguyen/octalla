@@ -1,3 +1,4 @@
+import { DocumentData, Query, QuerySnapshot } from '@firebase/firestore-types';
 import { db } from 'src/firebase';
 import {
   ChatData,
@@ -65,31 +66,40 @@ function watchWorkspaceChats(
   );
 }
 
-function watchChatMessages(
+function watchChatMessagesAfter(
   chatId: string,
   chatMessageObserver: () => void,
-
   onMessageAdded: (messageData: ChatMessageData) => void,
   onMessageChanged: (messageData: ChatMessageData) => void,
-  onMessageDeleted: (messageData: ChatMessageData) => void
+  onMessageDeleted: (messageData: ChatMessageData) => void,
+  message?: ChatMessageData
 ) {
   console.log('watching chat messages');
   // unsubscribe
   chatMessageObserver();
-  //   TODO move to ViewModel
-  //   clearWorkspaceProjects();
 
-  const query = db
-    .collection(CHATS_MESSAGES_STORENAME)
-    .where('chat_id', '==', chatId)
-    .orderBy('created_at', 'desc');
+  let query: Query;
+  if (message) {
+    console.log('starting after', message.created_at);
+    query = db
+      .collection(CHATS_MESSAGES_STORENAME)
+      .where('chat_id', '==', chatId)
+      .orderBy('created_at', 'asc')
+      .startAfter(message.created_at);
+  } else {
+    console.log('query from beginning');
+    query = db
+      .collection(CHATS_MESSAGES_STORENAME)
+      .where('chat_id', '==', chatId)
+      .orderBy('created_at', 'asc');
+  }
 
   chatMessageObserver = query.onSnapshot(
     (querySnapshot) => {
       querySnapshot.docChanges().forEach((change) => {
         const messageData = change.doc.data() as ChatMessageData;
 
-        console.log('message change.type:', change.type);
+        // console.log('message change.type:', change.type);
         if (change.type === 'added') {
           onMessageAdded(messageData);
         }
@@ -107,11 +117,36 @@ function watchChatMessages(
   );
 }
 
+async function getMostRecentMessage(chatId: string) {
+  const snapshot = await db
+    .collection(CHATS_MESSAGES_STORENAME)
+    .where('chat_id', '==', chatId)
+    .orderBy('created_at', 'desc')
+    .limit(1)
+    .get();
+  return snapshot.docs[0].data() as ChatMessageData;
+}
+
+async function getOlderMessages(message: ChatMessageData) {
+  const snapshot = await db
+    .collection(CHATS_MESSAGES_STORENAME)
+    .where('chat_id', '==', message.chat_id)
+    .orderBy('created_at', 'desc')
+    .limit(10)
+    .startAfter(message.created_at)
+    .get();
+  const messages: ChatMessageData[] = [];
+  snapshot.docs.forEach((doc) => messages.push(doc.data() as ChatMessageData));
+  return messages;
+}
+
 const ChatRepository = {
   createChat,
   sendMessage,
   watchWorkspaceChats,
-  watchChatMessages,
+  watchChatMessagesAfter,
+  getMostRecentMessage,
+  getOlderMessages,
 };
 
 export default ChatRepository;
