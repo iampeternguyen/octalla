@@ -41,7 +41,7 @@
 
 <script lang="ts">
 import draggable from 'vuedraggable';
-import { defineComponent, computed } from 'vue';
+import { defineComponent } from 'vue';
 import ProjectViewModel from 'src/viewmodels/ProjectViewModel';
 
 export default defineComponent({

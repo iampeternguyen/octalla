@@ -76,7 +76,7 @@ export default defineComponent({
     function filterFn(
       val: string,
       update: (fn: () => void) => void,
-      abort: (fn: () => void) => void
+      _abort: (fn: () => void) => void
     ) {
       update(() => {
         const needle = val.toLowerCase();

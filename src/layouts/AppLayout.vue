@@ -219,7 +219,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, watch, computed } from 'vue';
+import { defineComponent, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import { useRouter } from 'vue-router';
 import NewProjectModal from 'src/components/Projects/NewProjectModal.vue';

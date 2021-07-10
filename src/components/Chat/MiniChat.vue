@@ -74,14 +74,13 @@
   </q-item>
 </template>
 <script lang="ts">
-import { debounce, QScrollArea, QScrollObserver, QSelect } from 'quasar';
-import ChatMessage, { ChatData, ChatMessageData } from 'src/models/ChatMessage';
+import { debounce, QSelect } from 'quasar';
+import { ChatData, ChatMessageData } from 'src/models/ChatMessage';
 import UserViewModel from 'src/viewmodels/UserViewModel';
 import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
 import { defineComponent, ref, PropType } from 'vue';
 import ChatViewModel from 'src/viewmodels/ChatViewModel';
 import AppRepository from 'src/repository/AppRepository';
-import { QuerySnapshot } from '@firebase/firestore-types';
 export default defineComponent({
   name: 'MiniChat',
   props: {
@@ -175,6 +174,7 @@ export default defineComponent({
         setTimeout(() => chatMemberSelector.value?.hidePopup(), 100);
       }
     }
+    // TODO watch all messages that include the user and filter them appropriately.
 
     async function createChat() {
       if (members.value.length > 0) {

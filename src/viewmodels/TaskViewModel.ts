@@ -1,7 +1,6 @@
 import Task, { TaskData } from 'src/models/Task';
 import { WorkspaceMemberData } from 'src/models/WorkspaceMember';
 import AppRepository from 'src/repository/AppRepository';
-import WorkspaceViewModel from './WorkspaceViewModel';
 
 export enum TASK_STATUS {
   OPEN = 'Open',

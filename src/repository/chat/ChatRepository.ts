@@ -1,4 +1,4 @@
-import { DocumentData, Query, QuerySnapshot } from '@firebase/firestore-types';
+import { Query } from '@firebase/firestore-types';
 import { db } from 'src/firebase';
 import {
   ChatData,

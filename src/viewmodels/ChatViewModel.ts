@@ -2,7 +2,7 @@ import { EVENT_ACTIVE_WORKSPACE_SET } from 'src/events/BroadcastEvents';
 import ChatMessage, { Chat, ChatData } from 'src/models/ChatMessage';
 import { WorkspaceData } from 'src/models/Workspace';
 import AppRepository from 'src/repository/AppRepository';
-import { ref, computed, reactive } from 'vue';
+import { ref, computed } from 'vue';
 import UserViewModel from './UserViewModel';
 import WorkspaceViewModel from './WorkspaceViewModel';
 

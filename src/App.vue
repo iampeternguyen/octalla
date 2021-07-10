@@ -2,7 +2,7 @@
   <router-view />
 </template>
 <script lang="ts">
-import { defineComponent, computed } from 'vue';
+import { defineComponent } from 'vue';
 
 import UserViewModel from './viewmodels/UserViewModel';
 import WorkspaceViewModel from './viewmodels/WorkspaceViewModel';
