@@ -125,9 +125,8 @@
 </template>
 
 <script lang="ts">
-import { useDialogPluginComponent } from 'quasar';
+import { debounce, useDialogPluginComponent } from 'quasar';
 import { watch, PropType, reactive, ref, defineComponent } from 'vue';
-import { debounce } from 'ts-debounce';
 
 import Task, { TaskData } from 'src/models/Task';
 import ProjectViewModel from 'src/viewmodels/ProjectViewModel';
@@ -194,7 +193,8 @@ export default defineComponent({
         isSaving.value = true;
         await TaskViewModel.updateTask(taskEditModel);
         isNotSaved.value = false;
-        await debounceResetIsSaving();
+        debounceResetIsSaving();
+        console.log('after debounce save');
       } else {
         console.log('no changes');
       }

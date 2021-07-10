@@ -34,34 +34,35 @@
     <q-item-section
       ><q-btn color="primary" icon="check" round flat
     /></q-item-section>
-    <q-menu
-      fit
-      anchor="top start"
-      self="bottom left"
-      @show="onShowChat"
-      @before-show="isLoading = true"
-    >
-      <q-scroll-area
+    <q-menu fit anchor="top start" self="bottom left">
+      <div
         ref="chatMessageScrollArea"
         style="height: 35rem"
-        class="q-pl-md q-pt-md q-pr-lg bg-grey-2"
-        :class="{ invisible: isLoading }"
+        class="chatMessageScrollArea q-pl-md q-pt-md q-pr-lg bg-grey-2 scroll"
       >
-        <!-- <q-chat-message label="Sunday, 19th" /> -->
+        <div class="column">
+          <q-spinner-facebook
+            class="self-center"
+            color="primary"
+            size="2em"
+            v-if="loadingMessages"
+          />
+          <q-chat-message
+            v-for="message in messages"
+            :key="message.id"
+            name="me"
+            avatar="https://cdn.quasar.dev/img/avatar4.jpg"
+            size="8"
+            :text="[message.message]"
+            :sent="message.created_by == userId"
+            :stamp="message.created_at.toString()"
+          />
+        </div>
 
-        <q-chat-message
-          v-for="message in messages"
-          :key="message.id"
-          name="me"
-          avatar="https://cdn.quasar.dev/img/avatar4.jpg"
-          size="8"
-          :text="[message.message]"
-          :sent="message.created_by == userId"
-          :stamp="message.created_at"
-        />
-      </q-scroll-area>
+        <div v-scroll="checkPosition"></div>
+      </div>
+
       <q-input
-        :class="{ invisible: isLoading }"
         class="q-pa-sm"
         type="text"
         placeholder="Message"
@@ -69,14 +70,11 @@
         borderless
         @keydown.enter.stop="sendMessage"
       />
-      <q-inner-loading :showing="isLoading">
-        <q-spinner-gears size="50px" color="primary" />
-      </q-inner-loading>
     </q-menu>
   </q-item>
 </template>
 <script lang="ts">
-import { QScrollArea, QSelect } from 'quasar';
+import { debounce, QScrollArea, QScrollObserver, QSelect } from 'quasar';
 import ChatMessage, { ChatData, ChatMessageData } from 'src/models/ChatMessage';
 import UserViewModel from 'src/viewmodels/UserViewModel';
 import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
@@ -96,8 +94,8 @@ export default defineComponent({
     const messageInput = ref('');
     const messages = ref<ChatMessageData[]>([]);
     const chat = ref<ChatData | null>(props.chatData || null);
-    const chatMessageScrollArea = ref<QScrollArea | null>(null);
-    const isLoading = ref(true);
+    const chatMessageScrollArea = ref<HTMLDivElement | null>(null);
+    const loadingMessages = ref(false);
     let chatMesssageObsever = () => {
       return;
     };
@@ -185,18 +183,29 @@ export default defineComponent({
 
     function scrollToBottom() {
       if (chatMessageScrollArea.value) {
-        chatMessageScrollArea.value.setScrollPercentage('vertical', 1);
+        // chatMessageScrollArea.value.setScrollPercentage('vertical', 1);
       }
     }
 
-    // function checkPosition() {
-    //   if (chatMessageScrollArea.value) {
-    //     console.log(
-    //       'position',
-    //       chatMessageScrollArea.value.getScrollPosition().top
-    //     );
-    //   }
-    // }
+    const debounceFetchMoreMessages = debounce(fetchMoreMessages, 100, true);
+
+    function fetchMoreMessages() {
+      loadingMessages.value = true;
+      console.log('fetch more messages');
+    }
+
+    function checkPosition(scrollPosition: number) {
+      if (!chatMessageScrollArea.value) return;
+      if (
+        -scrollPosition >=
+        chatMessageScrollArea.value.scrollHeight -
+          chatMessageScrollArea.value.clientHeight -
+          10
+      ) {
+        console.log('at the top');
+        debounceFetchMoreMessages();
+      }
+    }
 
     function watchChatMessages() {
       if (!UserViewModel.properties.appProfile.value || !chat.value) return;
@@ -231,11 +240,6 @@ export default defineComponent({
       scrollToBottom();
     }
 
-    function onShowChat() {
-      scrollToBottom();
-      isLoading.value = false;
-    }
-
     return {
       sendMessage,
       messageInput,
@@ -249,8 +253,8 @@ export default defineComponent({
       userId,
       chat,
       chatMessageScrollArea,
-      isLoading,
-      onShowChat,
+      checkPosition,
+      loadingMessages,
     };
   },
 });
@@ -261,5 +265,29 @@ export default defineComponent({
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
+}
+
+.chatMessageScrollArea {
+  display: flex;
+  flex-direction: column-reverse;
+  overflow-y: auto;
+}
+
+.chatMessageScrollAreaContent {
+  display: flex;
+  flex-direction: column;
+}
+
+.chatMessageScrollArea::-webkit-scrollbar {
+  width: 1rem; /* width of the entire scrollbar */
+}
+
+.chatMessageScrollArea::-webkit-scrollbar-track {
+  background: $grey-1; /* color of the tracking area */
+}
+
+.chatMessageScrollArea::-webkit-scrollbar-thumb {
+  background-color: $primary; /* color of the scroll thumb */
+  border-radius: 2rem; /* roundness of the scroll thumb */
 }
 </style>
