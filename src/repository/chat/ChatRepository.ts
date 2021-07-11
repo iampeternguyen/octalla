@@ -1,4 +1,3 @@
-import { Query } from '@firebase/firestore-types';
 import { db } from 'src/firebase';
 import {
   ChatData,
@@ -41,7 +40,8 @@ function watchWorkspaceChats(
     .collection(CHATS_STORENAME)
     .doc(workspaceId)
     .collection(CHATS_STORENAME)
-    .where('members', 'array-contains', userId);
+    .where('members', 'array-contains', userId)
+    .orderBy('last_modified', 'desc');
 
   workspaceChatsObserver = query.onSnapshot(
     (querySnapshot) => {
@@ -66,40 +66,33 @@ function watchWorkspaceChats(
   );
 }
 
+let chatMessageObserver = () => {
+  return;
+};
+
 function watchChatMessagesAfter(
-  chatId: string,
-  chatMessageObserver: () => void,
+  chatIds: string[],
+
   onMessageAdded: (messageData: ChatMessageData) => void,
   onMessageChanged: (messageData: ChatMessageData) => void,
-  onMessageDeleted: (messageData: ChatMessageData) => void,
-  message?: ChatMessageData
+  onMessageDeleted: (messageData: ChatMessageData) => void
 ) {
   console.log('watching chat messages');
   // unsubscribe
   chatMessageObserver();
 
-  let query: Query;
-  if (message) {
-    console.log('starting after', message.created_at);
-    query = db
-      .collection(CHATS_MESSAGES_STORENAME)
-      .where('chat_id', '==', chatId)
-      .orderBy('created_at', 'asc')
-      .startAfter(message.created_at);
-  } else {
-    console.log('query from beginning');
-    query = db
-      .collection(CHATS_MESSAGES_STORENAME)
-      .where('chat_id', '==', chatId)
-      .orderBy('created_at', 'asc');
-  }
+  const query = db
+    .collection(CHATS_MESSAGES_STORENAME)
+    .where('chat_id', 'in', chatIds)
+    .orderBy('created_at', 'asc')
+    .startAfter(Date.now());
 
   chatMessageObserver = query.onSnapshot(
     (querySnapshot) => {
       querySnapshot.docChanges().forEach((change) => {
         const messageData = change.doc.data() as ChatMessageData;
 
-        // console.log('message change.type:', change.type);
+        console.log('message change.type:', change.type);
         if (change.type === 'added') {
           onMessageAdded(messageData);
         }

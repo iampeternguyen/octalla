@@ -4,6 +4,7 @@ import { User } from '@firebase/auth-types';
 import { UserSettingsData } from 'src/models/UserSettings';
 import { WorkspaceData } from 'src/models/Workspace';
 import { ProjectData } from 'src/models/Project';
+import { ChatMessageData } from 'src/models/ChatMessage';
 
 export const EVENT_USER_AUTHENTICATED = Symbol('EVENT_USER_AUTHENTICATED');
 export const EVENT_USER_SETTINGS_FETCHED = Symbol(
@@ -18,6 +19,10 @@ export const EVENT_ACTIVE_WORKSPACE_SET = Symbol('EVENT_ACTIVE_WORKSPACE_SET');
 
 export const EVENT_ACTIVE_PROJECT_SET = Symbol('EVENT_ACTIVE_PROJECT_SET');
 export const EVENT_PROJECT_DELETED = Symbol('EVENT_PROJECT_DELETED');
+
+export const EVENT_CHAT_MESSAGE_ADDED = Symbol('EVENT_CHAT_MESSAGE_ADDED');
+export const EVENT_CHAT_MESSAGE_UPDATED = Symbol('EVENT_CHAT_MESSAGE_UPDATED');
+export const EVENT_CHAT_MESSAGE_DELETED = Symbol('EVENT_CHAT_MESSAGE_DELETED');
 
 const onUserAuthenticated = (user: User) => {
   console.log(EVENT_USER_AUTHENTICATED, user);
@@ -59,6 +64,21 @@ const onProjectDeleted = (project: ProjectData) => {
   PubSub.publish(EVENT_PROJECT_DELETED, project);
 };
 
+const onChatMessageAdded = (chatMessageData: ChatMessageData) => {
+  console.log(EVENT_CHAT_MESSAGE_ADDED, chatMessageData);
+  PubSub.publish(EVENT_CHAT_MESSAGE_ADDED, chatMessageData);
+};
+
+const onChatMessageUpdated = (chatMessageData: ChatMessageData) => {
+  console.log(EVENT_CHAT_MESSAGE_UPDATED, chatMessageData);
+  PubSub.publish(EVENT_CHAT_MESSAGE_UPDATED, chatMessageData);
+};
+
+const onChatMessageDeleted = (chatMessageData: ChatMessageData) => {
+  console.log(EVENT_CHAT_MESSAGE_DELETED, chatMessageData);
+  PubSub.publish(EVENT_CHAT_MESSAGE_DELETED, chatMessageData);
+};
+
 const BroadcastEvent = {
   user: {
     onUserAuthenticated,
@@ -73,6 +93,12 @@ const BroadcastEvent = {
   project: {
     onActiveProjectSet,
     onProjectDeleted,
+  },
+
+  chat: {
+    onChatMessageAdded,
+    onChatMessageUpdated,
+    onChatMessageDeleted,
   },
 };
 

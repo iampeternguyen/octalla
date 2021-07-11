@@ -32,7 +32,13 @@
     </span>
 
     <q-item-section
-      ><q-btn color="primary" icon="check" round flat
+      ><q-btn
+        v-if="chat"
+        color="primary"
+        icon="eva-close-outline"
+        round
+        flat
+        @click="closeChat(index)"
     /></q-item-section>
     <q-menu fit anchor="top start" self="bottom left" @show="onFirstOpen">
       <div
@@ -81,11 +87,22 @@ import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
 import { defineComponent, ref, PropType } from 'vue';
 import ChatViewModel from 'src/viewmodels/ChatViewModel';
 import AppRepository from 'src/repository/AppRepository';
+import {
+  EVENT_CHAT_MESSAGE_ADDED,
+  EVENT_CHAT_MESSAGE_DELETED,
+  EVENT_CHAT_MESSAGE_UPDATED,
+} from 'src/events/BroadcastEvents';
 export default defineComponent({
   name: 'MiniChat',
   props: {
     chatData: {
       type: Object as PropType<ChatData>,
+    },
+    index: {
+      type: Number,
+    },
+    remove: {
+      type: Function,
     },
   },
   setup(props) {
@@ -96,9 +113,6 @@ export default defineComponent({
     const chat = ref<ChatData | null>(props.chatData || null);
     const chatMessageScrollArea = ref<HTMLDivElement | null>(null);
     const loadingMessages = ref(false);
-    let chatMesssageObsever = () => {
-      return;
-    };
 
     if (chat.value) {
       // watchChatMessages();
@@ -106,18 +120,45 @@ export default defineComponent({
     }
 
     function setUpChat() {
-      getFirstMessage()
-        .then((message) => {
-          watchChatMessages(message);
-        })
-        .catch((err) => {
-          console.log('no first message', err);
-          noMoreMessages.value = true;
-          watchChatMessages();
-        });
+      getFirstMessage().catch((err) => {
+        console.log('no first message', err);
+        noMoreMessages.value = true;
+      });
     }
 
+    PubSub.subscribe(
+      EVENT_CHAT_MESSAGE_ADDED,
+      (_msg: string, chatMessage: ChatMessageData) => {
+        if (chat.value && chatMessage.chat_id == chat.value.id) {
+          messages.value.push(chatMessage);
+        }
+      }
+    );
+
+    PubSub.subscribe(
+      EVENT_CHAT_MESSAGE_UPDATED,
+      (_msg: string, chatMessage: ChatMessageData) => {
+        if (chat.value && chatMessage.chat_id == chat.value.id) {
+          const index = messages.value.findIndex((t) => t.id == chatMessage.id);
+          messages.value.splice(index, 1, chatMessage);
+        }
+      }
+    );
+
+    PubSub.subscribe(
+      EVENT_CHAT_MESSAGE_DELETED,
+      (_msg: string, chatMessage: ChatMessageData) => {
+        if (chat.value && chatMessage.chat_id == chat.value.id) {
+          const index = messages.value.findIndex((t) => t.id == chatMessage.id);
+          messages.value.splice(index, 1);
+        }
+      }
+    );
+
+    // TODO MOVE OTHER METHODS THAT REQUEST DATA DIRECTLY TO VIEW MODEL
+
     const firstOpen = ref(true);
+
     async function onFirstOpen() {
       if (!firstOpen.value) return;
       await fetchMoreMessages();
@@ -126,12 +167,9 @@ export default defineComponent({
 
     async function getFirstMessage() {
       if (!chat.value) return;
-      const message = await AppRepository.chat.getMostRecentMessage(
-        chat.value.id
+      messages.value.push(
+        await ChatViewModel.methods.getMostRecentMessage(chat.value.id)
       );
-
-      messages.value.push(message);
-      return message;
     }
 
     const members = ref<{ label: string; value: string }[]>([]);
@@ -151,7 +189,7 @@ export default defineComponent({
     function filterFn(
       val: string,
       update: (fn: () => void) => void,
-      abort: (fn: () => void) => void
+      _abort: (fn: () => void) => void
     ) {
       update(() => {
         const needle = val.toLowerCase();
@@ -174,28 +212,28 @@ export default defineComponent({
         setTimeout(() => chatMemberSelector.value?.hidePopup(), 100);
       }
     }
-    // TODO watch all messages that include the user and filter them appropriately.
 
     async function createChat() {
       if (members.value.length > 0) {
-        const hasChat = getChatIfExists();
-        if (hasChat) {
-          chat.value = hasChat;
-          setUpChat();
+        const chatIndex = getChatIndexIfExists();
+        if (chatIndex) {
+          // TODO check if chat already open / auto load messages like fb
+          ChatViewModel.methods.openChat(chatIndex);
+          if (props.remove) props.remove();
         } else {
           await ChatViewModel.methods.createNewChat(members.value);
         }
       }
     }
 
-    function getChatIfExists(): ChatData | null {
-      let foundChat: ChatData | null = null;
-      ChatViewModel.properties.allChats.value.forEach((chat) => {
+    function getChatIndexIfExists(): number | null {
+      let foundChat: number | null = null;
+      ChatViewModel.properties.allChats.value.forEach((chat, index) => {
         if (
           chat.members.length == members.value.length + 1 &&
           members.value.every((member) => chat.members.includes(member.value))
         ) {
-          foundChat = chat;
+          foundChat = index;
         }
       });
       return foundChat;
@@ -222,15 +260,12 @@ export default defineComponent({
     const noMoreMessages = ref(false);
     async function fetchMoreMessages() {
       loadingMessages.value = true;
-      if (messages.value[0]) {
-        const olderMessages = await AppRepository.chat.getOlderMessages(
-          messages.value[0]
-        );
-        if (olderMessages.length < 10) noMoreMessages.value = true;
-        messages.value.unshift(...olderMessages);
-      } else {
-        noMoreMessages.value = true;
-      }
+
+      const olderMessages = await ChatViewModel.methods.getOlderMessages(
+        () => (noMoreMessages.value = true),
+        messages.value[0]
+      );
+      if (olderMessages) messages.value.unshift(...olderMessages);
 
       loadingMessages.value = false;
     }
@@ -248,37 +283,8 @@ export default defineComponent({
       }
     }
 
-    function watchChatMessages(message?: ChatMessageData) {
-      if (!UserViewModel.properties.appProfile.value || !chat.value) return;
-
-      AppRepository.chat.watchChatMessagesAfter(
-        chat.value.id,
-        chatMesssageObsever,
-        addChatMessage,
-        updateChatMessage,
-        removeChatMessage,
-        message
-      );
-    }
-
-    // Projects change handlers
-    function clearChatMessages() {
-      messages.value.splice(0, messages.value.length);
-    }
-
-    function updateChatMessage(messageData: ChatMessageData) {
-      const index = messages.value.findIndex((t) => t.id == messageData.id);
-      messages.value.splice(index, 1, messageData);
-    }
-
-    function removeChatMessage(messageData: ChatMessageData) {
-      const index = messages.value.findIndex((t) => t.id == messageData.id);
-      messages.value.splice(index, 1);
-    }
-
-    function addChatMessage(messageData: ChatMessageData) {
-      messages.value.push(messageData);
-      scrollToBottom();
+    function closeChat(index: number) {
+      ChatViewModel.methods.closeChat(index);
     }
 
     return {
@@ -297,6 +303,7 @@ export default defineComponent({
       checkPosition,
       loadingMessages,
       onFirstOpen,
+      closeChat,
     };
   },
 });

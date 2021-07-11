@@ -16,13 +16,29 @@
           :project="activeProject"
         ></edit-project-goal>
 
-        <q-btn
-          dense
-          flat
-          round
-          icon="eva-info-outline"
-          @click="onToggleRightDrawer"
-        />
+        <div>
+          <q-btn dense flat round icon="eva-message-circle-outline">
+            <q-menu>
+              <q-list
+                style="min-width: 100px"
+                v-for="(chat, index) in allChats"
+                :key="chat.id"
+              >
+                <q-item clickable v-close-popup @click="openChat(index)">
+                  <q-item-section>{{ chat.title }}</q-item-section>
+                </q-item>
+                <q-separator />
+              </q-list>
+            </q-menu>
+          </q-btn>
+          <q-btn
+            dense
+            flat
+            round
+            icon="eva-info-outline"
+            @click="onToggleRightDrawer"
+          />
+        </div>
       </q-toolbar>
       <q-toolbar class="shadow-2">
         <q-toolbar-title> Toolbar </q-toolbar-title>
@@ -118,6 +134,7 @@ import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
 import ProjectViewModel from 'src/viewmodels/ProjectViewModel';
 import UIViewModel from 'src/viewmodels/UIViewModel';
 import TaskViewModel from 'src/viewmodels/TaskViewModel';
+import ChatViewModel from 'src/viewmodels/ChatViewModel';
 
 export default defineComponent({
   components: {
@@ -130,6 +147,7 @@ export default defineComponent({
   setup() {
     const tasks = ProjectViewModel.properties.tasks;
     const activeProject = ProjectViewModel.properties.activeProject;
+    const allChats = ChatViewModel.properties.allChats;
 
     const text = ref('');
     const rightDrawerOpen = ref(false);
@@ -159,6 +177,10 @@ export default defineComponent({
       }
     }
 
+    function openChat(index: number) {
+      ChatViewModel.methods.openChat(index);
+    }
+
     return {
       text,
       filteredTasks,
@@ -171,6 +193,8 @@ export default defineComponent({
       group,
       isCompetencyHovered,
       groupCategory,
+      allChats,
+      openChat,
     };
   },
 });

@@ -1,14 +1,19 @@
 <template>
   <div class="footer row justify-end full-width q-gutter-xs">
     <q-page-sticky position="bottom-right" :offset="[18, 18]">
-      <q-btn fab icon="add" color="accent" @click="count++" />
+      <q-btn fab icon="add" color="accent" @click="addNewChat" />
     </q-page-sticky>
     <mini-chat
-      v-for="chat in chats"
+      v-for="(chat, index) in chats"
       :chatData="chat"
+      :index="index"
       :key="chat.id"
     ></mini-chat>
-    <mini-chat v-for="index in count" :key="index"></mini-chat>
+    <mini-chat
+      v-for="(item, index) in newChatArray"
+      :key="index"
+      :remove="() => onRemove(index)"
+    ></mini-chat>
   </div>
 </template>
 <script lang="ts">
@@ -22,11 +27,20 @@ export default defineComponent({
     MiniChat,
   },
   setup() {
-    const chats = ChatViewModel.properties.allChats.value;
-    const count = ref(0);
+    const chats = ChatViewModel.properties.openChats.value;
+    const newChatArray = ref<string[]>([]);
+    function onRemove(index: number) {
+      newChatArray.value.splice(index, 1);
+    }
+
+    function addNewChat() {
+      newChatArray.value.push('');
+    }
     return {
-      count,
+      newChatArray,
       chats,
+      onRemove,
+      addNewChat,
     };
   },
 });

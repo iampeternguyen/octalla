@@ -1,5 +1,12 @@
-import { EVENT_ACTIVE_WORKSPACE_SET } from 'src/events/BroadcastEvents';
-import ChatMessage, { Chat, ChatData } from 'src/models/ChatMessage';
+import { debounce } from 'quasar';
+import BroadcastEvent, {
+  EVENT_ACTIVE_WORKSPACE_SET,
+} from 'src/events/BroadcastEvents';
+import ChatMessage, {
+  Chat,
+  ChatData,
+  ChatMessageData,
+} from 'src/models/ChatMessage';
 import { WorkspaceData } from 'src/models/Workspace';
 import AppRepository from 'src/repository/AppRepository';
 import { ref, computed } from 'vue';
@@ -17,10 +24,12 @@ const dummyData = new Chat('1', [{ label: 'Peter', value: '2' }], '2');
 
 const _allChats = ref<ChatData[]>([dummyData.serialize()]);
 const _openChats = ref<ChatData[]>([]);
+const _allNewMessages = ref<ChatMessageData[]>([]);
 
 const properties = {
   allChats: computed(() => _allChats.value),
   openChats: computed(() => _openChats.value),
+  allNewMessages: computed(() => _allNewMessages.value),
 };
 
 async function createNewChat(members: { label: string; value: string }[]) {
@@ -78,11 +87,71 @@ function updateWorkspaceChat(chatData: ChatData) {
 function removeWorkspaceChat(chatData: ChatData) {
   const index = _allChats.value.findIndex((t) => t.id == chatData.id);
   _allChats.value.splice(index, 1);
+  debounceWaitForNewMessages();
 }
 
 function addWorkspaceChat(chatData: ChatData) {
   console.log('chat added', chatData);
   _allChats.value.push(chatData);
+  debounceWaitForNewMessages();
+}
+
+const debounceWaitForNewMessages = debounce(watchForNewMessages, 500);
+
+function watchForNewMessages() {
+  if (!_allChats.value) return;
+  const chatIds = _allChats.value.map((c) => c.id);
+  AppRepository.chat.watchChatMessagesAfter(
+    chatIds,
+    addChatMessage,
+    updateChatMessage,
+    removeChatMessage
+  );
+}
+
+// Message change handlers
+function clearChatMessages() {
+  _allNewMessages.value.splice(0, _allNewMessages.value.length);
+}
+
+function updateChatMessage(messageData: ChatMessageData) {
+  const index = _allNewMessages.value.findIndex((t) => t.id == messageData.id);
+  _allNewMessages.value.splice(index, 1, messageData);
+  BroadcastEvent.chat.onChatMessageUpdated(messageData);
+}
+
+function removeChatMessage(messageData: ChatMessageData) {
+  const index = _allNewMessages.value.findIndex((t) => t.id == messageData.id);
+  _allNewMessages.value.splice(index, 1);
+  BroadcastEvent.chat.onChatMessageDeleted(messageData);
+}
+
+function addChatMessage(messageData: ChatMessageData) {
+  _allNewMessages.value.push(messageData);
+  BroadcastEvent.chat.onChatMessageAdded(messageData);
+}
+
+async function getMostRecentMessage(chatId: string) {
+  return await AppRepository.chat.getMostRecentMessage(chatId);
+}
+
+async function getOlderMessages(done: () => void, message?: ChatMessageData) {
+  if (message) {
+    const olderMessages = await AppRepository.chat.getOlderMessages(message);
+    if (olderMessages.length < 10) {
+      done();
+    }
+    return olderMessages;
+  } else {
+    done();
+  }
+}
+
+function openChat(index: number) {
+  _openChats.value.push(_allChats.value[index]);
+}
+function closeChat(index: number) {
+  _openChats.value.splice(index, 1);
 }
 
 const ChatViewModel = {
@@ -90,6 +159,10 @@ const ChatViewModel = {
   methods: {
     createNewChat,
     sendMessage,
+    getMostRecentMessage,
+    getOlderMessages,
+    openChat,
+    closeChat,
   },
 };
 export default ChatViewModel;
