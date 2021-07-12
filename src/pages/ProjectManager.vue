@@ -102,7 +102,7 @@
     </q-drawer>
 
     <q-page class="page">
-      <q-scroll-area class="scroll-area q-pa-md" visible>
+      <q-scroll-area class="scroll-area q-pa-md" visible v-if="activeProject">
         <div class="row q-gutter-md no-wrap">
           <tasks-list
             v-for="field in group"
@@ -117,6 +117,9 @@
           ></tasks-list>
         </div>
       </q-scroll-area>
+      <div class="row items-center justify-center">
+        <div>Create a new project or select an existing one</div>
+      </div>
     </q-page>
   </div>
 </template>
