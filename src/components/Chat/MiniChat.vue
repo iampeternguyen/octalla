@@ -1,39 +1,11 @@
 <template>
-  <q-item class="col-2 bg-white row items-center" v-if="!chat">
-    <div class="q-mr-md col-1">To:</div>
-    <q-select
-      ref="chatMemberSelector"
-      class="col-8"
-      borderless
-      v-model="members"
-      multiple
-      :options="options"
-      use-chips
-      stack-label
-      use-input
-      @filter="filterFn"
-      @keydown.stop.enter="makeSelection"
-    />
-    <q-btn
-      color="primary"
-      flat
-      icon="eva-plus-outline"
-      class="col-1"
-      @click="createChat"
-    />
-  </q-item>
-  <q-item
-    clickable
-    class="col-2 bg-white row justify-between items-center"
-    v-else
-  >
-    <span class="chat-title col-10" v-if="chat">
+  <q-item clickable class="col-2 bg-white row justify-between items-center">
+    <span class="chat-title col-10">
       {{ chat.title }}
     </span>
 
     <q-item-section
       ><q-btn
-        v-if="chat"
         color="primary"
         icon="eva-close-outline"
         round
@@ -80,13 +52,11 @@
   </q-item>
 </template>
 <script lang="ts">
-import { debounce, QSelect } from 'quasar';
+import { debounce } from 'quasar';
 import { ChatData, ChatMessageData } from 'src/models/ChatMessage';
 import UserViewModel from 'src/viewmodels/UserViewModel';
-import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
 import { defineComponent, ref, PropType } from 'vue';
 import ChatViewModel from 'src/viewmodels/ChatViewModel';
-import AppRepository from 'src/repository/AppRepository';
 import {
   EVENT_CHAT_MESSAGE_ADDED,
   EVENT_CHAT_MESSAGE_DELETED,
@@ -95,41 +65,20 @@ import {
 export default defineComponent({
   name: 'MiniChat',
   props: {
-    chatData: {
+    chat: {
       type: Object as PropType<ChatData>,
+      required: true,
     },
     index: {
       type: Number,
-    },
-    remove: {
-      type: Function,
+      required: true,
     },
   },
   setup(props) {
-    const chatMemberSelector = ref<QSelect | null>(null);
-    const userId = UserViewModel.properties.appProfile.value?.id || '';
-    const messageInput = ref('');
-    const messages = ref<ChatMessageData[]>([]);
-    const chat = ref<ChatData | null>(props.chatData || null);
-    const chatMessageScrollArea = ref<HTMLDivElement | null>(null);
-    const loadingMessages = ref(false);
-
-    if (chat.value) {
-      // watchChatMessages();
-      setUpChat();
-    }
-
-    function setUpChat() {
-      getFirstMessage().catch((err) => {
-        console.log('no first message', err);
-        noMoreMessages.value = true;
-      });
-    }
-
     PubSub.subscribe(
       EVENT_CHAT_MESSAGE_ADDED,
       (_msg: string, chatMessage: ChatMessageData) => {
-        if (chat.value && chatMessage.chat_id == chat.value.id) {
+        if (props.chat && chatMessage.chat_id == props.chat.id) {
           messages.value.push(chatMessage);
         }
       }
@@ -138,7 +87,7 @@ export default defineComponent({
     PubSub.subscribe(
       EVENT_CHAT_MESSAGE_UPDATED,
       (_msg: string, chatMessage: ChatMessageData) => {
-        if (chat.value && chatMessage.chat_id == chat.value.id) {
+        if (props.chat && chatMessage.chat_id == props.chat.id) {
           const index = messages.value.findIndex((t) => t.id == chatMessage.id);
           messages.value.splice(index, 1, chatMessage);
         }
@@ -148,16 +97,35 @@ export default defineComponent({
     PubSub.subscribe(
       EVENT_CHAT_MESSAGE_DELETED,
       (_msg: string, chatMessage: ChatMessageData) => {
-        if (chat.value && chatMessage.chat_id == chat.value.id) {
+        if (props.chat && chatMessage.chat_id == props.chat.id) {
           const index = messages.value.findIndex((t) => t.id == chatMessage.id);
           messages.value.splice(index, 1);
         }
       }
     );
-
-    // TODO MOVE OTHER METHODS THAT REQUEST DATA DIRECTLY TO VIEW MODEL
-
+    // TODO make menu persistent and open as default
+    const userId = UserViewModel.properties.appProfile.value?.id || '';
+    const messageInput = ref('');
+    const messages = ref<ChatMessageData[]>([]);
+    const chatMessageScrollArea = ref<HTMLDivElement | null>(null);
+    const loadingMessages = ref(false);
     const firstOpen = ref(true);
+
+    setUpChat();
+
+    function setUpChat() {
+      getFirstMessage().catch((err) => {
+        console.log('no first message', err);
+        noMoreMessages.value = true;
+      });
+    }
+
+    async function getFirstMessage() {
+      if (!props.chat) return;
+      messages.value.push(
+        await ChatViewModel.methods.getMostRecentMessage(props.chat.id)
+      );
+    }
 
     async function onFirstOpen() {
       if (!firstOpen.value) return;
@@ -165,85 +133,15 @@ export default defineComponent({
       firstOpen.value = false;
     }
 
-    async function getFirstMessage() {
-      if (!chat.value) return;
-      messages.value.push(
-        await ChatViewModel.methods.getMostRecentMessage(chat.value.id)
-      );
-    }
-
-    const members = ref<{ label: string; value: string }[]>([]);
-
-    const memberOptions = WorkspaceViewModel.properties.members.value
-      .filter(
-        (member) =>
-          UserViewModel.properties.appProfile.value &&
-          UserViewModel.properties.appProfile.value.id != member.id
-      )
-      .map((member) => {
-        return { label: member.display_name, value: member.id };
-      });
-
-    const options = ref(memberOptions);
-
-    function filterFn(
-      val: string,
-      update: (fn: () => void) => void,
-      _abort: (fn: () => void) => void
-    ) {
-      update(() => {
-        const needle = val.toLowerCase();
-        options.value = memberOptions.filter((v) => {
-          const m = members.value.find((m) => m.value == v.value);
-
-          return !m && v.label.toLowerCase().indexOf(needle) > -1;
-        });
-      });
-    }
-
-    function makeSelection() {
-      if (!chatMemberSelector.value) return;
-      if (
-        chatMemberSelector.value.options &&
-        chatMemberSelector.value.options.length > 0
-      ) {
-        chatMemberSelector.value.moveOptionSelection(1, true);
-        chatMemberSelector.value.updateInputValue('');
-        setTimeout(() => chatMemberSelector.value?.hidePopup(), 100);
-      }
-    }
-
-    async function createChat() {
-      if (members.value.length > 0) {
-        const chatIndex = getChatIndexIfExists();
-        if (chatIndex) {
-          // TODO check if chat already open / auto load messages like fb
-          ChatViewModel.methods.openChat(chatIndex);
-          if (props.remove) props.remove();
-        } else {
-          await ChatViewModel.methods.createNewChat(members.value);
-        }
-      }
-    }
-
-    function getChatIndexIfExists(): number | null {
-      let foundChat: number | null = null;
-      ChatViewModel.properties.allChats.value.forEach((chat, index) => {
-        if (
-          chat.members.length == members.value.length + 1 &&
-          members.value.every((member) => chat.members.includes(member.value))
-        ) {
-          foundChat = index;
-        }
-      });
-      return foundChat;
+    function closeChat(index: number) {
+      ChatViewModel.methods.closeChat(index);
     }
 
     async function sendMessage() {
-      if (chat.value && messageInput.value) {
-        console.log('sending message to', chat.value.title, messageInput.value);
+      if (props.chat && messageInput.value) {
+        console.log('sending message to', props.chat.title, messageInput.value);
         await ChatViewModel.methods.sendMessage(
-          chat.value.id,
+          props.chat.id,
           messageInput.value
         );
         messageInput.value = '';
@@ -254,20 +152,6 @@ export default defineComponent({
       if (chatMessageScrollArea.value) {
         // chatMessageScrollArea.value.setScrollPercentage('vertical', 1);
       }
-    }
-
-    const debounceFetchMoreMessages = debounce(fetchMoreMessages, 100, true);
-    const noMoreMessages = ref(false);
-    async function fetchMoreMessages() {
-      loadingMessages.value = true;
-
-      const olderMessages = await ChatViewModel.methods.getOlderMessages(
-        () => (noMoreMessages.value = true),
-        messages.value[0]
-      );
-      if (olderMessages) messages.value.unshift(...olderMessages);
-
-      loadingMessages.value = false;
     }
 
     async function checkPosition(scrollPosition: number) {
@@ -283,22 +167,26 @@ export default defineComponent({
       }
     }
 
-    function closeChat(index: number) {
-      ChatViewModel.methods.closeChat(index);
+    const noMoreMessages = ref(false);
+
+    const debounceFetchMoreMessages = debounce(fetchMoreMessages, 100, true);
+    async function fetchMoreMessages() {
+      loadingMessages.value = true;
+
+      const olderMessages = await ChatViewModel.methods.getOlderMessages(
+        () => (noMoreMessages.value = true),
+        messages.value[0]
+      );
+      if (olderMessages) messages.value.unshift(...olderMessages);
+
+      loadingMessages.value = false;
     }
 
     return {
       sendMessage,
       messageInput,
       messages,
-      options,
-      filterFn,
-      members,
-      makeSelection,
-      chatMemberSelector,
-      createChat,
       userId,
-      chat,
       chatMessageScrollArea,
       checkPosition,
       loadingMessages,
