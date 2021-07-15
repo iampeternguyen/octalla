@@ -6,6 +6,7 @@ A project manager app that helps you level up your own management skills.
   - [Motivation](#motivation)
   - [Why I built this project this way](#why-i-built-this-project-this-way)
   - [How to navigate this project](#how-to-navigate-this-project)
+  - [Key Features](#key-features)
   - [Live Demo](#live-demo)
   - [Install the dependencies](#install-the-dependencies)
     - [Start the app in development mode (hot-code reloading, error reporting, etc.)](#start-the-app-in-development-mode-hot-code-reloading-error-reporting-etc)
@@ -26,6 +27,11 @@ I find that a lot of teams struggle with having a clear system for project manag
 - App logic and state are in ViewModels
 - Communication with databases occur in repositories
 - All app events that other parts need to listen to are housed in events/BroadcastEvents.ts
+
+## Key Features
+- Realtime chat
+- Realtime collaboration in projects
+- Role based privileges for team workspaces
 
 ## Live Demo
 [Click here to check out the live demo](https://octalla.vercel.app/)
