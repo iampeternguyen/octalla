@@ -1,6 +1,6 @@
 <template>
   <q-list class="rounded-borders mini-chat">
-    <q-expansion-item class="bg-white" default-opened>
+    <q-expansion-item class="bg-white" default-opened ref="miniChat">
       <template v-slot:header>
         <q-item-section class="ellipsis">
           {{ chat.title }}
@@ -18,21 +18,7 @@
           </div>
         </q-item-section>
       </template>
-      <!-- <template v-slot:header>
-        <div class="row justify-between">
-          <q-item-section class="col-4 ellipsis">
-            {{ chat.title }}
-          </q-item-section>
 
-          <q-btn
-            color="primary"
-            icon="eva-close-outline"
-            round
-            flat
-            @click="closeChat(index)"
-          />
-        </div>
-      </template> -->
       <q-card>
         <div
           ref="chatMessageScrollArea"
@@ -61,10 +47,11 @@
           <div v-scroll="checkPosition"></div>
         </div>
         <q-input
+          ref="miniChatMessageInput"
           class="q-pa-sm"
           type="text"
           placeholder="Message"
-          v-model="messageInput"
+          v-model="messageText"
           borderless
           @keydown.enter.stop="sendMessage"
         />
@@ -73,12 +60,13 @@
   </q-list>
 </template>
 <script lang="ts">
-import { debounce } from 'quasar';
+import { debounce, QExpansionItem, QInput } from 'quasar';
 import { ChatData, ChatMessageData } from 'src/models/ChatMessage';
 import UserViewModel from 'src/viewmodels/UserViewModel';
 import { defineComponent, ref, PropType } from 'vue';
 import ChatViewModel from 'src/viewmodels/ChatViewModel';
 import {
+  EVENT_CHAT_FOCUS,
   EVENT_CHAT_MESSAGE_ADDED,
   EVENT_CHAT_MESSAGE_DELETED,
   EVENT_CHAT_MESSAGE_UPDATED,
@@ -96,6 +84,7 @@ export default defineComponent({
     },
   },
   setup(props) {
+    // TODO show indication of focused chat?
     PubSub.subscribe(
       EVENT_CHAT_MESSAGE_ADDED,
       (_msg: string, chatMessage: ChatMessageData) => {
@@ -124,9 +113,17 @@ export default defineComponent({
         }
       }
     );
-    // TODO mini chat not very reactive
+
+    PubSub.subscribe(EVENT_CHAT_FOCUS, (_msg: string, chatData: ChatData) => {
+      if (props.chat && chatData.id == props.chat.id) {
+        focusChat();
+      }
+    });
+
+    const miniChat = ref<QExpansionItem | null>(null);
+    const miniChatMessageInput = ref<QInput | null>(null);
     const userId = UserViewModel.properties.appProfile.value?.id || '';
-    const messageInput = ref('');
+    const messageText = ref('');
     const messages = ref<ChatMessageData[]>([]);
     const chatMessageScrollArea = ref<HTMLDivElement | null>(null);
     const loadingMessages = ref(false);
@@ -157,19 +154,32 @@ export default defineComponent({
     }
 
     async function sendMessage() {
-      if (props.chat && messageInput.value) {
-        console.log('sending message to', props.chat.title, messageInput.value);
+      if (props.chat && messageText.value) {
+        console.log('sending message to', props.chat.title, messageText.value);
         await ChatViewModel.methods.sendMessage(
           props.chat.id,
-          messageInput.value
+          messageText.value
         );
-        messageInput.value = '';
+        messageText.value = '';
       }
     }
 
     function scrollToBottom() {
       if (chatMessageScrollArea.value) {
         // chatMessageScrollArea.value.setScrollPercentage('vertical', 1);
+      }
+    }
+
+    const debounceFocus = debounce(() => {
+      if (miniChatMessageInput.value) {
+        console.log('focusing');
+        miniChatMessageInput.value.focus();
+      }
+    }, 100);
+    function focusChat() {
+      if (miniChat.value && miniChatMessageInput.value) {
+        miniChat.value.show();
+        debounceFocus();
       }
     }
 
@@ -200,8 +210,10 @@ export default defineComponent({
     }
 
     return {
+      miniChat,
+      miniChatMessageInput,
       sendMessage,
-      messageInput,
+      messageText,
       messages,
       userId,
       chatMessageScrollArea,
@@ -219,10 +231,9 @@ export default defineComponent({
   pointer-events: auto;
   width: 30rem;
   max-width: 30rem;
-  // &::v-deep .q-expansion-item__toggle-icon {
-  //   display: none;
-  // }
+
   &::v-deep .close-button {
+    // targets the div containg the expand icon
     & + div {
       display: none;
     }
@@ -232,12 +243,6 @@ export default defineComponent({
 .hide-button {
   display: none;
 }
-
-// .chat-title {
-//   text-overflow: ellipsis;
-//   overflow: hidden;
-//   white-space: nowrap;
-// }
 
 .chatMessageScrollArea {
   display: flex;

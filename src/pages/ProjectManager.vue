@@ -138,6 +138,7 @@ import ProjectViewModel from 'src/viewmodels/ProjectViewModel';
 import UIViewModel from 'src/viewmodels/UIViewModel';
 import TaskViewModel from 'src/viewmodels/TaskViewModel';
 import ChatViewModel from 'src/viewmodels/ChatViewModel';
+import BroadcastEvent from 'src/events/BroadcastEvents';
 
 export default defineComponent({
   components: {
@@ -151,6 +152,7 @@ export default defineComponent({
     const tasks = ProjectViewModel.properties.tasks;
     const activeProject = ProjectViewModel.properties.activeProject;
     const allChats = ChatViewModel.properties.allChats;
+    const openChats = ChatViewModel.properties.openChats;
 
     const text = ref('');
     const rightDrawerOpen = ref(false);
@@ -181,7 +183,16 @@ export default defineComponent({
     }
 
     function openChat(index: number) {
+      const openChat = openChats.value.find(
+        (c) => c.id == allChats.value[index].id
+      );
+      if (openChat) {
+        console.log('chat is open');
+        BroadcastEvent.chat.onChatFocus(openChat);
+        return;
+      }
       ChatViewModel.methods.openChat(index);
+      BroadcastEvent.chat.onChatFocus(allChats.value[index]);
     }
 
     return {
