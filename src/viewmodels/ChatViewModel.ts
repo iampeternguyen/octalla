@@ -148,7 +148,16 @@ async function getOlderMessages(done: () => void, message?: ChatMessageData) {
 }
 
 function openChat(index: number) {
+  const openChat = _openChats.value.find(
+    (c) => c.id == _allChats.value[index].id
+  );
+  if (openChat) {
+    console.log('chat is open');
+    BroadcastEvent.chat.onChatFocus(openChat);
+    return;
+  }
   _openChats.value.push(_allChats.value[index]);
+  BroadcastEvent.chat.onChatFocus(_allChats.value[index]);
 }
 function closeChat(index: number) {
   _openChats.value.splice(index, 1);

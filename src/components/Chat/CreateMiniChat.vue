@@ -1,5 +1,5 @@
 <template>
-  <q-item class="col-2 bg-white row items-center">
+  <q-item class="new-mini-chat col-2 bg-white row items-center">
     <div class="q-mr-md col-1">To:</div>
     <q-select
       ref="chatMemberSelector"
@@ -112,4 +112,8 @@ export default defineComponent({
 });
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.new-mini-chat {
+  pointer-events: auto;
+}
+</style>

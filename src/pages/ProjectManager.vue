@@ -183,16 +183,7 @@ export default defineComponent({
     }
 
     function openChat(index: number) {
-      const openChat = openChats.value.find(
-        (c) => c.id == allChats.value[index].id
-      );
-      if (openChat) {
-        console.log('chat is open');
-        BroadcastEvent.chat.onChatFocus(openChat);
-        return;
-      }
       ChatViewModel.methods.openChat(index);
-      BroadcastEvent.chat.onChatFocus(allChats.value[index]);
     }
 
     return {

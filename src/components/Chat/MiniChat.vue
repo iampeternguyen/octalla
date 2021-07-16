@@ -23,7 +23,7 @@
         <div
           ref="chatMessageScrollArea"
           style="height: 35rem"
-          class="chatMessageScrollArea scroll"
+          class="chatMessageScrollArea scroll q-pr-md q-pl-sm"
         >
           <div class="column">
             <q-spinner-facebook

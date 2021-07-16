@@ -11,6 +11,9 @@
       :key="index"
       :remove="() => onRemove(index)"
     ></create-mini-chat>
+    <q-page-sticky position="bottom-right" :offset="[18, 18]">
+      <q-btn fab icon="add" color="accent" @click="addNewChat" />
+    </q-page-sticky>
   </div>
 </template>
 <script lang="ts">
