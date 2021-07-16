@@ -1,62 +1,74 @@
 <template>
-  <q-expansion-item
-    class="mini-chat bg-white"
-    dense
-    default-opened
-    switch-toggle-side
-  >
-    <template v-slot:header>
-      <div class="row justify-between items-center fit">
-        <span class="col-8 chat-title">
+  <q-list class="rounded-borders mini-chat">
+    <q-expansion-item class="bg-white" default-opened>
+      <template v-slot:header>
+        <q-item-section class="ellipsis">
           {{ chat.title }}
-        </span>
-
-        <q-btn
-          color="primary"
-          icon="eva-close-outline"
-          round
-          flat
-          @click="closeChat(index)"
-        />
-      </div>
-    </template>
-    <q-card>
-      <div
-        ref="chatMessageScrollArea"
-        style="height: 35rem"
-        class="chatMessageScrollArea scroll"
-      >
-        <div class="column">
-          <q-spinner-facebook
-            class="self-center"
+        </q-item-section>
+        <q-item-section side>
+          <q-btn
             color="primary"
-            size="2em"
-            v-if="loadingMessages"
+            size="1rem"
+            icon="eva-close-outline"
+            round
+            flat
+            @click="closeChat(index)"
           />
-          <q-chat-message
-            v-for="message in messages"
-            :key="message.id"
-            name="me"
-            avatar="https://cdn.quasar.dev/img/avatar4.jpg"
-            size="8"
-            :text="[message.message]"
-            :sent="message.created_by == userId"
-            :stamp="message.created_at.toString()"
+        </q-item-section>
+      </template>
+      <!-- <template v-slot:header>
+        <div class="row justify-between">
+          <q-item-section class="col-4 ellipsis">
+            {{ chat.title }}
+          </q-item-section>
+
+          <q-btn
+            color="primary"
+            icon="eva-close-outline"
+            round
+            flat
+            @click="closeChat(index)"
           />
         </div>
+      </template> -->
+      <q-card>
+        <div
+          ref="chatMessageScrollArea"
+          style="height: 35rem"
+          class="chatMessageScrollArea scroll"
+        >
+          <div class="column">
+            <q-spinner-facebook
+              class="self-center"
+              color="primary"
+              size="2em"
+              v-if="loadingMessages"
+            />
+            <q-chat-message
+              v-for="message in messages"
+              :key="message.id"
+              name="me"
+              avatar="https://cdn.quasar.dev/img/avatar4.jpg"
+              size="8"
+              :text="[message.message]"
+              :sent="message.created_by == userId"
+              :stamp="message.created_at.toString()"
+            />
+          </div>
 
-        <div v-scroll="checkPosition"></div>
-      </div>
-      <q-input
-        class="q-pa-sm"
-        type="text"
-        placeholder="Message"
-        v-model="messageInput"
-        borderless
-        @keydown.enter.stop="sendMessage"
-      />
-    </q-card>
-  </q-expansion-item>
+          <div v-scroll="checkPosition"></div>
+        </div>
+        <q-input
+          class="q-pa-sm"
+          type="text"
+          placeholder="Message"
+          v-model="messageInput"
+          borderless
+          @keydown.enter.stop="sendMessage"
+        />
+      </q-card>
+    </q-expansion-item>
+  </q-list>
 </template>
 <script lang="ts">
 import { debounce } from 'quasar';
@@ -110,7 +122,7 @@ export default defineComponent({
         }
       }
     );
-    // TODO make menu persistent and open as default
+    // TODO mini chat not very reactive
     const userId = UserViewModel.properties.appProfile.value?.id || '';
     const messageInput = ref('');
     const messages = ref<ChatMessageData[]>([]);
@@ -203,17 +215,19 @@ export default defineComponent({
 <style lang="scss" scoped>
 .mini-chat {
   pointer-events: auto;
+  width: 30rem;
+  max-width: 30rem;
 }
 
 .hide-button {
   display: none;
 }
 
-.chat-title {
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-}
+// .chat-title {
+//   text-overflow: ellipsis;
+//   overflow: hidden;
+//   white-space: nowrap;
+// }
 
 .chatMessageScrollArea {
   display: flex;

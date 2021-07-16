@@ -1,7 +1,6 @@
 <template>
   <div class="footer row justify-end full-width items-end q-gutter-sm">
     <mini-chat
-      class="col-2"
       v-for="(chat, index) in chats"
       :chat="chat"
       :index="index"
