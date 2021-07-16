@@ -1,22 +1,30 @@
 <template>
-  <q-item clickable class="col-2 bg-white row justify-between items-center">
-    <span class="chat-title col-10">
-      {{ chat.title }}
-    </span>
+  <q-expansion-item
+    class="mini-chat bg-white"
+    dense
+    default-opened
+    switch-toggle-side
+  >
+    <template v-slot:header>
+      <div class="row justify-between items-center fit">
+        <span class="col-8 chat-title">
+          {{ chat.title }}
+        </span>
 
-    <q-item-section
-      ><q-btn
-        color="primary"
-        icon="eva-close-outline"
-        round
-        flat
-        @click="closeChat(index)"
-    /></q-item-section>
-    <q-menu fit anchor="top start" self="bottom left" @show="onFirstOpen">
+        <q-btn
+          color="primary"
+          icon="eva-close-outline"
+          round
+          flat
+          @click="closeChat(index)"
+        />
+      </div>
+    </template>
+    <q-card>
       <div
         ref="chatMessageScrollArea"
         style="height: 35rem"
-        class="chatMessageScrollArea q-pl-md q-pt-md q-pr-lg bg-grey-2 scroll"
+        class="chatMessageScrollArea scroll"
       >
         <div class="column">
           <q-spinner-facebook
@@ -39,7 +47,6 @@
 
         <div v-scroll="checkPosition"></div>
       </div>
-
       <q-input
         class="q-pa-sm"
         type="text"
@@ -48,8 +55,8 @@
         borderless
         @keydown.enter.stop="sendMessage"
       />
-    </q-menu>
-  </q-item>
+    </q-card>
+  </q-expansion-item>
 </template>
 <script lang="ts">
 import { debounce } from 'quasar';
@@ -109,15 +116,19 @@ export default defineComponent({
     const messages = ref<ChatMessageData[]>([]);
     const chatMessageScrollArea = ref<HTMLDivElement | null>(null);
     const loadingMessages = ref(false);
-    const firstOpen = ref(true);
 
-    setUpChat();
+    const noMoreMessages = ref(false);
 
-    function setUpChat() {
-      getFirstMessage().catch((err) => {
-        console.log('no first message', err);
+    setUpChat().catch((err) => console.log(err));
+
+    async function setUpChat() {
+      try {
+        await getFirstMessage();
+        await fetchMoreMessages();
+      } catch (error) {
+        console.log('no first message', error);
         noMoreMessages.value = true;
-      });
+      }
     }
 
     async function getFirstMessage() {
@@ -125,12 +136,6 @@ export default defineComponent({
       messages.value.push(
         await ChatViewModel.methods.getMostRecentMessage(props.chat.id)
       );
-    }
-
-    async function onFirstOpen() {
-      if (!firstOpen.value) return;
-      await fetchMoreMessages();
-      firstOpen.value = false;
     }
 
     function closeChat(index: number) {
@@ -167,8 +172,6 @@ export default defineComponent({
       }
     }
 
-    const noMoreMessages = ref(false);
-
     const debounceFetchMoreMessages = debounce(fetchMoreMessages, 100, true);
     async function fetchMoreMessages() {
       loadingMessages.value = true;
@@ -190,7 +193,7 @@ export default defineComponent({
       chatMessageScrollArea,
       checkPosition,
       loadingMessages,
-      onFirstOpen,
+
       closeChat,
     };
   },
@@ -198,6 +201,14 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
+.mini-chat {
+  pointer-events: auto;
+}
+
+.hide-button {
+  display: none;
+}
+
 .chat-title {
   text-overflow: ellipsis;
   overflow: hidden;

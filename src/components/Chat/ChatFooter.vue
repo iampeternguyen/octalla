@@ -1,9 +1,7 @@
 <template>
-  <div class="footer row justify-end full-width q-gutter-xs">
-    <q-page-sticky position="bottom-right" :offset="[18, 18]">
-      <q-btn fab icon="add" color="accent" @click="addNewChat" />
-    </q-page-sticky>
+  <div class="footer row justify-end full-width items-end q-gutter-sm">
     <mini-chat
+      class="col-2"
       v-for="(chat, index) in chats"
       :chat="chat"
       :index="index"
@@ -54,5 +52,6 @@ export default defineComponent({
   padding-right: 10rem;
   bottom: 0;
   z-index: 1;
+  pointer-events: none;
 }
 </style>
