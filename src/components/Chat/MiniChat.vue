@@ -5,15 +5,17 @@
         <q-item-section class="ellipsis">
           {{ chat.title }}
         </q-item-section>
-        <q-item-section side>
-          <q-btn
-            color="primary"
-            size="1rem"
-            icon="eva-close-outline"
-            round
-            flat
-            @click="closeChat(index)"
-          />
+        <q-item-section side class="close-button">
+          <div class="row items-center justify-end">
+            <q-btn
+              color="primary"
+              size="1rem"
+              icon="eva-close-outline"
+              round
+              flat
+              @click="closeChat(index)"
+            />
+          </div>
         </q-item-section>
       </template>
       <!-- <template v-slot:header>
@@ -217,6 +219,14 @@ export default defineComponent({
   pointer-events: auto;
   width: 30rem;
   max-width: 30rem;
+  // &::v-deep .q-expansion-item__toggle-icon {
+  //   display: none;
+  // }
+  &::v-deep .close-button {
+    & + div {
+      display: none;
+    }
+  }
 }
 
 .hide-button {
