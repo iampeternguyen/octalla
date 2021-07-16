@@ -1,12 +1,14 @@
 <template>
   <div class="footer row justify-end full-width items-end q-gutter-sm">
     <mini-chat
+      class="col-2"
       v-for="(chat, index) in chats"
       :chat="chat"
       :index="index"
       :key="chat.id"
     ></mini-chat>
     <create-mini-chat
+      class="col-2"
       v-for="(item, index) in newChatArray"
       :key="index"
       :remove="() => onRemove(index)"

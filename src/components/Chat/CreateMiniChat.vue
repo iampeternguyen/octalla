@@ -84,12 +84,18 @@ export default defineComponent({
     async function createChat() {
       if (members.value.length > 0) {
         const chatIndex = getChatIndexIfExists();
-        if (chatIndex) {
+
+        if (chatIndex != null) {
           // TODO check if chat already open / auto load messages like fb
           ChatViewModel.methods.openChat(chatIndex);
-          if (props.remove) props.remove();
+          props.remove();
         } else {
+          console.log('creating chat');
           await ChatViewModel.methods.createNewChat(members.value);
+          ChatViewModel.methods.openChat(
+            ChatViewModel.properties.allChats.value.length - 1
+          );
+          props.remove();
         }
       }
     }
@@ -102,6 +108,7 @@ export default defineComponent({
           members.value.every((member) => chat.members.includes(member.value))
         ) {
           foundChat = index;
+          return foundChat;
         }
       });
       return foundChat;

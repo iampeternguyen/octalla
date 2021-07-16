@@ -229,8 +229,6 @@ export default defineComponent({
 <style lang="scss" scoped>
 .mini-chat {
   pointer-events: auto;
-  width: 30rem;
-  max-width: 30rem;
 
   &::v-deep .close-button {
     // targets the div containg the expand icon
