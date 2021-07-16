@@ -12,7 +12,7 @@
       stack-label
       use-input
       @filter="filterFn"
-      @keydown.stop.enter="makeSelection"
+      @keydown.prevent.stop.enter="makeSelection"
     />
     <q-btn
       color="primary"
@@ -71,6 +71,7 @@ export default defineComponent({
 
     function makeSelection() {
       if (!chatMemberSelector.value) return;
+
       if (
         chatMemberSelector.value.options &&
         chatMemberSelector.value.options.length > 0
@@ -114,7 +115,14 @@ export default defineComponent({
       return foundChat;
     }
 
-    return { members, options, filterFn, makeSelection, createChat };
+    return {
+      members,
+      options,
+      filterFn,
+      makeSelection,
+      createChat,
+      chatMemberSelector,
+    };
   },
 });
 </script>
