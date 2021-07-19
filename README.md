@@ -7,6 +7,7 @@ A project manager app that helps you level up your own management skills.
   - [Why I built this project this way](#why-i-built-this-project-this-way)
   - [How to navigate this project](#how-to-navigate-this-project)
   - [Key Features](#key-features)
+  - [If I had more time](#if-i-had-more-time)
   - [Live Demo](#live-demo)
   - [Install the dependencies](#install-the-dependencies)
     - [Start the app in development mode (hot-code reloading, error reporting, etc.)](#start-the-app-in-development-mode-hot-code-reloading-error-reporting-etc)
@@ -30,8 +31,17 @@ I find that a lot of teams struggle with having a clear system for project manag
 
 ## Key Features
 - Realtime chat
-- Realtime collaboration in projects
-- Role based privileges for team workspaces
+- Realtime updates for tasks and projects changes 
+- Role based CRUD privileges system with protection on front end and backend (firebase)
+- Multiple workspaces for users
+- Can invite users to workspaces for collaboration
+
+## If I had more time
+- Bug fixing 
+- Create tests when Quasar's testing framework is updated for V2
+- Develop manager skill tree
+  - This would help managers track their learning and development and unlock new features
+  - This is going to require a bit of research for not only best practices but user research of people who use other similar apps
 
 ## Live Demo
 [Click here to check out the live demo](https://octalla.vercel.app/)
