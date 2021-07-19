@@ -36,7 +36,11 @@ I find that a lot of teams struggle with having a clear system for project manag
 - Can invite users to workspaces for collaboration
 
 ## If I had more time
+<<<<<<< HEAD
 - Bug fixing (ex: make responsive on different screens)
+=======
+- Bug fixing 
+>>>>>>> 9a0e1dcd96a440d2faa05fa377bdba31f86625e0
 - Create tests when Quasar's testing framework is updated for V2
 - Develop manager skill tree
   - This would help managers track their learning and development and unlock new features
