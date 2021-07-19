@@ -13,7 +13,6 @@ A project manager app that helps you level up your own management skills.
     - [Start the app in development mode (hot-code reloading, error reporting, etc.)](#start-the-app-in-development-mode-hot-code-reloading-error-reporting-etc)
     - [Lint the files](#lint-the-files)
     - [Build the app for production](#build-the-app-for-production)
-    - [Customize the configuration](#customize-the-configuration)
 
 ## Motivation
 I find that a lot of teams struggle with having a clear system for project management. Mission driven organizations and startups, especially, often struggle with delegating effectively and getting everyone on the same page. There's always so much to do, that creating a good system isn't a priority. People turn to project management apps to make this easier, but they can be overwhelming with all the features available and not a clear way to best implement them. I wanted to create an app that helped managers and teams learn about some models and frameworks that could help guide their project management. Users wouldn't necessarily have to use these exact frameworks, but it would set them up to think about what these frameworks try to solve and how they can learn from that and apply it in their own teams. 
@@ -67,5 +66,3 @@ yarn run lint
 quasar build
 ```
 
-### Customize the configuration
-See [Configuring quasar.conf.js](https://v2.quasar.dev/quasar-cli/quasar-conf-js).
