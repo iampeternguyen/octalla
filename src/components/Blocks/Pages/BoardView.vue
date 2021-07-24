@@ -14,13 +14,9 @@ import UserViewModel from 'src/viewmodels/UserViewModel';
 import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
 
 import { defineComponent, reactive } from 'vue';
-import BlockDisplay from '../BlockDisplay.vue';
 
 export default defineComponent({
   name: 'BoardToDo',
-  components: {
-    BlockDisplay,
-  },
   setup() {
     if (
       !UserViewModel.properties.settings.value ||

@@ -91,6 +91,7 @@ export default defineComponent({
       required: true,
     },
   },
+  components: {},
   setup(props) {
     const $q = useQuasar();
 

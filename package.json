@@ -22,9 +22,7 @@
     "nanoid": "^3.1.23",
     "pubsub-js": "^1.9.3",
     "quasar": "^2.0.0",
-    "vue-class-component": "^7.2.6",
     "vue-i18n": "^9.0.0-beta.0",
-    "vue-property-decorator": "^9.1.2",
     "vuedraggable": "^4.0.3"
   },
   "devDependencies": {
