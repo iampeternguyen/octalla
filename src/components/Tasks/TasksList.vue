@@ -97,24 +97,23 @@ export default defineComponent({
         return;
       }
 
-      const block = new TaskBlock(
+      const task = new Task(
         text.value,
         UserViewModel.properties.settings.value.id,
+        route.params.project_id.toString(),
         route.params.workspace_id.toString()
       );
-
       if (props.category == 'status' && props.field != 'Empty') {
-        block.task[props.category] = props.field.toString();
+        task.fields[props.category] = props.field.toString();
       } else if (props.category == 'competency' && props.field != 'Empty') {
-        block.task[props.category] =
+        task.fields[props.category] =
           WorkspaceViewModel.properties.competencies.value.find(
             (comp) => comp.name == props.field
           )?.id || '';
       } else if (props.field == 'Empty' && props.category == 'competency') {
-        block.task[props.category] = '';
+        task.fields[props.category] = '';
       }
-
-      await BlocksViewModel.saveBlock(block.serialize());
+      await TaskViewModel.updateTask(task.serialize());
       text.value = '';
       addTaskInputRef.value?.resetValidation();
       addTaskInputRef.value?.blur();

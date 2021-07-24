@@ -22,11 +22,15 @@
     "nanoid": "^3.1.23",
     "pubsub-js": "^1.9.3",
     "quasar": "^2.0.0",
+    "vue-class-component": "^7.2.6",
     "vue-i18n": "^9.0.0-beta.0",
+    "vue-property-decorator": "^9.1.2",
     "vuedraggable": "^4.0.3"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.13.14",
+    "@babel/plugin-proposal-class-properties": "^7.14.5",
+    "@babel/plugin-proposal-decorators": "^7.14.5",
     "@firebase/auth-types": "^0.10.3",
     "@firebase/firestore-types": "^2.3.0",
     "@quasar/app": "^3.0.0",

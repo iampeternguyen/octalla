@@ -7,7 +7,7 @@
   >
     <q-card-section>
       <div class="row q-py-sm justify-between">
-        <div>{{ task.fields.name }}</div>
+        <div>{{ block.title }}</div>
         <q-btn
           size="sm"
           color="grey-5 q-pa-none"
@@ -16,7 +16,7 @@
           dense
           rounded
           @click.stop
-          :label="task.fields.due_date ? dueDateFriendly : ''"
+          :label="block.task.due_date ? dueDateFriendly : ''"
         >
           <q-menu
             transition-show="jump-down"
@@ -79,60 +79,66 @@
 
 <script lang="ts">
 import { useQuasar, date } from 'quasar';
-import { TaskData } from 'src/models/Task';
 import { defineComponent, ref, PropType, computed } from 'vue';
 import TaskEditModal from 'src/components/Tasks/TaskEditModal.vue';
-import TaskViewModel from 'src/viewmodels/TaskViewModel';
+import Block from 'src/models/Block';
 
 export default defineComponent({
+  name: 'TaskListItemView',
   props: {
-    task: {
-      type: Object as PropType<TaskData>,
+    block: {
+      type: Object as PropType<Block>,
       required: true,
     },
   },
   setup(props) {
     const $q = useQuasar();
 
-    const isComplete = ref(props.task.fields.isComplete);
+    if (!props.block.task) {
+      throw new Error('Unable to convert block to task');
+    }
+
+    const isComplete = ref(props.block.task.isComplete);
 
     const taskHovered = ref(false);
-    async function onToggleComplete() {
-      await TaskViewModel.toggleComplete(props.task);
-      isComplete.value = !isComplete.value;
+    function onToggleComplete() {
+      props.block.toggleComplete();
+      isComplete.value = props.block.task?.isComplete || false;
     }
 
     async function onDelete() {
-      await TaskViewModel.deleteTask(props.task);
+      // await TaskViewModel.deleteTask(props.block);
     }
 
     function onTaskClicked() {
       $q.dialog({
         component: TaskEditModal,
         componentProps: {
-          task: props.task,
+          task: props.block,
         },
       });
       // .onDismiss(() => {})
     }
 
     const dueDateFriendly = computed(() =>
-      date.formatDate(props.task.fields.due_date, 'MMM D')
+      date.formatDate(props.block.task?.due_date, 'MMM D')
     );
 
     const format = date.formatDate(Date.now(), 'YYYY-MM-DD HH:mm');
     const dueDate = ref(format);
 
-    async function checkDueDate() {
+    function checkDueDate() {
       if (
-        props.task.fields.due_date !=
+        props.block.task?.due_date !=
         date.extractDate(dueDate.value, 'YYYY-MM-DD HH:mm').getTime()
       ) {
-        const task = props.task;
-        task.fields.due_date = date
-          .extractDate(dueDate.value, 'YYYY-MM-DD HH:mm')
-          .getTime();
-        await TaskViewModel.updateTask(task);
+        const block = props.block;
+        if (block.task) {
+          block.task.due_date = date
+            .extractDate(dueDate.value, 'YYYY-MM-DD HH:mm')
+            .getTime();
+          // await TaskViewModel.updateTask(block);
+        }
       }
     }
 

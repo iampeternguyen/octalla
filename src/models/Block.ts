@@ -1,14 +1,17 @@
 import { nanoid } from 'nanoid';
 
 export const BLOCKS_STORENAME = 'blocks';
-
-export interface TaskBlockData {
+export enum BLOCK_TYPES {
+  TASK_BLOCK = 'TASK_BLOCK',
+  TASK_LIST_BLOCK = 'TASK_LIST_BLOCK',
+}
+export interface BlockData {
   id: string;
   last_modified: number;
   created_at: number;
   workspace_id: string;
   created_by: string;
-  type: string;
+  type: BLOCK_TYPES;
 
   title: string;
   content: string[];
@@ -21,16 +24,16 @@ export interface TaskBlockData {
     isComplete: boolean;
     order: number;
     assigned_to: string;
-  };
+  } | null;
 }
 
-export default class TaskBlock implements TaskBlockData {
+export default class Block implements BlockData {
   id: string;
   last_modified: number;
   created_at: number;
   workspace_id: string;
   created_by: string;
-  type: string;
+  type: BLOCK_TYPES;
 
   title: string;
   content: string[];
@@ -43,13 +46,14 @@ export default class TaskBlock implements TaskBlockData {
     isComplete: boolean;
     order: number;
     assigned_to: string;
-  };
+  } | null;
 
   constructor(
     title: string,
     userId: string,
     workspaceId: string,
-    data?: TaskBlockData
+    type: BLOCK_TYPES,
+    data?: BlockData
   ) {
     // for database model abstract class
 
@@ -58,19 +62,26 @@ export default class TaskBlock implements TaskBlockData {
     this.created_by = userId;
     this.created_at = data?.created_at || Date.now();
     this.last_modified = data?.last_modified || Date.now();
-    this.type = 'task_block';
+    this.type = type;
 
     this.title = title;
     this.content = [];
 
-    this.task = data?.task || {
-      status: '',
-      competency: '',
-      due_date: 0,
-      isComplete: false,
-      order: 0,
-      assigned_to: '',
-    };
+    this.task = data?.task || null;
+  }
+
+  convertToTask() {
+    this.type = BLOCK_TYPES.TASK_BLOCK;
+    if (!this.task) {
+      this.task = {
+        status: '',
+        competency: '',
+        due_date: 0,
+        isComplete: false,
+        order: 0,
+        assigned_to: '',
+      };
+    }
   }
 
   //   changeStatus(status: string) {
@@ -80,14 +91,11 @@ export default class TaskBlock implements TaskBlockData {
   //       : (this.fields.isComplete = false);
   //   }
 
-  //   toggleComplete() {
-  //     this.fields.isComplete = !this.fields.isComplete;
-  //     if (this.fields.isComplete) {
-  //       this.fields.status = TASK_STATUS.COMPLETE;
-  //     } else if (this.fields.status == TASK_STATUS.COMPLETE) {
-  //       this.fields.status = TASK_STATUS.OPEN;
-  //     }
-  //   }
+  toggleComplete() {
+    if (this.task) {
+      this.task.isComplete = !this.task.isComplete;
+    }
+  }
 
   //   toggleStatus() {
   //     switch (this.fields.status) {
@@ -112,7 +120,7 @@ export default class TaskBlock implements TaskBlockData {
   //       : (this.fields.isComplete = false);
   //   }
 
-  serialize(): TaskBlockData {
+  serialize(): BlockData {
     return {
       id: this.id,
       last_modified: this.last_modified,
@@ -128,11 +136,12 @@ export default class TaskBlock implements TaskBlockData {
     };
   }
 
-  static deserialize(taskBlockData: TaskBlockData): TaskBlock {
-    return new TaskBlock(
+  static deserialize(taskBlockData: BlockData): Block {
+    return new Block(
       taskBlockData.title,
       taskBlockData.created_by,
       taskBlockData.workspace_id,
+      taskBlockData.type,
       taskBlockData
     );
   }

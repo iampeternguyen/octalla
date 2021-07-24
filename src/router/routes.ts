@@ -84,8 +84,7 @@ const routes: RouteRecordRaw[] = [
       {
         name: 'board',
         path: '',
-        component: () =>
-          import('src/components/Blocks/BoardView/BoardToDo.vue'),
+        component: () => import('src/components/Blocks/Pages/BoardView.vue'),
         meta: {
           requiresAuth: true,
           requiresReadWorkspacePermission: true,

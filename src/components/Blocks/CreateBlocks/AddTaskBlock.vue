@@ -14,11 +14,10 @@
 </template>
 <script lang="ts">
 import { QInput } from 'quasar';
-import TaskBlock from 'src/models/Block';
-import BlocksViewModel from 'src/viewmodels/BlocksViewModel';
+import Block, { BLOCK_TYPES } from 'src/models/Block';
 import UserViewModel from 'src/viewmodels/UserViewModel';
 import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
-import { defineComponent, ref, PropType } from 'vue';
+import { defineComponent, ref } from 'vue';
 
 export default defineComponent({
   name: 'AddTaskBlock',
@@ -42,11 +41,14 @@ export default defineComponent({
         return;
       }
 
-      const block = new TaskBlock(
+      const block = new Block(
         title.value,
         UserViewModel.properties.settings.value.id,
-        WorkspaceViewModel.properties.activeSpace.value.id
+        WorkspaceViewModel.properties.activeSpace.value.id,
+        BLOCK_TYPES.TASK_BLOCK
       );
+
+      block.convertToTask();
 
       //   if (props.category == 'status' && props.field != 'Empty') {
       //     block.task[props.category] = props.field.toString();
