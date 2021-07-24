@@ -34,10 +34,12 @@
 </template>
 <script lang="ts">
 import { QInput } from 'quasar';
+import TaskBlock from 'src/models/Block';
 import Task, { TaskData } from 'src/models/Task';
 import ProjectViewModel from 'src/viewmodels/ProjectViewModel';
 import TaskViewModel from 'src/viewmodels/TaskViewModel';
 import UserViewModel from 'src/viewmodels/UserViewModel';
+import BlocksViewModel from 'src/viewmodels/BlocksViewModel';
 import WorkspaceViewModel from 'src/viewmodels/WorkspaceViewModel';
 import { defineComponent, ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
@@ -94,23 +96,25 @@ export default defineComponent({
         addTaskInputRef.value?.validate();
         return;
       }
-      const task = new Task(
+
+      const block = new TaskBlock(
         text.value,
         UserViewModel.properties.settings.value.id,
-        route.params.project_id.toString(),
         route.params.workspace_id.toString()
       );
+
       if (props.category == 'status' && props.field != 'Empty') {
-        task.fields[props.category] = props.field.toString();
+        block.task[props.category] = props.field.toString();
       } else if (props.category == 'competency' && props.field != 'Empty') {
-        task.fields[props.category] =
+        block.task[props.category] =
           WorkspaceViewModel.properties.competencies.value.find(
             (comp) => comp.name == props.field
           )?.id || '';
       } else if (props.field == 'Empty' && props.category == 'competency') {
-        task.fields[props.category] = '';
+        block.task[props.category] = '';
       }
-      await TaskViewModel.updateTask(task.serialize());
+
+      await BlocksViewModel.saveBlock(block.serialize());
       text.value = '';
       addTaskInputRef.value?.resetValidation();
       addTaskInputRef.value?.blur();

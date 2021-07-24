@@ -3,6 +3,7 @@ import UserRepository from './user/UserRepository';
 import ProjectRepository from './project/ProjectRepository';
 import TaskRepository from './task/TaskRepository';
 import ChatRepository from './chat/ChatRepository';
+import BlocksRepository from './blocks/BlocksRepository';
 
 const AppRepository = {
   user: {
@@ -19,6 +20,9 @@ const AppRepository = {
   },
   chat: {
     ...ChatRepository,
+  },
+  blocks: {
+    ...BlocksRepository,
   },
 };
 

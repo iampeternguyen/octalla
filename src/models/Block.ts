@@ -12,15 +12,16 @@ export interface TaskBlockData {
 
   title: string;
   content: string[];
-  kanban_group: string | null;
 
   task: {
+    status: string;
+
     competency: string;
     due_date: number;
     isComplete: boolean;
     order: number;
     assigned_to: string;
-  } | null;
+  };
 }
 
 export default class TaskBlock implements TaskBlockData {
@@ -33,15 +34,16 @@ export default class TaskBlock implements TaskBlockData {
 
   title: string;
   content: string[];
-  kanban_group: string | null;
 
   task: {
+    status: string;
+
     competency: string;
     due_date: number;
     isComplete: boolean;
     order: number;
     assigned_to: string;
-  } | null;
+  };
 
   constructor(
     title: string,
@@ -60,9 +62,15 @@ export default class TaskBlock implements TaskBlockData {
 
     this.title = title;
     this.content = [];
-    this.kanban_group = null;
 
-    this.task = data?.task || null;
+    this.task = data?.task || {
+      status: '',
+      competency: '',
+      due_date: 0,
+      isComplete: false,
+      order: 0,
+      assigned_to: '',
+    };
   }
 
   //   changeStatus(status: string) {
@@ -115,7 +123,6 @@ export default class TaskBlock implements TaskBlockData {
 
       title: this.title,
       content: this.content,
-      kanban_group: this.kanban_group,
 
       task: this.task,
     };
