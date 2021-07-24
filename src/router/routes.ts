@@ -77,6 +77,23 @@ const routes: RouteRecordRaw[] = [
     ],
   },
   {
+    path: '/app/:workspace_id/board',
+    component: () => import('src/layouts/AppLayout.vue'),
+
+    children: [
+      {
+        name: 'board',
+        path: '',
+        component: () =>
+          import('src/components/Blocks/BoardView/BoardToDo.vue'),
+        meta: {
+          requiresAuth: true,
+          requiresReadWorkspacePermission: true,
+        },
+      },
+    ],
+  },
+  {
     path: '/app/:workspace_id/',
     component: () => import('src/layouts/AppLayout.vue'),
 
