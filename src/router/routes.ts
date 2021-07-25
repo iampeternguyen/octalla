@@ -153,6 +153,18 @@ const routes: RouteRecordRaw[] = [
   },
 
   {
+    path: '/editor',
+    component: () => import('src/layouts/LandingPageLayout.vue'),
+    children: [
+      {
+        name: 'Editor',
+        path: '',
+        component: () => import('components/Blocks/Editable/EditorBlock.vue'),
+      },
+    ],
+  },
+
+  {
     path: '/app/login',
     component: () => import('src/layouts/LandingPageLayout.vue'),
     children: [

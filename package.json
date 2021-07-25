@@ -14,6 +14,8 @@
   "dependencies": {
     "@quasar/cli": "^1.2.1",
     "@quasar/extras": "^1.0.0",
+    "@tiptap/starter-kit": "^2.0.0-beta.82",
+    "@tiptap/vue-3": "^2.0.0-beta.45",
     "axios": "^0.21.1",
     "core-js": "^3.6.5",
     "firebase": "^8.6.8",

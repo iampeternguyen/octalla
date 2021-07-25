@@ -16,7 +16,7 @@
           dense
           rounded
           @click.stop
-          :label="block.task.due_date ? dueDateFriendly : ''"
+          :label="block.task?.due_date ? dueDateFriendly : ''"
         >
           <q-menu
             transition-show="jump-down"
